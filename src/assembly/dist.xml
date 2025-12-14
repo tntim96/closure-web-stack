@@ -1,0 +1,45 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="
+            http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3
+            https://maven.apache.org/xsd/assembly-1.1.3.xsd">
+
+  <id>dist</id>
+
+  <formats>
+    <format>zip</format>
+  </formats>
+
+  <includeBaseDirectory>true</includeBaseDirectory>
+
+  <!-- Closure Compiler -->
+  <dependencySets>
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <outputDirectory>compiler</outputDirectory>
+      <includes>
+        <include>com.google.javascript:closure-compiler</include>
+      </includes>
+    </dependencySet>
+  </dependencySets>
+
+  <!-- Local directories -->
+  <fileSets>
+    <fileSet>
+      <directory>closure-library</directory>
+      <outputDirectory>closure-library</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>closure-templates-release</directory>
+      <outputDirectory>closure-templates</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>incremental-dom</directory>
+      <outputDirectory>incremental-dom</outputDirectory>
+    </fileSet>
+  </fileSets>
+
+</assembly>
