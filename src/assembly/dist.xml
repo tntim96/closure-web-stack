@@ -18,6 +18,9 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <outputDirectory>compiler</outputDirectory>
+      <outputFileNameMapping>
+        ${artifact.artifactId}.${artifact.extension}
+      </outputFileNameMapping>
       <includes>
         <include>com.google.javascript:closure-compiler</include>
       </includes>
