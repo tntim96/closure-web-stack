@@ -1,12 +1,23 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Default renderer for {@link goog.ui.TabBar}s.  Based on the
- * original `TabPane` code.
+ * original {@code TabPane} code.
+ *
+ * @author attila@google.com (Attila Bodis)
+ * @author eae@google.com (Emil A. Eklund)
  */
 
 goog.provide('goog.ui.TabBarRenderer');
@@ -14,12 +25,11 @@ goog.provide('goog.ui.TabBarRenderer');
 goog.require('goog.a11y.aria.Role');
 goog.require('goog.object');
 goog.require('goog.ui.ContainerRenderer');
-goog.requireType('goog.ui.Container');
 
 
 
 /**
- * Default renderer for {@link goog.ui.TabBar}s, based on the `TabPane`
+ * Default renderer for {@link goog.ui.TabBar}s, based on the {@code TabPane}
  * code.  The tab bar's DOM structure is determined by its orientation and
  * location relative to tab contents.  For example, a horizontal tab bar
  * located above tab contents looks like this:
@@ -32,11 +42,11 @@ goog.requireType('goog.ui.Container');
  * @extends {goog.ui.ContainerRenderer}
  */
 goog.ui.TabBarRenderer = function() {
-  'use strict';
   goog.ui.ContainerRenderer.call(this, goog.a11y.aria.Role.TAB_LIST);
 };
 goog.inherits(goog.ui.TabBarRenderer, goog.ui.ContainerRenderer);
 goog.addSingletonGetter(goog.ui.TabBarRenderer);
+goog.tagUnsealableClass(goog.ui.TabBarRenderer);
 
 
 /**
@@ -54,7 +64,6 @@ goog.ui.TabBarRenderer.CSS_CLASS = goog.getCssName('goog-tab-bar');
  * @override
  */
 goog.ui.TabBarRenderer.prototype.getCssClass = function() {
-  'use strict';
   return goog.ui.TabBarRenderer.CSS_CLASS;
 };
 
@@ -69,11 +78,9 @@ goog.ui.TabBarRenderer.prototype.getCssClass = function() {
  *     class names (typically the renderer's own class name).
  * @protected
  * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.ui.TabBarRenderer.prototype.setStateFromClassName = function(
     tabBar, className, baseClass) {
-  'use strict';
   // Create the class-to-location lookup table on first access.
   if (!this.locationByClass_) {
     this.createLocationByClassMap_();
@@ -99,10 +106,8 @@ goog.ui.TabBarRenderer.prototype.setStateFromClassName = function(
  *     returned.
  * @return {!Array<string>} Array of CSS class names applicable to the tab bar.
  * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.ui.TabBarRenderer.prototype.getClassNames = function(tabBar) {
-  'use strict';
   var classNames =
       goog.ui.TabBarRenderer.superClass_.getClassNames.call(this, tabBar);
 
@@ -122,7 +127,6 @@ goog.ui.TabBarRenderer.prototype.getClassNames = function(tabBar) {
  * @private
  */
 goog.ui.TabBarRenderer.prototype.createClassByLocationMap_ = function() {
-  'use strict';
   var baseClass = this.getCssClass();
 
   /**
@@ -146,7 +150,6 @@ goog.ui.TabBarRenderer.prototype.createClassByLocationMap_ = function() {
  * @private
  */
 goog.ui.TabBarRenderer.prototype.createLocationByClassMap_ = function() {
-  'use strict';
   // We need the classByLocation_ map so we can transpose it.
   if (!this.classByLocation_) {
     this.createClassByLocationMap_();

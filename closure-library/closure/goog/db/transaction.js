@@ -1,11 +1,20 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Wrapper for an IndexedDB transaction.
+ *
  */
 
 
@@ -18,7 +27,6 @@ goog.require('goog.db.ObjectStore');
 goog.require('goog.events');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
-goog.requireType('goog.db.IndexedDb');
 
 
 
@@ -35,7 +43,6 @@ goog.requireType('goog.db.IndexedDb');
  * @final
  */
 goog.db.Transaction = function(tx, db) {
-  'use strict';
   goog.db.Transaction.base(this, 'constructor');
 
   /**
@@ -86,7 +93,6 @@ goog.inherits(goog.db.Transaction, goog.events.EventTarget);
  * @private
  */
 goog.db.Transaction.prototype.dispatchError_ = function(ev) {
-  'use strict';
   if (ev.target instanceof goog.db.Error) {
     this.dispatchEvent(
         {type: goog.db.Transaction.EventTypes.ERROR, target: ev.target});
@@ -119,7 +125,6 @@ goog.db.Transaction.EventTypes = {
  * @return {goog.db.Transaction.TransactionMode} The transaction's mode.
  */
 goog.db.Transaction.prototype.getMode = function() {
-  'use strict';
   return /** @type {goog.db.Transaction.TransactionMode} */ (this.tx_.mode);
 };
 
@@ -128,7 +133,6 @@ goog.db.Transaction.prototype.getMode = function() {
  * @return {!goog.db.IndexedDb} The database that this transaction modifies.
  */
 goog.db.Transaction.prototype.getDatabase = function() {
-  'use strict';
   return this.db_;
 };
 
@@ -143,29 +147,10 @@ goog.db.Transaction.prototype.getDatabase = function() {
  * @throws {goog.db.Error} In case of error getting the object store.
  */
 goog.db.Transaction.prototype.objectStore = function(name) {
-  'use strict';
   try {
     return new goog.db.ObjectStore(this.tx_.objectStore(name));
   } catch (ex) {
     throw goog.db.Error.fromException(ex, 'getting object store ' + name);
-  }
-};
-
-/**
- * @param {boolean} allowNoopWhenUnsupported Whether it's fine for the method to
- *     act like no-op if native method is not supported by the browser.
- * @throws {!goog.db.Error} In case of error executing the commit.
- */
-goog.db.Transaction.prototype.commit = function(allowNoopWhenUnsupported) {
-  'use strict';
-  if (!this.tx_.commit && allowNoopWhenUnsupported) {
-    // Method doesn't exist, and caller is ok with a no-op.
-    return;
-  }
-  try {
-    this.tx_.commit();
-  } catch (ex) {
-    throw goog.db.Error.fromException(ex, 'cannot commit the transaction');
   }
 };
 
@@ -176,14 +161,12 @@ goog.db.Transaction.prototype.commit = function(allowNoopWhenUnsupported) {
  *     in the transaction, or if it is aborted.
  */
 goog.db.Transaction.prototype.wait = function() {
-  'use strict';
-  const d = new goog.async.Deferred();
+  var d = new goog.async.Deferred();
   goog.events.listenOnce(
       this, goog.db.Transaction.EventTypes.COMPLETE, goog.bind(d.callback, d));
-  let errorKey;
-  const abortKey = goog.events.listenOnce(
+  var errorKey;
+  var abortKey = goog.events.listenOnce(
       this, goog.db.Transaction.EventTypes.ABORT, function() {
-        'use strict';
         goog.events.unlistenByKey(errorKey);
         d.errback(
             new goog.db.Error(
@@ -192,16 +175,12 @@ goog.db.Transaction.prototype.wait = function() {
       });
   errorKey = goog.events.listenOnce(
       this, goog.db.Transaction.EventTypes.ERROR, function(e) {
-        'use strict';
         goog.events.unlistenByKey(abortKey);
         d.errback(e.target);
       });
 
-  const db = this.getDatabase();
-  return d.addCallback(function() {
-    'use strict';
-    return db;
-  });
+  var db = this.getDatabase();
+  return d.addCallback(function() { return db; });
 };
 
 
@@ -210,14 +189,12 @@ goog.db.Transaction.prototype.wait = function() {
  * database. Dispatches an ABORT event.
  */
 goog.db.Transaction.prototype.abort = function() {
-  'use strict';
   this.tx_.abort();
 };
 
 
 /** @override */
 goog.db.Transaction.prototype.disposeInternal = function() {
-  'use strict';
   goog.db.Transaction.base(this, 'disposeInternal');
   this.eventHandler_.dispose();
 };

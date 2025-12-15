@@ -1,98 +1,49 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.storage.mechanism.mechanismfactoryTest');
-goog.setTestOnly();
+goog.provide('goog.storage.mechanism.mechanismfactoryTest');
+goog.setTestOnly('goog.storage.mechanism.mechanismfactoryTest');
 
-const iterableMechanismTests = goog.require('goog.storage.mechanism.iterableMechanismTests');
-const mechanismSeparationTests = goog.require('goog.storage.mechanism.mechanismSeparationTests');
-const mechanismSharingTests = goog.require('goog.storage.mechanism.mechanismSharingTests');
-const mechanismTests = goog.require('goog.storage.mechanism.mechanismTests');
-const mechanismfactory = goog.require('goog.storage.mechanism.mechanismfactory');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.storage.mechanism.mechanismfactory');
+goog.require('goog.testing.jsunit');
 
-let mechanism;
-let mechanismShared;
-let mechanismSeparate;
+function setUp() {
+  mechanism = goog.storage.mechanism.mechanismfactory.create('test');
+  mechanism_shared = goog.storage.mechanism.mechanismfactory.create('test');
+  mechanism_separate = goog.storage.mechanism.mechanismfactory.create('test2');
+}
 
-testSuite({
+function tearDown() {
+  if (!!mechanism) {
+    mechanism.clear();
+    mechanism = null;
+  }
+  if (!!mechanism_shared) {
+    mechanism_shared.clear();
+    mechanism_shared = null;
+  }
+  if (!!mechanism_separate) {
+    mechanism_separate.clear();
+    mechanism_separate = null;
+  }
+}
 
-  setUp() {
-    mechanism = mechanismfactory.create('test');
-    mechanismShared = mechanismfactory.create('test');
-    mechanismSeparate = mechanismfactory.create('test2');
-  },
-
-  tearDown() {
-    if (!!mechanism) {
-      mechanism.clear();
-      mechanism = null;
-    }
-    if (!!mechanismShared) {
-      mechanismShared.clear();
-      mechanismShared = null;
-    }
-    if (!!mechanismSeparate) {
-      mechanismSeparate.clear();
-      mechanismSeparate = null;
-    }
-  },
-
-  testAvailability() {
-    const probe = mechanismfactory.create();
-    if (!!probe) {
-      assertNotNull(mechanism);
-      assertNotNull(mechanismShared);
-      assertNotNull(mechanismSeparate);
-    }
-
-    if (!!mechanism) {
-      mechanism.clear();
-      mechanism = null;
-    }
-    if (!!mechanismShared) {
-      mechanismShared.clear();
-      mechanismShared = null;
-    }
-    if (!!mechanismSeparate) {
-      mechanismSeparate.clear();
-      mechanismSeparate = null;
-    }
-  },
-
-  ...mechanismTests.register({
-    getMechanism: function() {
-      return mechanism;
-    },
-    getMinimumQuota: function() {
-      return 0;
-    },
-  }),
-
-  ...iterableMechanismTests.register({
-    getMechanism: function() {
-      return mechanism;
-    },
-  }),
-
-  ...mechanismSharingTests.register({
-    getMechanism: function() {
-      return mechanism;
-    },
-    getMechanismShared: function() {
-      return mechanismShared;
-    },
-  }),
-
-  ...mechanismSeparationTests.register({
-    getMechanism: function() {
-      return mechanism;
-    },
-    getMechanismSeparate: function() {
-      return mechanismSeparate;
-    },
-  }),
-});
+function testAvailability() {
+  var probe = goog.storage.mechanism.mechanismfactory.create();
+  if (!!probe) {
+    assertNotNull(mechanism);
+    assertNotNull(mechanism_shared);
+    assertNotNull(mechanism_separate);
+  }
+}

@@ -1,14 +1,24 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview The default renderer for a goog.dom.DimensionPicker.  A
  * dimension picker allows the user to visually select a row and column count.
  * It looks like a palette but in order to minimize DOM load it is rendered.
  * using CSS background tiling instead of as a grid of nodes.
+ *
+ * @author robbyw@google.com (Robby Walker)
  */
 
 goog.provide('goog.ui.DimensionPickerRenderer');
@@ -21,8 +31,6 @@ goog.require('goog.i18n.bidi');
 goog.require('goog.style');
 goog.require('goog.ui.ControlRenderer');
 goog.require('goog.userAgent');
-goog.requireType('goog.ui.Control');
-goog.requireType('goog.ui.DimensionPicker');
 
 
 
@@ -35,7 +43,6 @@ goog.requireType('goog.ui.DimensionPicker');
  * @extends {goog.ui.ControlRenderer}
  */
 goog.ui.DimensionPickerRenderer = function() {
-  'use strict';
   goog.ui.ControlRenderer.call(this);
 
   /** @private {goog.a11y.aria.Announcer} */
@@ -62,7 +69,6 @@ goog.ui.DimensionPickerRenderer.CSS_CLASS =
  */
 goog.ui.DimensionPickerRenderer.prototype.getUnderlyingDiv_ = function(
     element) {
-  'use strict';
   return /** @type {Element} */ (element.firstChild.childNodes[1]);
 };
 
@@ -74,7 +80,6 @@ goog.ui.DimensionPickerRenderer.prototype.getUnderlyingDiv_ = function(
  * @private
  */
 goog.ui.DimensionPickerRenderer.prototype.getHighlightDiv_ = function(element) {
-  'use strict';
   return /** @type {Element} */ (element.firstChild.lastChild);
 };
 
@@ -86,7 +91,6 @@ goog.ui.DimensionPickerRenderer.prototype.getHighlightDiv_ = function(element) {
  * @private
  */
 goog.ui.DimensionPickerRenderer.prototype.getStatusDiv_ = function(element) {
-  'use strict';
   return /** @type {Element} */ (element.lastChild);
 };
 
@@ -98,7 +102,6 @@ goog.ui.DimensionPickerRenderer.prototype.getStatusDiv_ = function(element) {
  * @private
  */
 goog.ui.DimensionPickerRenderer.prototype.getMouseCatcher_ = function(element) {
-  'use strict';
   return /** @type {Element} */ (element.firstChild.firstChild);
 };
 
@@ -111,7 +114,6 @@ goog.ui.DimensionPickerRenderer.prototype.getMouseCatcher_ = function(element) {
  * @override
  */
 goog.ui.DimensionPickerRenderer.prototype.canDecorate = function(element) {
-  'use strict';
   return element.tagName == goog.dom.TagName.DIV && !element.firstChild;
 };
 
@@ -125,7 +127,6 @@ goog.ui.DimensionPickerRenderer.prototype.canDecorate = function(element) {
  */
 goog.ui.DimensionPickerRenderer.prototype.decorate = function(
     control, element) {
-  'use strict';
   var palette = /** @type {goog.ui.DimensionPicker} */ (control);
   goog.ui.DimensionPickerRenderer.superClass_.decorate.call(
       this, palette, element);
@@ -144,7 +145,6 @@ goog.ui.DimensionPickerRenderer.prototype.decorate = function(
  */
 goog.ui.DimensionPickerRenderer.prototype.updateSize = function(
     palette, element) {
-  'use strict';
   var size = palette.getSize();
 
   element.style.width = size.width + 'em';
@@ -167,7 +167,6 @@ goog.ui.DimensionPickerRenderer.prototype.updateSize = function(
  */
 goog.ui.DimensionPickerRenderer.prototype.addElementContents_ = function(
     palette, element) {
-  'use strict';
   // First we create a single div containing three stacked divs.  The bottom div
   // catches mouse events.  We can't use document level mouse move detection as
   // we could lose events to iframes.  This is especially important in Firefox 2
@@ -186,9 +185,7 @@ goog.ui.DimensionPickerRenderer.prototype.addElementContents_ = function(
       goog.dom.TagName.DIV, goog.getCssName(this.getCssClass(), 'highlighted'));
   element.appendChild(
       palette.getDomHelper().createDom(
-          goog.dom.TagName.DIV, {
-            'style': 'width:100%;height:100%;touch-action:none;'
-          },
+          goog.dom.TagName.DIV, {'style': 'width:100%;height:100%'},
           mouseCatcherDiv, unhighlightedDiv, highlightedDiv));
 
   // Lastly we add a div to store the text version of the current state.
@@ -205,7 +202,6 @@ goog.ui.DimensionPickerRenderer.prototype.addElementContents_ = function(
  * @override
  */
 goog.ui.DimensionPickerRenderer.prototype.createDom = function(control) {
-  'use strict';
   var palette = /** @type {goog.ui.DimensionPicker} */ (control);
   var classNames = this.getClassNames(palette);
   // Hide the element from screen readers so they don't announce "1 of 1" for
@@ -227,7 +223,6 @@ goog.ui.DimensionPickerRenderer.prototype.createDom = function(control) {
  * @override
  */
 goog.ui.DimensionPickerRenderer.prototype.initializeDom = function(control) {
-  'use strict';
   var palette = /** @type {goog.ui.DimensionPicker} */ (control);
   goog.ui.DimensionPickerRenderer.superClass_.initializeDom.call(this, palette);
 
@@ -247,7 +242,6 @@ goog.ui.DimensionPickerRenderer.prototype.initializeDom = function(control) {
  */
 goog.ui.DimensionPickerRenderer.prototype.getMouseMoveElement = function(
     palette) {
-  'use strict';
   return /** @type {Element} */ (palette.getElement().firstChild);
 };
 
@@ -260,7 +254,6 @@ goog.ui.DimensionPickerRenderer.prototype.getMouseMoveElement = function(
  */
 goog.ui.DimensionPickerRenderer.prototype.getGridOffsetX = function(
     palette, x) {
-  'use strict';
   // TODO(robbyw): Don't rely on magic 18 - measure each palette's em size.
   return Math.min(palette.maxColumns, Math.ceil(x / 18));
 };
@@ -274,7 +267,6 @@ goog.ui.DimensionPickerRenderer.prototype.getGridOffsetX = function(
  */
 goog.ui.DimensionPickerRenderer.prototype.getGridOffsetY = function(
     palette, y) {
-  'use strict';
   return Math.min(palette.maxRows, Math.ceil(y / 18));
 };
 
@@ -287,7 +279,6 @@ goog.ui.DimensionPickerRenderer.prototype.getGridOffsetY = function(
  */
 goog.ui.DimensionPickerRenderer.prototype.setHighlightedSize = function(
     palette, columns, rows) {
-  'use strict';
   var element = palette.getElement();
   // Can't update anything if DimensionPicker hasn't been rendered.
   if (!element) {
@@ -331,7 +322,6 @@ goog.ui.DimensionPickerRenderer.prototype.setHighlightedSize = function(
  */
 goog.ui.DimensionPickerRenderer.prototype.positionMouseCatcher = function(
     palette) {
-  'use strict';
   var mouseCatcher = this.getMouseCatcher_(palette.getElement());
   var doc = goog.dom.getOwnerDocument(mouseCatcher);
   var body = doc.body;
@@ -379,7 +369,6 @@ goog.ui.DimensionPickerRenderer.prototype.positionMouseCatcher = function(
  * @override
  */
 goog.ui.DimensionPickerRenderer.prototype.getCssClass = function() {
-  'use strict';
   return goog.ui.DimensionPickerRenderer.CSS_CLASS;
 };
 
@@ -397,7 +386,6 @@ goog.ui.DimensionPickerRenderer.prototype.getCssClass = function() {
  */
 goog.ui.DimensionPickerRenderer.prototype.adjustParentDirection_ = function(
     palette, element) {
-  'use strict';
   var parent = palette.getParent();
   if (parent) {
     var parentElement = parent.getElement();
@@ -417,7 +405,7 @@ goog.ui.DimensionPickerRenderer.prototype.adjustParentDirection_ = function(
       }
     }
 
-    // When a table is inserted, the containing element's position is
+    // When a table is inserted, the containing elemet's position is
     // recalculated the next time it shows, set left back to '' to prevent
     // extra white space on the left.
     var left = goog.style.getStyle(parentElement, 'left');

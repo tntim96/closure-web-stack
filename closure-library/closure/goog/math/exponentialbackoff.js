@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 
 /**
@@ -10,6 +18,7 @@
  * exponential backoff model.  Given an initial backoff value and a maximum
  * backoff value, every call to backoff() will double the value until maximum
  * backoff value is reached.
+ *
  */
 
 
@@ -31,30 +40,29 @@ goog.require('goog.asserts');
  * @param {number=} opt_backoffFactor The factor to backoff by. Defaults to 2.
  *     Should be a number greater than 1.
  * @param {number=} opt_decayFactor The factor to decay by. Defaults to 2.
- *     Should be a number greater than one.
+ *     Should be a number between greater than one.
  */
 goog.math.ExponentialBackoff = function(
     initialValue, maxValue, opt_randomFactor, opt_backoffFactor,
     opt_decayFactor) {
-  'use strict';
   goog.asserts.assert(
       initialValue > 0, 'Initial value must be greater than zero.');
   goog.asserts.assert(
       maxValue >= initialValue,
       'Max value should be at least as large as initial value.');
 
-  if (opt_randomFactor !== undefined) {
+  if (goog.isDef(opt_randomFactor)) {
     goog.asserts.assert(
         opt_randomFactor >= 0 && opt_randomFactor <= 1,
         'Randomness factor should be between 0 and 1.');
   }
 
-  if (opt_backoffFactor !== undefined) {
+  if (goog.isDef(opt_backoffFactor)) {
     goog.asserts.assert(
         opt_backoffFactor > 1, 'Backoff factor should be greater than 1');
   }
 
-  if (opt_decayFactor !== undefined) {
+  if (goog.isDef(opt_decayFactor)) {
     goog.asserts.assert(
         opt_decayFactor >= 1, 'Decay factor should be greater than 1');
   }
@@ -130,7 +138,6 @@ goog.math.ExponentialBackoff.prototype.currDecayCount_ = 0;
  * Resets the backoff value to its initial value.
  */
 goog.math.ExponentialBackoff.prototype.reset = function() {
-  'use strict';
   this.currValue_ = this.initialValue_;
   this.currBaseValue_ = this.initialValue_;
   this.currBackoffCount_ = 0;
@@ -142,7 +149,6 @@ goog.math.ExponentialBackoff.prototype.reset = function() {
  * @return {number} The current backoff value.
  */
 goog.math.ExponentialBackoff.prototype.getValue = function() {
-  'use strict';
   return this.currValue_;
 };
 
@@ -151,7 +157,6 @@ goog.math.ExponentialBackoff.prototype.getValue = function() {
  * @return {number} The number of times this class has backed off.
  */
 goog.math.ExponentialBackoff.prototype.getBackoffCount = function() {
-  'use strict';
   return this.currBackoffCount_;
 };
 
@@ -160,7 +165,6 @@ goog.math.ExponentialBackoff.prototype.getBackoffCount = function() {
  * @return {number} The number of times this class has decayed.
  */
 goog.math.ExponentialBackoff.prototype.getDecayCount = function() {
-  'use strict';
   return this.currDecayCount_;
 };
 
@@ -169,7 +173,6 @@ goog.math.ExponentialBackoff.prototype.getDecayCount = function() {
  * Initiates a backoff.
  */
 goog.math.ExponentialBackoff.prototype.backoff = function() {
-  'use strict';
   // If we haven't hit the maximum value yet, keep increasing the base value.
   this.currBaseValue_ =
       Math.min(this.maxValue_, this.currBaseValue_ * this.backoffFactor_);
@@ -188,7 +191,6 @@ goog.math.ExponentialBackoff.prototype.backoff = function() {
  * Initiates a decay.
  */
 goog.math.ExponentialBackoff.prototype.decay = function() {
-  'use strict';
   // If we haven't hit the initial value yet, keep decreasing the base value.
   this.currBaseValue_ =
       Math.max(this.initialValue_, this.currBaseValue_ / this.decayFactor_);

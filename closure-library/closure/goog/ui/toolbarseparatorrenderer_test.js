@@ -1,69 +1,74 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2009 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.ui.ToolbarSeparatorRendererTest');
-goog.setTestOnly();
+goog.provide('goog.ui.ToolbarSeparatorRendererTest');
+goog.setTestOnly('goog.ui.ToolbarSeparatorRendererTest');
 
-const Component = goog.require('goog.ui.Component');
-const INLINE_BLOCK_CLASSNAME = goog.require('goog.ui.INLINE_BLOCK_CLASSNAME');
-const TagName = goog.require('goog.dom.TagName');
-const ToolbarSeparator = goog.require('goog.ui.ToolbarSeparator');
-const ToolbarSeparatorRenderer = goog.require('goog.ui.ToolbarSeparatorRenderer');
-const classlist = goog.require('goog.dom.classlist');
-const dom = goog.require('goog.dom');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.dom');
+goog.require('goog.dom.TagName');
+goog.require('goog.dom.classlist');
+goog.require('goog.testing.jsunit');
+goog.require('goog.ui.Component');
+goog.require('goog.ui.INLINE_BLOCK_CLASSNAME');
+goog.require('goog.ui.ToolbarSeparator');
+goog.require('goog.ui.ToolbarSeparatorRenderer');
 
-let parent;
-let renderer;
-let separator;
+var parent;
+var renderer;
+var separator;
 
-testSuite({
-  setUp() {
-    parent = dom.getElement('parent');
-    renderer = ToolbarSeparatorRenderer.getInstance();
-    separator = new ToolbarSeparator(renderer);
-  },
+function setUp() {
+  parent = goog.dom.getElement('parent');
+  renderer = goog.ui.ToolbarSeparatorRenderer.getInstance();
+  separator = new goog.ui.ToolbarSeparator(renderer);
+}
 
-  tearDown() {
-    separator.dispose();
-    dom.removeChildren(parent);
-  },
+function tearDown() {
+  separator.dispose();
+  goog.dom.removeChildren(parent);
+}
 
-  testConstructor() {
-    assertNotNull('Renderer must not be null', renderer);
-  },
+function testConstructor() {
+  assertNotNull('Renderer must not be null', renderer);
+}
 
-  testGetCssClass() {
-    assertEquals(
-        'getCssClass() must return expected value',
-        ToolbarSeparatorRenderer.CSS_CLASS, renderer.getCssClass());
-  },
+function testGetCssClass() {
+  assertEquals(
+      'getCssClass() must return expected value',
+      goog.ui.ToolbarSeparatorRenderer.CSS_CLASS, renderer.getCssClass());
+}
 
-  /** @suppress {visibility} suppression added to enable type checking */
-  testCreateDom() {
-    const element = renderer.createDom(separator);
-    assertNotNull('Created element must not be null', element);
-    assertEquals(
-        'Created element must be a DIV', String(TagName.DIV), element.tagName);
-    assertSameElements(
-        'Created element must have expected class names',
-        [
-          ToolbarSeparatorRenderer.CSS_CLASS,
-          // Separators are always in a disabled state.
-          renderer.getClassForState(Component.State.DISABLED),
-          INLINE_BLOCK_CLASSNAME,
-        ],
-        classlist.get(element));
-  },
+function testCreateDom() {
+  var element = renderer.createDom(separator);
+  assertNotNull('Created element must not be null', element);
+  assertEquals('Created element must be a DIV',
+      String(goog.dom.TagName.DIV), element.tagName);
+  assertSameElements(
+      'Created element must have expected class names',
+      [
+        goog.ui.ToolbarSeparatorRenderer.CSS_CLASS,
+        // Separators are always in a disabled state.
+        renderer.getClassForState(goog.ui.Component.State.DISABLED),
+        goog.ui.INLINE_BLOCK_CLASSNAME
+      ],
+      goog.dom.classlist.get(element));
+}
 
-  testCreateDomWithExtraCssClass() {
-    separator.addClassName('another-class');
-    const element = renderer.createDom(separator);
-    assertContains(
-        'Created element must contain extra CSS classes', 'another-class',
-        classlist.get(element));
-  },
-});
+function testCreateDomWithExtraCssClass() {
+  separator.addClassName('another-class');
+  var element = renderer.createDom(separator);
+  assertContains(
+      'Created element must contain extra CSS classes', 'another-class',
+      goog.dom.classlist.get(element));
+}

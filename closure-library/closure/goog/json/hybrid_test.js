@@ -1,100 +1,127 @@
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 /**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
+ * @fileoverview Unit tests for goog.json.hybrid.
+ * @author nnaze@google.com (Nathan Naze)
  */
 
-/** @fileoverview Unit tests for hybrid. */
+goog.provide('goog.json.hybridTest');
 
-goog.module('goog.json.hybridTest');
-goog.setTestOnly();
+goog.require('goog.json');
+goog.require('goog.json.hybrid');
+goog.require('goog.testing.PropertyReplacer');
+goog.require('goog.testing.jsunit');
+goog.require('goog.testing.recordFunction');
+goog.require('goog.userAgent');
 
-const PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
-const googJson = goog.require('goog.json');
-const hybrid = goog.require('goog.json.hybrid');
-const recordFunction = goog.require('goog.testing.recordFunction');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.setTestOnly('goog.json.hybridTest');
 
-const propertyReplacer = new PropertyReplacer();
 
-let jsonParse;
-let jsonStringify;
-let googJsonParse;
-let googJsonSerialize;
+var propertyReplacer = new goog.testing.PropertyReplacer();
+
+var jsonParse;
+var jsonStringify;
+var googJsonParse;
+var googJsonSerialize;
+
+function isIe7() {
+  return goog.userAgent.IE && !goog.userAgent.isVersionOrHigher('8');
+}
+
+function setUp() {
+  googJsonParse = goog.testing.recordFunction(goog.json.parse);
+  googJsonSerialize = goog.testing.recordFunction(goog.json.serialize);
+
+  propertyReplacer.set(goog.json, 'parse', googJsonParse);
+  propertyReplacer.set(goog.json, 'serialize', googJsonSerialize);
+
+  jsonParse =
+      goog.testing.recordFunction(goog.global.JSON && goog.global.JSON.parse);
+  jsonStringify = goog.testing.recordFunction(
+      goog.global.JSON && goog.global.JSON.stringify);
+
+  if (goog.global.JSON) {
+    propertyReplacer.set(goog.global.JSON, 'parse', jsonParse);
+    propertyReplacer.set(goog.global.JSON, 'stringify', jsonStringify);
+  }
+}
+
+function tearDown() {
+  propertyReplacer.reset();
+}
 
 function parseJson() {
-  const obj = hybrid.parse('{"a": 2}');
+  var obj = goog.json.hybrid.parse('{"a": 2}');
   assertObjectEquals({'a': 2}, obj);
 }
 
 function serializeJson() {
-  const str = hybrid.stringify({b: 2});
+  var str = goog.json.hybrid.stringify({b: 2});
   assertEquals('{"b":2}', str);
 }
 
-testSuite({
-  setUp() {
-    googJsonParse = recordFunction(googJson.parse);
-    googJsonSerialize = recordFunction(googJson.serialize);
+function testParseNativeJsonPresent() {
+  // No native JSON in IE7
+  if (isIe7()) {
+    return;
+  }
 
-    propertyReplacer.set(googJson, 'parse', googJsonParse);
-    propertyReplacer.set(googJson, 'serialize', googJsonSerialize);
+  parseJson();
+  assertEquals(1, jsonParse.getCallCount());
+  assertEquals(0, googJsonParse.getCallCount());
+}
 
-    jsonParse = recordFunction(globalThis.JSON && globalThis.JSON.parse);
-    jsonStringify =
-        recordFunction(globalThis.JSON && globalThis.JSON.stringify);
+function testStringifyNativeJsonPresent() {
+  // No native JSON in IE7
+  if (isIe7()) {
+    return;
+  }
 
-    if (globalThis.JSON) {
-      propertyReplacer.set(globalThis.JSON, 'parse', jsonParse);
-      propertyReplacer.set(globalThis.JSON, 'stringify', jsonStringify);
-    }
-  },
+  serializeJson();
 
-  tearDown() {
-    propertyReplacer.reset();
-  },
+  assertEquals(1, jsonStringify.getCallCount());
+  assertEquals(0, googJsonSerialize.getCallCount());
+}
 
-  testParseNativeJsonPresent() {
-    parseJson();
-    assertEquals(1, jsonParse.getCallCount());
-    assertEquals(0, googJsonParse.getCallCount());
-  },
+function testParseNativeJsonAbsent() {
+  propertyReplacer.set(goog.global, 'JSON', null);
 
-  testStringifyNativeJsonPresent() {
-    serializeJson();
+  parseJson();
 
-    assertEquals(1, jsonStringify.getCallCount());
-    assertEquals(0, googJsonSerialize.getCallCount());
-  },
+  assertEquals(0, jsonParse.getCallCount());
+  assertEquals(0, jsonStringify.getCallCount());
+  assertEquals(1, googJsonParse.getCallCount());
+}
 
-  testParseNativeJsonAbsent() {
-    propertyReplacer.set(globalThis, 'JSON', null);
+function testStringifyNativeJsonAbsent() {
+  propertyReplacer.set(goog.global, 'JSON', null);
 
-    parseJson();
+  serializeJson();
 
-    assertEquals(0, jsonParse.getCallCount());
-    assertEquals(0, jsonStringify.getCallCount());
-    assertEquals(1, googJsonParse.getCallCount());
-  },
+  assertEquals(0, jsonStringify.getCallCount());
+  assertEquals(1, googJsonSerialize.getCallCount());
+}
 
-  testStringifyNativeJsonAbsent() {
-    propertyReplacer.set(globalThis, 'JSON', null);
+function testParseCurrentBrowserParse() {
+  parseJson();
+  assertEquals(isIe7() ? 0 : 1, jsonParse.getCallCount());
+  assertEquals(isIe7() ? 1 : 0, googJsonParse.getCallCount());
+}
 
-    serializeJson();
-
-    assertEquals(0, jsonStringify.getCallCount());
-    assertEquals(1, googJsonSerialize.getCallCount());
-  },
-
-  testParseCurrentBrowserParse() {
-    parseJson();
-    assertEquals(1, jsonParse.getCallCount());
-    assertEquals(0, googJsonParse.getCallCount());
-  },
-
-  testParseCurrentBrowserStringify() {
-    serializeJson();
-    assertEquals(1, jsonStringify.getCallCount());
-    assertEquals(0, googJsonSerialize.getCallCount());
-  },
-});
+function testParseCurrentBrowserStringify() {
+  serializeJson();
+  assertEquals(isIe7() ? 0 : 1, jsonStringify.getCallCount());
+  assertEquals(isIe7() ? 1 : 0, googJsonSerialize.getCallCount());
+}

@@ -1,52 +1,62 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2017 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /** @fileoverview Tests for {@link goog.html.sanitizer.SafeDomTreeProcessor} */
 
 goog.module('goog.html.sanitizer.SafeDomTreeProcessorTest');
 goog.setTestOnly();
 
-const SafeDomTreeProcessor = goog.require('goog.html.sanitizer.SafeDomTreeProcessor');
-const noclobber = goog.require('goog.html.sanitizer.noclobber');
-const testSuite = goog.require('goog.testing.testSuite');
-const testingDom = goog.require('goog.testing.dom');
+var SafeDomTreeProcessor = goog.require('goog.html.sanitizer.SafeDomTreeProcessor');
+var noclobber = goog.require('goog.html.sanitizer.noclobber');
+var testSuite = goog.require('goog.testing.testSuite');
+var testingDom = goog.require('goog.testing.dom');
 
 /**
  * Concrete subclass that defines an identity transformation function.
- * @final
+ * @final @constructor @struct
+ * @extends {SafeDomTreeProcessor}
  */
-class NoopProcessor extends SafeDomTreeProcessor {
-  /** @override */
-  processRoot(newRoot) {}
+var NoopProcessor = function() {};
+goog.inherits(NoopProcessor, SafeDomTreeProcessor);
 
-  /** @override */
-  preProcessHtml(html) {
-    return html;
-  }
+/** @override */
+NoopProcessor.prototype.processRoot = function(newRoot) {};
 
-  /** @override */
-  createTextNode(originalNode) {
-    return document.createTextNode(originalNode.data);
-  }
+/** @override */
+NoopProcessor.prototype.preProcessHtml = function(html) {
+  return html;
+};
 
-  /** @override */
-  createElementWithoutAttributes(originalElement) {
-    return document.createElement(noclobber.getNodeName(originalElement));
-  }
+/** @override */
+NoopProcessor.prototype.createTextNode = function(originalNode) {
+  return document.createTextNode(originalNode.data);
+};
 
-  /** @override */
-  processElementAttribute(element, attribute) {
-    return attribute.value;
-  }
-}
+/** @override */
+NoopProcessor.prototype.createElementWithoutAttributes = function(
+    originalElement) {
+  return document.createElement(noclobber.getNodeName(originalElement));
+};
+
+/** @override */
+NoopProcessor.prototype.processElementAttribute = function(element, attribute) {
+  return attribute.value;
+};
 
 testSuite({
-  /** @suppress {visibility} suppression added to enable type checking */
   testBasic() {
-    let input = '';
+    var input = '';
     assertHtmlMatchesOnSupportedBrowser(
         input, new NoopProcessor().processToString(input));
 
@@ -63,28 +73,25 @@ testSuite({
         input, new NoopProcessor().processToString(input));
   },
 
-  /** @suppress {visibility} suppression added to enable type checking */
   testTagChanged() {
-    const processor = new NoopProcessor();
-    /** @suppress {visibility} suppression added to enable type checking */
+    var processor = new NoopProcessor();
     processor.createElementWithoutAttributes = anchorToFoo;
-    const input = '<a href="bar"><p>baz</p></a>';
-    const expected = '<foo href="bar"><p>baz</p></foo>';
+    var input = '<a href="bar"><p>baz</p></a>';
+    var expected = '<foo href="bar"><p>baz</p></foo>';
     assertHtmlMatchesOnSupportedBrowser(
         expected, processor.processToString(input));
   },
 
-  /** @suppress {visibility} suppression added to enable type checking */
   testTagDropped() {
-    const processor = new NoopProcessor();
-    /** @suppress {visibility} suppression added to enable type checking */
-    processor.createElementWithoutAttributes = (originalElement) =>
-        originalElement.tagName.toUpperCase() == 'A' ?
-        null :
-        document.createElement(originalElement.tagName);
+    var processor = new NoopProcessor();
+    processor.createElementWithoutAttributes = function(originalElement) {
+      return originalElement.tagName.toUpperCase() == 'A' ?
+          null :
+          document.createElement(originalElement.tagName);
+    };
 
-    let input = '<a href="bar"><p>baz</p></a>';
-    let expected = '';
+    var input = '<a href="bar"><p>baz</p></a>';
+    var expected = '';
     assertHtmlMatchesOnSupportedBrowser(
         expected, processor.processToString(input));
 
@@ -104,52 +111,48 @@ testSuite({
         expected, processor.processToString(input));
   },
 
-  /** @suppress {visibility} suppression added to enable type checking */
   testAttributeDropped() {
-    const processor = new NoopProcessor();
-    /** @suppress {visibility} suppression added to enable type checking */
-    processor.processElementAttribute = (element, attribute) =>
-        attribute.name == 'src' ? null : attribute.value;
+    var processor = new NoopProcessor();
+    processor.processElementAttribute = function(element, attribute) {
+      return attribute.name == 'src' ? null : attribute.value;
+    };
 
-    const input = '<img src="aaa" id="foo" />';
-    const expected = '<img id="foo" />';
+    var input = '<img src="aaa" id="foo" />';
+    var expected = '<img id="foo" />';
     assertHtmlMatchesOnSupportedBrowser(
         expected, processor.processToString(input));
   },
 
-  /** @suppress {visibility} suppression added to enable type checking */
   testTemplateDropped() {
-    const input = '<div><template id="foo"><p>foo</p></template></div>';
-    const expected = '<div></div>';
+    var input = '<div><template id="foo"><p>foo</p></template></div>';
+    var expected = '<div></div>';
     assertHtmlMatchesOnSupportedBrowser(
         expected, new NoopProcessor().processToString(input));
   },
 
-  /** @suppress {visibility} suppression added to enable type checking */
   testProcessRoot() {
-    const processor = new NoopProcessor();
-    /** @suppress {visibility} suppression added to enable type checking */
-    processor.processRoot = (spanElement) => {
+    var processor = new NoopProcessor();
+    processor.processRoot = function(spanElement) {
       spanElement.id = 'bar';
     };
 
-    const input = '<p>foo</p>';
-    const expected = '<span id="bar"><p>foo</p></span>';
+    var input = '<p>foo</p>';
+    var expected = '<span id="bar"><p>foo</p></span>';
     assertHtmlMatchesOnSupportedBrowser(
         expected, processor.processToString(input));
   },
 
-  /** @suppress {visibility} suppression added to enable type checking */
   testPreprocessHtml() {
-    const processor = new NoopProcessor();
-    /** @suppress {visibility} suppression added to enable type checking */
-    processor.preProcessHtml = (html) => html.toLowerCase();
+    var processor = new NoopProcessor();
+    processor.preProcessHtml = function(html) {
+      return html.toLowerCase();
+    };
 
-    const input = '<p id="BAR">FOO</p>';
-    const expected = '<p id="bar">foo</p>';
+    var input = '<p id="BAR">FOO</p>';
+    var expected = '<p id="bar">foo</p>';
     assertHtmlMatchesOnSupportedBrowser(
         expected, processor.processToString(input));
-  },
+  }
 });
 
 /**

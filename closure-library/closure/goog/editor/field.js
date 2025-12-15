@@ -1,14 +1,24 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// All Rights Reserved.
 
 /**
  * @fileoverview Class to encapsulate an editable field.  Always uses an
  * iframe to contain the editable area, never inherits the style of the
  * surrounding page, and is always a fixed height.
  *
+ * @author nicksantos@google.com (Nick Santos)
  * @see ../demos/editor/editor.html
  * @see ../demos/editor/field_basic.html
  */
@@ -28,7 +38,7 @@ goog.require('goog.dom.classlist');
 goog.require('goog.dom.safe');
 goog.require('goog.editor.BrowserFeature');
 goog.require('goog.editor.Command');
-goog.require('goog.editor.PluginImpl');
+goog.require('goog.editor.Plugin');
 goog.require('goog.editor.icontent');
 goog.require('goog.editor.icontent.FieldFormatInfo');
 goog.require('goog.editor.icontent.FieldStyleInfo');
@@ -42,19 +52,13 @@ goog.require('goog.events.KeyCodes');
 goog.require('goog.functions');
 goog.require('goog.html.SafeHtml');
 goog.require('goog.html.SafeStyleSheet');
-goog.require('goog.html.legacyconversions');
-goog.require('goog.labs.userAgent.platform');
 goog.require('goog.log');
 goog.require('goog.log.Level');
 goog.require('goog.string');
 goog.require('goog.string.Unicode');
 goog.require('goog.style');
 goog.require('goog.userAgent');
-goog.requireType('goog.Disposable');
-goog.requireType('goog.dom.AbstractRange');
-goog.requireType('goog.dom.SavedRange');
-goog.requireType('goog.events.BrowserEvent');
-goog.requireType('goog.html.TrustedResourceUrl');
+goog.require('goog.userAgent.product');
 
 
 
@@ -84,7 +88,6 @@ goog.requireType('goog.html.TrustedResourceUrl');
  * @extends {goog.events.EventTarget}
  */
 goog.editor.Field = function(id, opt_doc) {
-  'use strict';
   goog.events.EventTarget.call(this);
 
   /**
@@ -103,7 +106,7 @@ goog.editor.Field = function(id, opt_doc) {
 
   /**
    * Dom helper for the editable node.
-   * @type {?goog.dom.DomHelper}
+   * @type {goog.dom.DomHelper}
    * @protected
    */
   this.editableDomHelper = null;
@@ -117,14 +120,14 @@ goog.editor.Field = function(id, opt_doc) {
 
 
   /**
-   * Plugins registered on this field, indexed by the goog.editor.PluginImpl.Op
+   * Plugins registered on this field, indexed by the goog.editor.Plugin.Op
    * that they support.
-   * @type {!Object<!Array<!goog.editor.PluginImpl>>}
+   * @type {Object<Array<goog.editor.Plugin>>}
    * @private
    */
   this.indexedPlugins_ = {};
 
-  for (var op in goog.editor.PluginImpl.OPCODE) {
+  for (var op in goog.editor.Plugin.OPCODE) {
     this.indexedPlugins_[op] = [];
   }
 
@@ -149,7 +152,6 @@ goog.editor.Field = function(id, opt_doc) {
   this.delayedChangeTimer_ = new goog.async.Delay(
       this.dispatchDelayedChange_, goog.editor.Field.DELAYED_CHANGE_FREQUENCY,
       this);
-  this.registerDisposable(this.delayedChangeTimer_);
 
   /** @private */
   this.debouncedEvents_ = {};
@@ -161,7 +163,6 @@ goog.editor.Field = function(id, opt_doc) {
     /** @private */
     this.changeTimerGecko_ = new goog.async.Delay(
         this.handleChange, goog.editor.Field.CHANGE_FREQUENCY, this);
-    this.registerDisposable(this.changeTimerGecko_);
   }
 
   /**
@@ -209,7 +210,7 @@ goog.inherits(goog.editor.Field, goog.events.EventTarget);
 
 /**
  * The editable dom node.
- * @type {?Element}
+ * @type {Element}
  * TODO(user): Make this private!
  */
 goog.editor.Field.prototype.field = null;
@@ -345,13 +346,6 @@ goog.editor.Field.prototype.inModalMode_ = false;
 goog.editor.Field.prototype.appWindow_;
 
 
-/** @private {?goog.async.Delay} */
-goog.editor.Field.prototype.selectionChangeTimer_ = null;
-
-/** @private {boolean} */
-goog.editor.Field.prototype.isSelectionEditable_ = false;
-
-
 /**
  * Target node to be used when dispatching SELECTIONCHANGE asynchronously on
  * mouseup (to avoid IE quirk). Should be set just before starting the timer and
@@ -363,7 +357,7 @@ goog.editor.Field.prototype.selectionChangeTarget_;
 
 
 /**
- * Flag controlling whether to capture mouse up events on the window or not.
+ * Flag controlling wether to capture mouse up events on the window or not.
  * @type {boolean}
  * @private
  */
@@ -383,7 +377,6 @@ goog.editor.Field.prototype.waitingForMouseUp_ = false;
  * @param {?string} fieldId The active field id.
  */
 goog.editor.Field.setActiveFieldId = function(fieldId) {
-  'use strict';
   goog.editor.Field.activeFieldId_ = fieldId;
 };
 
@@ -392,7 +385,6 @@ goog.editor.Field.setActiveFieldId = function(fieldId) {
  * @return {?string} The id of the active field.
  */
 goog.editor.Field.getActiveFieldId = function() {
-  'use strict';
   return goog.editor.Field.activeFieldId_;
 };
 
@@ -403,7 +395,6 @@ goog.editor.Field.getActiveFieldId = function() {
  * @param {boolean} flag True to track window mouse up.
  */
 goog.editor.Field.prototype.setUseWindowMouseUp = function(flag) {
-  'use strict';
   goog.asserts.assert(
       !flag || !this.usesIframe(),
       'procssing window mouse up should only be enabled when not using iframe');
@@ -418,7 +409,6 @@ goog.editor.Field.prototype.setUseWindowMouseUp = function(flag) {
  *     the field's DOM structure or selection.
  */
 goog.editor.Field.prototype.inModalMode = function() {
-  'use strict';
   return this.inModalMode_;
 };
 
@@ -427,7 +417,6 @@ goog.editor.Field.prototype.inModalMode = function() {
  * @param {boolean} inModalMode Sets whether we're in modal interaction mode.
  */
 goog.editor.Field.prototype.setModalMode = function(inModalMode) {
-  'use strict';
   this.inModalMode_ = inModalMode;
 };
 
@@ -439,7 +428,6 @@ goog.editor.Field.prototype.setModalMode = function(inModalMode) {
  * @return {string} The hash code for this editable field.
  */
 goog.editor.Field.prototype.getHashCode = function() {
-  'use strict';
   return this.hashCode_;
 };
 
@@ -454,7 +442,6 @@ goog.editor.Field.prototype.getHashCode = function() {
  * @return {Element} The editable DOM element, defined as above.
  */
 goog.editor.Field.prototype.getElement = function() {
-  'use strict';
   return this.field;
 };
 
@@ -465,7 +452,6 @@ goog.editor.Field.prototype.getElement = function() {
  * @return {Element} The original element.
  */
 goog.editor.Field.prototype.getOriginalElement = function() {
-  'use strict';
   return this.originalElement;
 };
 
@@ -483,7 +469,6 @@ goog.editor.Field.prototype.getOriginalElement = function() {
  */
 goog.editor.Field.prototype.addListener = function(
     type, listener, opt_capture, opt_handler) {
-  'use strict';
   var elem = this.getElement();
   // On Gecko, keyboard events only reliably fire on the document element when
   // using an iframe.
@@ -503,20 +488,18 @@ goog.editor.Field.prototype.addListener = function(
 /**
  * Returns the registered plugin with the given classId.
  * @param {string} classId classId of the plugin.
- * @return {?goog.editor.PluginImpl} Registered plugin with the given classId.
+ * @return {goog.editor.Plugin} Registered plugin with the given classId.
  */
 goog.editor.Field.prototype.getPluginByClassId = function(classId) {
-  'use strict';
-  return this.plugins_[classId] || null;
+  return this.plugins_[classId];
 };
 
 
 /**
  * Registers the plugin with the editable field.
- * @param {!goog.editor.PluginImpl} plugin The plugin to register.
+ * @param {goog.editor.Plugin} plugin The plugin to register.
  */
 goog.editor.Field.prototype.registerPlugin = function(plugin) {
-  'use strict';
   var classId = plugin.getTrogClassId();
   if (this.plugins_[classId]) {
     goog.log.error(
@@ -527,8 +510,8 @@ goog.editor.Field.prototype.registerPlugin = function(plugin) {
   // Only key events and execute should have these has* functions with a custom
   // handler array since they need to be very careful about performance.
   // The rest of the plugin hooks should be event-based.
-  for (var op in goog.editor.PluginImpl.OPCODE) {
-    var opcode = goog.editor.PluginImpl.OPCODE[op];
+  for (var op in goog.editor.Plugin.OPCODE) {
+    var opcode = goog.editor.Plugin.OPCODE[op];
     if (plugin[opcode]) {
       this.indexedPlugins_[op].push(plugin);
     }
@@ -544,14 +527,9 @@ goog.editor.Field.prototype.registerPlugin = function(plugin) {
 
 /**
  * Unregisters the plugin with this field.
- * @param {?goog.editor.PluginImpl} plugin The plugin to unregister.
+ * @param {goog.editor.Plugin} plugin The plugin to unregister.
  */
 goog.editor.Field.prototype.unregisterPlugin = function(plugin) {
-  'use strict';
-  if (!plugin) {
-    return;
-  }
-
   var classId = plugin.getTrogClassId();
   if (!this.plugins_[classId]) {
     goog.log.error(
@@ -559,8 +537,8 @@ goog.editor.Field.prototype.unregisterPlugin = function(plugin) {
   }
   delete this.plugins_[classId];
 
-  for (var op in goog.editor.PluginImpl.OPCODE) {
-    var opcode = goog.editor.PluginImpl.OPCODE[op];
+  for (var op in goog.editor.Plugin.OPCODE) {
+    var opcode = goog.editor.Plugin.OPCODE[op];
     if (plugin[opcode]) {
       goog.array.remove(this.indexedPlugins_[op], plugin);
     }
@@ -577,8 +555,6 @@ goog.editor.Field.prototype.unregisterPlugin = function(plugin) {
  * @param {string} cssText The value of the style attribute.
  */
 goog.editor.Field.prototype.setInitialStyle = function(cssText) {
-  'use strict';
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   this.cssText = cssText;
 };
 
@@ -588,7 +564,6 @@ goog.editor.Field.prototype.setInitialStyle = function(cssText) {
  * it was made editable.
  */
 goog.editor.Field.prototype.resetOriginalElemProperties = function() {
-  'use strict';
   var field = this.getOriginalElement();
   field.removeAttribute('contentEditable');
   field.removeAttribute('g_editable');
@@ -600,10 +575,8 @@ goog.editor.Field.prototype.resetOriginalElemProperties = function() {
     field.id = this.id;
   }
 
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   field.className = this.savedClassName_ || '';
 
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   var cssText = this.cssText;
   if (!cssText) {
     field.removeAttribute('style');
@@ -611,9 +584,8 @@ goog.editor.Field.prototype.resetOriginalElemProperties = function() {
     goog.dom.setProperties(field, {'style': cssText});
   }
 
-  if (typeof (this.originalFieldLineHeight_) === 'string') {
+  if (goog.isString(this.originalFieldLineHeight_)) {
     goog.style.setStyle(field, 'lineHeight', this.originalFieldLineHeight_);
-    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.originalFieldLineHeight_ = null;
   }
 };
@@ -630,7 +602,6 @@ goog.editor.Field.prototype.resetOriginalElemProperties = function() {
  * @return {boolean} Whether the field has been modified.
  */
 goog.editor.Field.prototype.isModified = function(opt_useIsEverModified) {
-  'use strict';
   return opt_useIsEverModified ? this.isEverModified_ : this.isModified_;
 };
 
@@ -663,6 +634,15 @@ goog.editor.Field.prototype.isFixedHeight = goog.functions.TRUE;
 
 
 /**
+ * @return {boolean} Whether the field should be refocused on input.
+ *    This is a workaround for the iOS bug that text input doesn't work
+ *    when the main window listens touch events.
+ */
+goog.editor.Field.prototype.shouldRefocusOnInputMobileSafari =
+    goog.functions.FALSE;
+
+
+/**
  * Map of keyCodes (not charCodes) that cause changes in the field contents.
  * @type {Object}
  * @private
@@ -691,18 +671,12 @@ goog.editor.Field.CTRL_KEYS_CAUSING_CHANGES_ = {
   88: true   // X
 };
 
-if ((goog.userAgent.WINDOWS || goog.labs.userAgent.platform.isAndroid()) &&
-    !goog.userAgent.GECKO) {
+if (goog.userAgent.WINDOWS && !goog.userAgent.GECKO) {
   // In IE and Webkit, input from IME (Input Method Editor) does not generate a
   // keypress event so we have to rely on the keydown event. This way we have
   // false positives while the user is using keyboard to select the
   // character to input, but it is still better than the false negatives
   // that ignores user's final input at all.
-  // The same phenomina happen on android devices - no KeyPress events are
-  // emitted, and all KeyDown events have no useful charCode or other
-  // identifying information (see
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=118639 for
-  // background, but it's considered WAI by various Input Method experts).
   goog.editor.Field.KEYS_CAUSING_CHANGES_[229] = true;  // from IME;
 }
 
@@ -717,7 +691,6 @@ if ((goog.userAgent.WINDOWS || goog.labs.userAgent.platform.isAndroid()) &&
  * @private
  */
 goog.editor.Field.isGeneratingKey_ = function(e, testAllKeys) {
-  'use strict';
   if (goog.editor.Field.isSpecialGeneratingKey_(e)) {
     return true;
   }
@@ -736,7 +709,6 @@ goog.editor.Field.isGeneratingKey_ = function(e, testAllKeys) {
  * @private
  */
 goog.editor.Field.isSpecialGeneratingKey_ = function(e) {
-  'use strict';
   var testCtrlKeys = (e.ctrlKey || e.metaKey) &&
       e.keyCode in goog.editor.Field.CTRL_KEYS_CAUSING_CHANGES_;
   var testRegularKeys = !(e.ctrlKey || e.metaKey) &&
@@ -752,7 +724,6 @@ goog.editor.Field.isSpecialGeneratingKey_ = function(e) {
  *     rendered.
  */
 goog.editor.Field.prototype.setAppWindow = function(appWindow) {
-  'use strict';
   this.appWindow_ = appWindow;
 };
 
@@ -763,7 +734,6 @@ goog.editor.Field.prototype.setAppWindow = function(appWindow) {
  * @return {!Window} The window.
  */
 goog.editor.Field.prototype.getAppWindow = function() {
-  'use strict';
   return this.appWindow_;
 };
 
@@ -776,8 +746,6 @@ goog.editor.Field.prototype.getAppWindow = function() {
  * @param {number} zindex The base zIndex of the editor.
  */
 goog.editor.Field.prototype.setBaseZindex = function(zindex) {
-  'use strict';
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   this.baseZindex_ = zindex;
 };
 
@@ -786,10 +754,8 @@ goog.editor.Field.prototype.setBaseZindex = function(zindex) {
  * Returns the zindex of the base level of the field.
  *
  * @return {number} The base zindex of the editor.
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.Field.prototype.getBaseZindex = function() {
-  'use strict';
   return this.baseZindex_ || 0;
 };
 
@@ -803,7 +769,6 @@ goog.editor.Field.prototype.getBaseZindex = function() {
  * @protected
  */
 goog.editor.Field.prototype.setupFieldObject = function(field) {
-  'use strict';
   this.loadState_ = goog.editor.Field.LoadState_.EDITABLE;
   this.field = field;
   this.editableDomHelper = goog.dom.getDomHelper(field);
@@ -820,7 +785,6 @@ goog.editor.Field.prototype.setupFieldObject = function(field) {
  * @private
  */
 goog.editor.Field.prototype.tearDownFieldObject_ = function() {
-  'use strict';
   this.loadState_ = goog.editor.Field.LoadState_.UNEDITABLE;
 
   for (var classId in this.plugins_) {
@@ -840,19 +804,45 @@ goog.editor.Field.prototype.tearDownFieldObject_ = function() {
  * @private
  */
 goog.editor.Field.prototype.setupChangeListeners_ = function() {
-  'use strict';
-
-
-  if (goog.editor.BrowserFeature.SUPPORTS_FOCUSIN) {
-    this.addListener(goog.events.EventType.FOCUS, this.dispatchFocus_);
-    this.addListener(goog.events.EventType.FOCUSIN, this.dispatchBeforeFocus_);
-  } else {
-    this.addListener(
-        goog.events.EventType.FOCUS, this.dispatchFocusAndBeforeFocus_);
+  if ((goog.userAgent.product.IPHONE || goog.userAgent.product.IPAD) &&
+      this.usesIframe() && this.shouldRefocusOnInputMobileSafari()) {
+    // This is a workaround for the iOS bug that text input doesn't work
+    // when the main window listens touch events.
+    var editWindow = this.getEditableDomHelper().getWindow();
+    this.boundRefocusListenerMobileSafari_ =
+        goog.bind(editWindow.focus, editWindow);
+    editWindow.addEventListener(
+        goog.events.EventType.KEYDOWN, this.boundRefocusListenerMobileSafari_,
+        false);
+    editWindow.addEventListener(
+        goog.events.EventType.TOUCHEND, this.boundRefocusListenerMobileSafari_,
+        false);
   }
-  this.addListener(
-      goog.events.EventType.BLUR, this.dispatchBlur,
-      goog.editor.BrowserFeature.USE_MUTATION_EVENTS);
+  if (goog.userAgent.OPERA && this.usesIframe()) {
+    // We can't use addListener here because we need to listen on the window,
+    // and removing listeners on window objects from the event register throws
+    // an exception if the window is closed.
+    this.boundFocusListenerOpera_ =
+        goog.bind(this.dispatchFocusAndBeforeFocus_, this);
+    this.boundBlurListenerOpera_ = goog.bind(this.dispatchBlur, this);
+    var editWindow = this.getEditableDomHelper().getWindow();
+    editWindow.addEventListener(
+        goog.events.EventType.FOCUS, this.boundFocusListenerOpera_, false);
+    editWindow.addEventListener(
+        goog.events.EventType.BLUR, this.boundBlurListenerOpera_, false);
+  } else {
+    if (goog.editor.BrowserFeature.SUPPORTS_FOCUSIN) {
+      this.addListener(goog.events.EventType.FOCUS, this.dispatchFocus_);
+      this.addListener(
+          goog.events.EventType.FOCUSIN, this.dispatchBeforeFocus_);
+    } else {
+      this.addListener(
+          goog.events.EventType.FOCUS, this.dispatchFocusAndBeforeFocus_);
+    }
+    this.addListener(
+        goog.events.EventType.BLUR, this.dispatchBlur,
+        goog.editor.BrowserFeature.USE_MUTATION_EVENTS);
+  }
 
   if (goog.editor.BrowserFeature.USE_MUTATION_EVENTS) {
     // Ways to detect changes in Mozilla:
@@ -907,14 +897,9 @@ goog.editor.Field.prototype.setupChangeListeners_ = function() {
   this.addListener(goog.events.EventType.KEYPRESS, this.handleKeyPress_);
   this.addListener(goog.events.EventType.KEYUP, this.handleKeyUp_);
 
-  // Handles changes from non-keyboard forms of input. Such as choosing a
-  // spellcheck suggestion.
-  this.addListener(goog.events.EventType.INPUT, this.handleChange);
-
   this.selectionChangeTimer_ = new goog.async.Delay(
       this.handleSelectionChangeTimer_,
       goog.editor.Field.SELECTION_CHANGE_FREQUENCY_, this);
-  this.registerDisposable(this.selectionChangeTimer_);
 
   if (this.followLinkInNewWindow_) {
     this.addListener(
@@ -946,11 +931,42 @@ goog.editor.Field.SELECTION_CHANGE_FREQUENCY_ = 250;
  * @protected
  */
 goog.editor.Field.prototype.clearListeners = function() {
-  'use strict';
   if (this.eventRegister) {
     this.eventRegister.removeAll();
   }
 
+  if ((goog.userAgent.product.IPHONE || goog.userAgent.product.IPAD) &&
+      this.usesIframe() && this.shouldRefocusOnInputMobileSafari()) {
+    try {
+      var editWindow = this.getEditableDomHelper().getWindow();
+      editWindow.removeEventListener(
+          goog.events.EventType.KEYDOWN, this.boundRefocusListenerMobileSafari_,
+          false);
+      editWindow.removeEventListener(
+          goog.events.EventType.TOUCHEND,
+          this.boundRefocusListenerMobileSafari_, false);
+    } catch (e) {
+      // The editWindow no longer exists, or has been navigated to a different-
+      // origin URL. Either way, the event listeners have already been removed
+      // for us.
+    }
+    delete this.boundRefocusListenerMobileSafari_;
+  }
+  if (goog.userAgent.OPERA && this.usesIframe()) {
+    try {
+      var editWindow = this.getEditableDomHelper().getWindow();
+      editWindow.removeEventListener(
+          goog.events.EventType.FOCUS, this.boundFocusListenerOpera_, false);
+      editWindow.removeEventListener(
+          goog.events.EventType.BLUR, this.boundBlurListenerOpera_, false);
+    } catch (e) {
+      // The editWindow no longer exists, or has been navigated to a different-
+      // origin URL. Either way, the event listeners have already been removed
+      // for us.
+    }
+    delete this.boundFocusListenerOpera_;
+    delete this.boundBlurListenerOpera_;
+  }
 
   if (this.changeTimerGecko_) {
     this.changeTimerGecko_.stop();
@@ -961,7 +977,6 @@ goog.editor.Field.prototype.clearListeners = function() {
 
 /** @override */
 goog.editor.Field.prototype.disposeInternal = function() {
-  'use strict';
   if (this.isLoading() || this.isLoaded()) {
     goog.log.warning(this.logger, 'Disposing a field that is in use.');
   }
@@ -1004,7 +1019,6 @@ goog.editor.Field.prototype.disposeInternal = function() {
  * @param {goog.Disposable} wrapper The wrapper to attach.
  */
 goog.editor.Field.prototype.attachWrapper = function(wrapper) {
-  'use strict';
   this.wrappers_.push(wrapper);
 };
 
@@ -1013,7 +1027,6 @@ goog.editor.Field.prototype.attachWrapper = function(wrapper) {
  * Removes all wrappers and destroys them.
  */
 goog.editor.Field.prototype.removeAllWrappers = function() {
-  'use strict';
   var wrapper;
   while (wrapper = this.wrappers_.pop()) {
     wrapper.dispose();
@@ -1028,7 +1041,6 @@ goog.editor.Field.prototype.removeAllWrappers = function() {
  */
 goog.editor.Field.prototype.setFollowLinkInNewWindow = function(
     followLinkInNewWindow) {
-  'use strict';
   this.followLinkInNewWindow_ = followLinkInNewWindow;
 };
 
@@ -1049,7 +1061,6 @@ goog.editor.Field.MUTATION_EVENTS_GECKO = [
  * @protected
  */
 goog.editor.Field.prototype.setupMutationEventHandlersGecko = function() {
-  'use strict';
   // Always use DOMSubtreeModified on Gecko when not using an iframe so that
   // DOM mutations outside the Field do not trigger handleMutationEventGecko_.
   if (goog.editor.BrowserFeature.HAS_DOM_SUBTREE_MODIFIED_EVENT ||
@@ -1083,7 +1094,6 @@ goog.editor.Field.prototype.setupMutationEventHandlersGecko = function() {
  * @private
  */
 goog.editor.Field.prototype.handleBeforeChangeKeyEvent_ = function(e) {
-  'use strict';
   // There are two reasons to block a key:
   var block =
       // #1: to intercept a tab
@@ -1109,8 +1119,7 @@ goog.editor.Field.prototype.handleBeforeChangeKeyEvent_ = function(e) {
 
     // TODO(arv): Del at end of field or backspace at beginning should be
     // ignored.
-    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
-    this.gotGeneratingKey_ = !!e.charCode ||
+    this.gotGeneratingKey_ = e.charCode ||
         goog.editor.Field.isGeneratingKey_(e, goog.userAgent.GECKO);
     if (this.gotGeneratingKey_) {
       this.dispatchBeforeChange();
@@ -1184,23 +1193,21 @@ goog.editor.Field.POTENTIAL_SHORTCUT_KEYCODES_ = {
  * Calls all the plugins of the given operation, in sequence, with the
  * given arguments. This is short-circuiting: once one plugin cancels
  * the event, no more plugins will be invoked.
- * @param {goog.editor.PluginImpl.Op} op A plugin op.
+ * @param {goog.editor.Plugin.Op} op A plugin op.
  * @param {...*} var_args The arguments to the plugin.
  * @return {boolean} True if one of the plugins cancel the event, false
  *    otherwise.
  * @private
  */
 goog.editor.Field.prototype.invokeShortCircuitingOp_ = function(op, var_args) {
-  'use strict';
   var plugins = this.indexedPlugins_[op];
-  var argList = Array.prototype.slice.call(arguments, 1);
+  var argList = goog.array.slice(arguments, 1);
   for (var i = 0; i < plugins.length; ++i) {
     // If the plugin returns true, that means it handled the event and
     // we shouldn't propagate to the other plugins.
     var plugin = plugins[i];
-    if ((plugin.isEnabled(this) ||
-         goog.editor.PluginImpl.IRREPRESSIBLE_OPS[op]) &&
-        plugin[goog.editor.PluginImpl.OPCODE[op]].apply(plugin, argList)) {
+    if ((plugin.isEnabled(this) || goog.editor.Plugin.IRREPRESSIBLE_OPS[op]) &&
+        plugin[goog.editor.Plugin.OPCODE[op]].apply(plugin, argList)) {
       // Only one plugin is allowed to handle the event. If for some reason
       // a plugin wants to handle it and still allow other plugins to handle
       // it, it shouldn't return true.
@@ -1214,19 +1221,17 @@ goog.editor.Field.prototype.invokeShortCircuitingOp_ = function(op, var_args) {
 
 /**
  * Invoke this operation on all plugins with the given arguments.
- * @param {!goog.editor.PluginImpl.Op} op A plugin op.
+ * @param {goog.editor.Plugin.Op} op A plugin op.
  * @param {...*} var_args The arguments to the plugin.
  * @private
  */
 goog.editor.Field.prototype.invokeOp_ = function(op, var_args) {
-  'use strict';
   var plugins = this.indexedPlugins_[op];
-  var argList = Array.prototype.slice.call(arguments, 1);
+  var argList = goog.array.slice(arguments, 1);
   for (var i = 0; i < plugins.length; ++i) {
     var plugin = plugins[i];
-    if (plugin.isEnabled(this) ||
-        goog.editor.PluginImpl.IRREPRESSIBLE_OPS[op]) {
-      plugin[goog.editor.PluginImpl.OPCODE[op]].apply(plugin, argList);
+    if (plugin.isEnabled(this) || goog.editor.Plugin.IRREPRESSIBLE_OPS[op]) {
+      plugin[goog.editor.Plugin.OPCODE[op]].apply(plugin, argList);
     }
   }
 };
@@ -1235,7 +1240,7 @@ goog.editor.Field.prototype.invokeOp_ = function(op, var_args) {
 /**
  * Reduce this argument over all plugins. The result of each plugin invocation
  * will be passed to the next plugin invocation. See goog.array.reduce.
- * @param {goog.editor.PluginImpl.Op} op A plugin op.
+ * @param {goog.editor.Plugin.Op} op A plugin op.
  * @param {string} arg The argument to reduce. For now, we assume it's a
  *     string, but we should widen this later if there are reducing
  *     plugins that don't operate on strings.
@@ -1245,15 +1250,12 @@ goog.editor.Field.prototype.invokeOp_ = function(op, var_args) {
  * @private
  */
 goog.editor.Field.prototype.reduceOp_ = function(op, arg, var_args) {
-  'use strict';
   var plugins = this.indexedPlugins_[op];
-  var argList = Array.prototype.slice.call(arguments, 1);
+  var argList = goog.array.slice(arguments, 1);
   for (var i = 0; i < plugins.length; ++i) {
     var plugin = plugins[i];
-    if (plugin.isEnabled(this) ||
-        goog.editor.PluginImpl.IRREPRESSIBLE_OPS[op]) {
-      argList[0] =
-          plugin[goog.editor.PluginImpl.OPCODE[op]].apply(plugin, argList);
+    if (plugin.isEnabled(this) || goog.editor.Plugin.IRREPRESSIBLE_OPS[op]) {
+      argList[0] = plugin[goog.editor.Plugin.OPCODE[op]].apply(plugin, argList);
     }
   }
   return argList[0];
@@ -1267,7 +1269,6 @@ goog.editor.Field.prototype.reduceOp_ = function(op, arg, var_args) {
  * @protected
  */
 goog.editor.Field.prototype.injectContents = function(contents, field) {
-  'use strict';
   var styles = {};
   var newHtml = this.getInjectableContents(contents, styles);
   goog.style.setStyle(field, styles);
@@ -1283,9 +1284,8 @@ goog.editor.Field.prototype.injectContents = function(contents, field) {
  * @return {string} The prepared contents.
  */
 goog.editor.Field.prototype.getInjectableContents = function(contents, styles) {
-  'use strict';
   return this.reduceOp_(
-      goog.editor.PluginImpl.Op.PREPARE_CONTENTS_HTML, contents || '', styles);
+      goog.editor.Plugin.Op.PREPARE_CONTENTS_HTML, contents || '', styles);
 };
 
 
@@ -1295,7 +1295,6 @@ goog.editor.Field.prototype.getInjectableContents = function(contents, styles) {
  * @private
  */
 goog.editor.Field.prototype.handleKeyDown_ = function(e) {
-  'use strict';
   // Mac only fires Cmd+A for keydown, not keyup: b/22407515.
   if (goog.userAgent.MAC && e.keyCode == goog.events.KeyCodes.A) {
     this.maybeStartSelectionChangeTimer_(e);
@@ -1307,7 +1306,7 @@ goog.editor.Field.prototype.handleKeyDown_ = function(e) {
     }
   }
 
-  if (!this.invokeShortCircuitingOp_(goog.editor.PluginImpl.Op.KEYDOWN, e) &&
+  if (!this.invokeShortCircuitingOp_(goog.editor.Plugin.Op.KEYDOWN, e) &&
       goog.editor.BrowserFeature.USES_KEYDOWN) {
     this.handleKeyboardShortcut_(e);
   }
@@ -1320,7 +1319,6 @@ goog.editor.Field.prototype.handleKeyDown_ = function(e) {
  * @private
  */
 goog.editor.Field.prototype.handleKeyPress_ = function(e) {
-  'use strict';
   if (goog.editor.BrowserFeature.USE_MUTATION_EVENTS) {
     if (!this.handleBeforeChangeKeyEvent_(e)) {
       return;
@@ -1328,12 +1326,11 @@ goog.editor.Field.prototype.handleKeyPress_ = function(e) {
   } else {
     // In IE only keys that generate output trigger keypress
     // In Mozilla charCode is set for keys generating content.
-    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.gotGeneratingKey_ = true;
     this.dispatchBeforeChange();
   }
 
-  if (!this.invokeShortCircuitingOp_(goog.editor.PluginImpl.Op.KEYPRESS, e) &&
+  if (!this.invokeShortCircuitingOp_(goog.editor.Plugin.Op.KEYPRESS, e) &&
       !goog.editor.BrowserFeature.USES_KEYDOWN) {
     this.handleKeyboardShortcut_(e);
   }
@@ -1344,10 +1341,8 @@ goog.editor.Field.prototype.handleKeyPress_ = function(e) {
  * Handles keyup on the field.
  * @param {!goog.events.BrowserEvent} e The browser event.
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.Field.prototype.handleKeyUp_ = function(e) {
-  'use strict';
   if (!goog.editor.BrowserFeature.USE_MUTATION_EVENTS &&
       (this.gotGeneratingKey_ ||
        goog.editor.Field.isSpecialGeneratingKey_(e))) {
@@ -1356,20 +1351,19 @@ goog.editor.Field.prototype.handleKeyUp_ = function(e) {
     this.handleChange();
   }
 
-  this.invokeShortCircuitingOp_(goog.editor.PluginImpl.Op.KEYUP, e);
+  this.invokeShortCircuitingOp_(goog.editor.Plugin.Op.KEYUP, e);
   this.maybeStartSelectionChangeTimer_(e);
 };
 
 
 /**
- * Fires `BEFORESELECTIONCHANGE` and starts the selection change timer
- * (which will fire `SELECTIONCHANGE`) if the given event is a key event
+ * Fires {@code BEFORESELECTIONCHANGE} and starts the selection change timer
+ * (which will fire {@code SELECTIONCHANGE}) if the given event is a key event
  * that causes a selection change.
  * @param {!goog.events.BrowserEvent} e The browser event.
  * @private
  */
 goog.editor.Field.prototype.maybeStartSelectionChangeTimer_ = function(e) {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.SELECTIONCHANGE)) {
     return;
   }
@@ -1391,29 +1385,28 @@ goog.editor.Field.prototype.maybeStartSelectionChangeTimer_ = function(e) {
  * event system every time.
  * @param {goog.events.BrowserEvent} e The browser event.
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.Field.prototype.handleKeyboardShortcut_ = function(e) {
-  'use strict';
   // Alt key is used for i18n languages to enter certain characters. like
   // control + alt + z (used for IMEs) and control + alt + s for Polish.
-  // So we only invoke handleKeyboardShortcut for alt + shift only.
-  if (e.altKey && !e.shiftKey) {
+  // So we don't invoke handleKeyboardShortcut at all for alt keys.
+  if (e.altKey) {
     return;
   }
-  // TODO(user): goog.events.KeyHandler uses much more complicated logic
-  // to determine key.  Consider changing to what they do.
-  var key = e.charCode || e.keyCode;
-  var stringKey = String.fromCharCode(key).toLowerCase();
-  var isPrimaryModifierPressed = goog.userAgent.MAC ? e.metaKey : e.ctrlKey;
-  var isAltShiftPressed = e.altKey && e.shiftKey;
-  if (isPrimaryModifierPressed || isAltShiftPressed ||
+
+  var isModifierPressed = goog.userAgent.MAC ? e.metaKey : e.ctrlKey;
+  if (isModifierPressed ||
       goog.editor.Field.POTENTIAL_SHORTCUT_KEYCODES_[e.keyCode]) {
+    // TODO(user): goog.events.KeyHandler uses much more complicated logic
+    // to determine key.  Consider changing to what they do.
+    var key = e.charCode || e.keyCode;
+
     if (key == 17) {  // Ctrl key
       // In IE and Webkit pressing Ctrl key itself results in this event.
       return;
     }
 
+    var stringKey = String.fromCharCode(key).toLowerCase();
     // Ctrl+Cmd+Space generates a charCode for a backtick on Mac Firefox, but
     // has the correct string key in the browser event.
     if (goog.userAgent.MAC && goog.userAgent.GECKO && stringKey == '`' &&
@@ -1427,8 +1420,7 @@ goog.editor.Field.prototype.handleKeyboardShortcut_ = function(e) {
     }
 
     if (this.invokeShortCircuitingOp_(
-            goog.editor.PluginImpl.Op.SHORTCUT, e, stringKey,
-            isPrimaryModifierPressed)) {
+            goog.editor.Plugin.Op.SHORTCUT, e, stringKey, isModifierPressed)) {
       e.preventDefault();
       // We don't call stopPropagation as some other handler outside of
       // trogedit might need it.
@@ -1446,11 +1438,10 @@ goog.editor.Field.prototype.handleKeyboardShortcut_ = function(e) {
  *     the command.
  */
 goog.editor.Field.prototype.execCommand = function(command, var_args) {
-  'use strict';
   var args = arguments;
   var result;
 
-  var plugins = this.indexedPlugins_[goog.editor.PluginImpl.Op.EXEC_COMMAND];
+  var plugins = this.indexedPlugins_[goog.editor.Plugin.Op.EXEC_COMMAND];
   for (var i = 0; i < plugins.length; ++i) {
     // If the plugin supports the command, that means it handled the
     // event and we shouldn't propagate to the other plugins.
@@ -1473,9 +1464,8 @@ goog.editor.Field.prototype.execCommand = function(command, var_args) {
  *     there are no activeOnUneditable plugins for the command.
  */
 goog.editor.Field.prototype.queryCommandValue = function(commands) {
-  'use strict';
   var isEditable = this.isLoaded() && this.isSelectionEditable();
-  if (typeof commands === 'string') {
+  if (goog.isString(commands)) {
     return this.queryCommandValueInternal_(commands, isEditable);
   } else {
     var state = {};
@@ -1499,8 +1489,7 @@ goog.editor.Field.prototype.queryCommandValue = function(commands) {
  */
 goog.editor.Field.prototype.queryCommandValueInternal_ = function(
     command, isEditable) {
-  'use strict';
-  var plugins = this.indexedPlugins_[goog.editor.PluginImpl.Op.QUERY_COMMAND];
+  var plugins = this.indexedPlugins_[goog.editor.Plugin.Op.QUERY_COMMAND];
   for (var i = 0; i < plugins.length; ++i) {
     var plugin = plugins[i];
     if (plugin.isEnabled(this) && plugin.isSupportedCommand(command) &&
@@ -1520,11 +1509,9 @@ goog.editor.Field.prototype.queryCommandValueInternal_ = function(
  *     browser event.
  * @param {goog.events.BrowserEvent} browserEvent The browser event.
  * @protected
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.Field.prototype.handleDomAttrChange = function(
     handler, browserEvent) {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.CHANGE)) {
     return;
   }
@@ -1556,15 +1543,12 @@ goog.editor.Field.prototype.handleDomAttrChange = function(
  * Handle a mutation event.
  * @param {goog.events.BrowserEvent|Event} e The browser event.
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.Field.prototype.handleMutationEventGecko_ = function(e) {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.CHANGE)) {
     return;
   }
 
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   e = e.getBrowserEvent ? e.getBrowserEvent() : e;
   // For people with firebug, firebug sets this property on elements it is
   // inserting into the dom.
@@ -1585,7 +1569,6 @@ goog.editor.Field.prototype.handleMutationEventGecko_ = function(e) {
  * @private
  */
 goog.editor.Field.prototype.handleDrop_ = function(e) {
-  'use strict';
   if (goog.userAgent.IE) {
     // TODO(user): This should really be done in the loremipsum plugin.
     this.execCommand(goog.editor.Command.CLEAR_LOREM, true);
@@ -1606,7 +1589,6 @@ goog.editor.Field.prototype.handleDrop_ = function(e) {
  * @protected
  */
 goog.editor.Field.prototype.getEditableIframe = function() {
-  'use strict';
   var dh;
   if (this.usesIframe() && (dh = this.getEditableDomHelper())) {
     // If the iframe has been destroyed, the dh could still exist since the
@@ -1622,7 +1604,6 @@ goog.editor.Field.prototype.getEditableIframe = function() {
  * @return {goog.dom.DomHelper?} The dom helper for the editable node.
  */
 goog.editor.Field.prototype.getEditableDomHelper = function() {
-  'use strict';
   return this.editableDomHelper;
 };
 
@@ -1632,7 +1613,6 @@ goog.editor.Field.prototype.getEditableDomHelper = function() {
  *     in this field or null if this field is not currently editable.
  */
 goog.editor.Field.prototype.getRange = function() {
-  'use strict';
   var win = this.editableDomHelper && this.editableDomHelper.getWindow();
   return win && goog.dom.Range.createFromWindow(win);
 };
@@ -1647,7 +1627,6 @@ goog.editor.Field.prototype.getRange = function() {
  */
 goog.editor.Field.prototype.dispatchSelectionChangeEvent = function(
     opt_e, opt_target) {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.SELECTIONCHANGE)) {
     return;
   }
@@ -1666,7 +1645,7 @@ goog.editor.Field.prototype.dispatchSelectionChangeEvent = function(
   });
 
   this.invokeShortCircuitingOp_(
-      goog.editor.PluginImpl.Op.SELECTION, opt_e, opt_target);
+      goog.editor.Plugin.Op.SELECTION, opt_e, opt_target);
 };
 
 
@@ -1676,7 +1655,6 @@ goog.editor.Field.prototype.dispatchSelectionChangeEvent = function(
  * @private
  */
 goog.editor.Field.prototype.handleSelectionChangeTimer_ = function() {
-  'use strict';
   var t = this.selectionChangeTarget_;
   this.selectionChangeTarget_ = null;
   this.dispatchSelectionChangeEvent(undefined, t);
@@ -1687,7 +1665,6 @@ goog.editor.Field.prototype.handleSelectionChangeTimer_ = function() {
  * This dispatches the beforechange event on the editable field
  */
 goog.editor.Field.prototype.dispatchBeforeChange = function() {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.BEFORECHANGE)) {
     return;
   }
@@ -1704,7 +1681,6 @@ goog.editor.Field.prototype.dispatchBeforeChange = function() {
  * @return {boolean} The result of dispatchEvent.
  */
 goog.editor.Field.prototype.dispatchBeforeTab_ = function(e) {
-  'use strict';
   return this.dispatchEvent({
     type: goog.editor.Field.EventType.BEFORETAB,
     shiftKey: e.shiftKey,
@@ -1721,12 +1697,9 @@ goog.editor.Field.prototype.dispatchBeforeTab_ = function(e) {
  * @param {boolean=} opt_stopChange Whether to ignore base change events.
  * @param {boolean=} opt_stopDelayedChange Whether to ignore delayed change
  *     events.
- * @param {boolean=} opt_cancelPendingDelayedChange Whether to prevent any
- *     pending delayed change events from firing when we disable the event.
  */
 goog.editor.Field.prototype.stopChangeEvents = function(
-    opt_stopChange, opt_stopDelayedChange, opt_cancelPendingDelayedChange) {
-  'use strict';
+    opt_stopChange, opt_stopDelayedChange) {
   if (opt_stopChange) {
     if (this.changeTimerGecko_) {
       this.changeTimerGecko_.fireIfActive();
@@ -1735,13 +1708,7 @@ goog.editor.Field.prototype.stopChangeEvents = function(
     this.stopEvent(goog.editor.Field.EventType.CHANGE);
   }
   if (opt_stopDelayedChange) {
-    if (opt_cancelPendingDelayedChange) {
-      // Stop the delayed change timer without emitting pending events.
-      this.stopDelayedChange_();
-    } else {
-      // Immediately emit pending delayed change events, which stops the timer.
-      this.clearDelayedChange();
-    }
+    this.clearDelayedChange();
     this.stopEvent(goog.editor.Field.EventType.DELAYEDCHANGE);
   }
 };
@@ -1756,7 +1723,7 @@ goog.editor.Field.prototype.stopChangeEvents = function(
  */
 goog.editor.Field.prototype.startChangeEvents = function(
     opt_fireChange, opt_fireDelayedChange) {
-  'use strict';
+
   if (!opt_fireChange && this.changeTimerGecko_) {
     // In the case where change events were stopped and we're not firing
     // them on start, the user was trying to suppress all change or delayed
@@ -1783,7 +1750,6 @@ goog.editor.Field.prototype.startChangeEvents = function(
  * @param {goog.editor.Field.EventType} eventType type of event to stop.
  */
 goog.editor.Field.prototype.stopEvent = function(eventType) {
-  'use strict';
   this.stoppedEvents_[eventType] = 1;
 };
 
@@ -1794,7 +1760,6 @@ goog.editor.Field.prototype.stopEvent = function(eventType) {
  * @param {goog.editor.Field.EventType} eventType type of event to start.
  */
 goog.editor.Field.prototype.startEvent = function(eventType) {
-  'use strict';
   // Toggling this bit on/off instead of deleting it/re-adding it
   // saves array allocations.
   this.stoppedEvents_[eventType] = 0;
@@ -1814,8 +1779,7 @@ goog.editor.Field.prototype.startEvent = function(eventType) {
  * @param {goog.editor.Field.EventType} eventType type of event to debounce.
  */
 goog.editor.Field.prototype.debounceEvent = function(eventType) {
-  'use strict';
-  this.debouncedEvents_[eventType] = Date.now();
+  this.debouncedEvents_[eventType] = goog.now();
 };
 
 
@@ -1826,10 +1790,9 @@ goog.editor.Field.prototype.debounceEvent = function(eventType) {
  * @protected
  */
 goog.editor.Field.prototype.isEventStopped = function(eventType) {
-  'use strict';
   return !!this.stoppedEvents_[eventType] ||
       (this.debouncedEvents_[eventType] &&
-       (Date.now() - this.debouncedEvents_[eventType] <=
+       (goog.now() - this.debouncedEvents_[eventType] <=
         goog.editor.Field.DEBOUNCE_TIME_MS_));
 };
 
@@ -1840,17 +1803,17 @@ goog.editor.Field.prototype.isEventStopped = function(eventType) {
  * delayed change events are handled appropriately. Extra delayed change events
  * will cause undesired states to be added to the undo-redo stack. This method
  * will always fire at most one delayed change event, depending on the value of
- * `opt_preventDelayedChange`.
+ * {@code opt_preventDelayedChange}.
  *
  * @param {function()} func The function to call that will manipulate the dom.
  * @param {boolean=} opt_preventDelayedChange Whether delayed change should be
- *      prevented after calling `func`. Defaults to always firing
+ *      prevented after calling {@code func}. Defaults to always firing
  *      delayed change.
  * @param {Object=} opt_handler Object in whose scope to call the listener.
  */
 goog.editor.Field.prototype.manipulateDom = function(
     func, opt_preventDelayedChange, opt_handler) {
-  'use strict';
+
   this.stopChangeEvents(true, true);
   // We don't want any problems with the passed in function permanently
   // stopping change events. That would break Trogedit.
@@ -1881,7 +1844,6 @@ goog.editor.Field.prototype.manipulateDom = function(
  */
 goog.editor.Field.prototype.dispatchCommandValueChange = function(
     opt_commands) {
-  'use strict';
   if (opt_commands) {
     this.dispatchEvent({
       type: goog.editor.Field.EventType.COMMAND_VALUE_CHANGE,
@@ -1903,7 +1865,6 @@ goog.editor.Field.prototype.dispatchCommandValueChange = function(
  *      goog.editor.Field.EventType.DELAYEDCHANGE should be fired syncronously.
  */
 goog.editor.Field.prototype.dispatchChange = function(opt_noDelay) {
-  'use strict';
   this.startChangeEvents(true, opt_noDelay);
 };
 
@@ -1915,7 +1876,6 @@ goog.editor.Field.prototype.dispatchChange = function(opt_noDelay) {
  * the proper events are not stopped.
  */
 goog.editor.Field.prototype.handleChange = function() {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.CHANGE)) {
     return;
   }
@@ -1942,7 +1902,6 @@ goog.editor.Field.prototype.handleChange = function() {
  * @private
  */
 goog.editor.Field.prototype.dispatchDelayedChange_ = function() {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.DELAYEDCHANGE)) {
     return;
   }
@@ -1959,7 +1918,6 @@ goog.editor.Field.prototype.dispatchDelayedChange_ = function() {
  * pending.
  */
 goog.editor.Field.prototype.clearDelayedChange = function() {
-  'use strict';
   // The changeTimerGecko_ will queue up a delayed change so to fully clear
   // delayed change we must also clear this timer.
   if (this.changeTimerGecko_) {
@@ -1968,20 +1926,6 @@ goog.editor.Field.prototype.clearDelayedChange = function() {
   this.delayedChangeTimer_.fireIfActive();
 };
 
-/**
- * Stop the timer, effectively canceling any pending delayed changes.
- *
- * @private
- */
-goog.editor.Field.prototype.stopDelayedChange_ = function() {
-  'use strict';
-  // The changeTimerGecko_ will queue up a delayed change so to fully stop
-  // delayed change we must also stop this timer.
-  if (this.changeTimerGecko_) {
-    this.changeTimerGecko_.stop();
-  }
-  this.delayedChangeTimer_.stop();
-};
 
 /**
  * Dispatch beforefocus and focus for FF. Note that both of these actually
@@ -1991,7 +1935,6 @@ goog.editor.Field.prototype.stopDelayedChange_ = function() {
  * @private
  */
 goog.editor.Field.prototype.dispatchFocusAndBeforeFocus_ = function() {
-  'use strict';
   this.dispatchBeforeFocus_();
   this.dispatchFocus_();
 };
@@ -2002,7 +1945,6 @@ goog.editor.Field.prototype.dispatchFocusAndBeforeFocus_ = function() {
  * @private
  */
 goog.editor.Field.prototype.dispatchBeforeFocus_ = function() {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.BEFOREFOCUS)) {
     return;
   }
@@ -2017,7 +1959,6 @@ goog.editor.Field.prototype.dispatchBeforeFocus_ = function() {
  * @private
  */
 goog.editor.Field.prototype.dispatchFocus_ = function() {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.FOCUS)) {
     return;
   }
@@ -2060,7 +2001,6 @@ goog.editor.Field.prototype.dispatchFocus_ = function() {
  * @protected
  */
 goog.editor.Field.prototype.dispatchBlur = function() {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.BLUR)) {
     return;
   }
@@ -2080,7 +2020,6 @@ goog.editor.Field.prototype.dispatchBlur = function() {
  * @return {boolean} Whether the selection is editable.
  */
 goog.editor.Field.prototype.isSelectionEditable = function() {
-  'use strict';
   return this.isSelectionEditable_;
 };
 
@@ -2092,7 +2031,6 @@ goog.editor.Field.prototype.isSelectionEditable = function() {
  * @private
  */
 goog.editor.Field.cancelLinkClick_ = function(e) {
-  'use strict';
   if (goog.dom.getAncestorByTagNameAndClass(
           /** @type {Node} */ (e.target), goog.dom.TagName.A)) {
     e.preventDefault();
@@ -2104,10 +2042,8 @@ goog.editor.Field.cancelLinkClick_ = function(e) {
  * Handle mouse down inside the editable field.
  * @param {goog.events.BrowserEvent} e The event.
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.Field.prototype.handleMouseDown_ = function(e) {
-  'use strict';
   goog.editor.Field.setActiveFieldId(this.id);
 
   // Open links in a new window if the user control + clicks.
@@ -2130,7 +2066,6 @@ goog.editor.Field.prototype.handleMouseDown_ = function(e) {
  * @private
  */
 goog.editor.Field.prototype.handleDragStart_ = function(e) {
-  'use strict';
   this.waitingForMouseUp_ = false;
 };
 
@@ -2141,7 +2076,6 @@ goog.editor.Field.prototype.handleDragStart_ = function(e) {
  * @private
  */
 goog.editor.Field.prototype.handleMouseUp_ = function(e) {
-  'use strict';
   if (this.useWindowMouseUp_ && !this.waitingForMouseUp_) {
     return;
   }
@@ -2172,10 +2106,9 @@ goog.editor.Field.prototype.handleMouseUp_ = function(e) {
  *
  * Do NOT just get the innerHTML of a field directly--there's a lot of
  * processing that needs to happen.
- * @return {string} The scrubbed contents of the field.
+  * @return {string} The scrubbed contents of the field.
  */
 goog.editor.Field.prototype.getCleanContents = function() {
-  'use strict';
   if (this.queryCommandValue(goog.editor.Command.USING_LOREM)) {
     return goog.string.Unicode.NBSP;
   }
@@ -2186,7 +2119,7 @@ goog.editor.Field.prototype.getCleanContents = function() {
     if (!elem) {
       goog.log.log(
           this.logger, goog.log.Level.SHOUT,
-          'Couldn\'t get the field element to read the contents');
+          "Couldn't get the field element to read the contents");
     }
     return elem.innerHTML;
   }
@@ -2194,9 +2127,9 @@ goog.editor.Field.prototype.getCleanContents = function() {
   var fieldCopy = this.getFieldCopy();
 
   // Allow the plugins to handle their cleanup.
-  this.invokeOp_(goog.editor.PluginImpl.Op.CLEAN_CONTENTS_DOM, fieldCopy);
+  this.invokeOp_(goog.editor.Plugin.Op.CLEAN_CONTENTS_DOM, fieldCopy);
   return this.reduceOp_(
-      goog.editor.PluginImpl.Op.CLEAN_CONTENTS_HTML, fieldCopy.innerHTML);
+      goog.editor.Plugin.Op.CLEAN_CONTENTS_HTML, fieldCopy.innerHTML);
 };
 
 
@@ -2207,10 +2140,9 @@ goog.editor.Field.prototype.getCleanContents = function() {
  * @protected
  */
 goog.editor.Field.prototype.getFieldCopy = function() {
-  'use strict';
   var field = this.getElement();
   // Deep cloneNode strips some script tag contents in IE, so we do this.
-  var fieldCopy = /** @type {!Element} */ (field.cloneNode(false));
+  var fieldCopy = /** @type {Element} */ (field.cloneNode(false));
 
   // For some reason, when IE sets innerHtml of the cloned node, it strips
   // script tags that fall at the beginning of an element. Appending a
@@ -2219,8 +2151,7 @@ goog.editor.Field.prototype.getFieldCopy = function() {
   if (goog.userAgent.IE && html.match(/^\s*<script/i)) {
     html = goog.string.Unicode.NBSP + html;
   }
-  goog.dom.safe.setInnerHtml(
-      fieldCopy, goog.html.legacyconversions.safeHtmlFromString(html));
+  fieldCopy.innerHTML = html;
   return fieldCopy;
 };
 
@@ -2230,16 +2161,15 @@ goog.editor.Field.prototype.getFieldCopy = function() {
  * @param {boolean} addParas Boolean to specify whether to add paragraphs
  *    to long fields.
  * @param {?goog.html.SafeHtml} html html to insert.  If html=null, then this
- *    defaults to a nbsp for mozilla and an empty string for IE.
+ *    defaults to a nsbp for mozilla and an empty string for IE.
  * @param {boolean=} opt_dontFireDelayedChange True to make this content change
  *    not fire a delayed change event.
  * @param {boolean=} opt_applyLorem Whether to apply lorem ipsum styles.
  */
 goog.editor.Field.prototype.setSafeHtml = function(
     addParas, html, opt_dontFireDelayedChange, opt_applyLorem) {
-  'use strict';
   if (this.isLoading()) {
-    goog.log.error(this.logger, 'Can\'t set html while loading Trogedit');
+    goog.log.error(this.logger, "Can't set html while loading Trogedit");
     return;
   }
 
@@ -2255,7 +2185,7 @@ goog.editor.Field.prototype.setSafeHtml = function(
   // If we don't want change events to fire, we have to turn off change events
   // before setting the field contents, since that causes mutation events.
   if (opt_dontFireDelayedChange) {
-    this.stopChangeEvents(false, true, true);
+    this.stopChangeEvents(false, true);
   }
 
   this.setInnerHtml_(html);
@@ -2296,7 +2226,6 @@ goog.editor.Field.prototype.setSafeHtml = function(
  * @private
  */
 goog.editor.Field.prototype.setInnerHtml_ = function(html) {
-  'use strict';
   var field = this.getElement();
   if (field) {
     // Safari will put <style> tags into *new* <head> elements. When setting
@@ -2327,7 +2256,6 @@ goog.editor.Field.prototype.setInnerHtml_ = function(html) {
  * @protected
  */
 goog.editor.Field.prototype.turnOnDesignModeGecko = function() {
-  'use strict';
   var doc = this.getEditableDomHelper().getDocument();
 
   // NOTE(nicksantos): This will fail under certain conditions, like
@@ -2347,7 +2275,6 @@ goog.editor.Field.prototype.turnOnDesignModeGecko = function() {
  * @protected
  */
 goog.editor.Field.prototype.installStyles = function() {
-  'use strict';
   if (this.cssStyles.getTypedStringValue() && this.shouldLoadAsynchronously()) {
     goog.style.installSafeStyleSheet(this.cssStyles, this.getElement());
   }
@@ -2360,7 +2287,6 @@ goog.editor.Field.prototype.installStyles = function() {
  * @private
  */
 goog.editor.Field.prototype.dispatchLoadEvent_ = function() {
-  'use strict';
   this.getElement();
   this.installStyles();
   this.startChangeEvents();
@@ -2373,7 +2299,6 @@ goog.editor.Field.prototype.dispatchLoadEvent_ = function() {
  * @return {boolean} Whether the field is uneditable.
  */
 goog.editor.Field.prototype.isUneditable = function() {
-  'use strict';
   return this.loadState_ == goog.editor.Field.LoadState_.UNEDITABLE;
 };
 
@@ -2382,7 +2307,6 @@ goog.editor.Field.prototype.isUneditable = function() {
  * @return {boolean} Whether the field has finished loading.
  */
 goog.editor.Field.prototype.isLoaded = function() {
-  'use strict';
   return this.loadState_ == goog.editor.Field.LoadState_.EDITABLE;
 };
 
@@ -2391,7 +2315,6 @@ goog.editor.Field.prototype.isLoaded = function() {
  * @return {boolean} Whether the field is in the process of loading.
  */
 goog.editor.Field.prototype.isLoading = function() {
-  'use strict';
   return this.loadState_ == goog.editor.Field.LoadState_.LOADING;
 };
 
@@ -2400,12 +2323,24 @@ goog.editor.Field.prototype.isLoading = function() {
  * Gives the field focus.
  */
 goog.editor.Field.prototype.focus = function() {
-  'use strict';
   if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE && this.usesIframe()) {
     // In designMode, only the window itself can be focused; not the element.
     this.getEditableDomHelper().getWindow().focus();
   } else {
+    if (goog.userAgent.OPERA) {
+      // Opera will scroll to the bottom of the focused document, even
+      // if it is contained in an iframe that is scrolled to the top and
+      // the bottom flows past the end of it. To prevent this,
+      // save the scroll position of the document containing the editor
+      // iframe, then restore it after the focus.
+      var scrollX = this.appWindow_.pageXOffset;
+      var scrollY = this.appWindow_.pageYOffset;
+    }
     this.getElement().focus();
+    if (goog.userAgent.OPERA) {
+      this.appWindow_.scrollTo(
+          /** @type {number} */ (scrollX), /** @type {number} */ (scrollY));
+    }
   }
 };
 
@@ -2414,7 +2349,6 @@ goog.editor.Field.prototype.focus = function() {
  * Gives the field focus and places the cursor at the start of the field.
  */
 goog.editor.Field.prototype.focusAndPlaceCursorAtStart = function() {
-  'use strict';
   // NOTE(user): Excluding Gecko to maintain existing behavior post refactoring
   // placeCursorAtStart into its own method. In Gecko browsers that currently
   // have a selection the existing selection will be restored, otherwise it
@@ -2435,7 +2369,6 @@ goog.editor.Field.prototype.focusAndPlaceCursorAtStart = function() {
  * an existing selection in the field.
  */
 goog.editor.Field.prototype.placeCursorAtStart = function() {
-  'use strict';
   this.placeCursorAtStartOrEnd_(true);
 };
 
@@ -2446,7 +2379,6 @@ goog.editor.Field.prototype.placeCursorAtStart = function() {
  * an existing selection in the field.
  */
 goog.editor.Field.prototype.placeCursorAtEnd = function() {
-  'use strict';
   this.placeCursorAtStartOrEnd_(false);
 };
 
@@ -2457,7 +2389,6 @@ goog.editor.Field.prototype.placeCursorAtEnd = function() {
  * @private
  */
 goog.editor.Field.prototype.placeCursorAtStartOrEnd_ = function(isStart) {
-  'use strict';
   var field = this.getElement();
   if (field) {
     var cursorPosition = isStart ? goog.editor.node.getLeftMostLeaf(field) :
@@ -2481,7 +2412,6 @@ goog.editor.Field.prototype.placeCursorAtStartOrEnd_ = function(isStart) {
  * @param {goog.dom.SavedRange=} opt_range A previously saved selected range.
  */
 goog.editor.Field.prototype.restoreSavedRange = function(opt_range) {
-  'use strict';
   if (opt_range) {
     opt_range.restore();
   }
@@ -2496,7 +2426,6 @@ goog.editor.Field.prototype.restoreSavedRange = function(opt_range) {
  *     src to if necessary.
  */
 goog.editor.Field.prototype.makeEditable = function(opt_iframeSrc) {
-  'use strict';
   this.loadState_ = goog.editor.Field.LoadState_.LOADING;
 
   var field = this.getOriginalElement();
@@ -2504,9 +2433,7 @@ goog.editor.Field.prototype.makeEditable = function(opt_iframeSrc) {
   // TODO: In the fieldObj, save the field's id, className, cssText
   // in order to reset it on closeField. That way, we can muck with the field's
   // css, id, class and restore to how it was at the end.
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   this.nodeName = field.nodeName;
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   this.savedClassName_ = field.className;
   this.setInitialStyle(field.style.cssText);
 
@@ -2524,7 +2451,6 @@ goog.editor.Field.prototype.makeEditable = function(opt_iframeSrc) {
  * @protected
  */
 goog.editor.Field.prototype.makeEditableInternal = function(opt_iframeSrc) {
-  'use strict';
   this.makeIframeField_(opt_iframeSrc);
 };
 
@@ -2535,7 +2461,6 @@ goog.editor.Field.prototype.makeEditableInternal = function(opt_iframeSrc) {
  * @protected
  */
 goog.editor.Field.prototype.handleFieldLoad = function() {
-  'use strict';
   if (goog.userAgent.IE) {
     // This sometimes fails if the selection is invalid. This can happen, for
     // example, if you attach a CLICK handler to the field that causes the
@@ -2571,7 +2496,6 @@ goog.editor.Field.prototype.handleFieldLoad = function() {
  *     contents back into the original node.
  */
 goog.editor.Field.prototype.makeUneditable = function(opt_skipRestore) {
-  'use strict';
   if (this.isUneditable()) {
     throw new Error('makeUneditable: Field is already uneditable');
   }
@@ -2607,7 +2531,7 @@ goog.editor.Field.prototype.makeUneditable = function(opt_skipRestore) {
   // If html is provided, copy it back and reset the properties on the field
   // so that the original node will have the same properties as it did before
   // it was made editable.
-  if (typeof html === 'string') {
+  if (goog.isString(html)) {
     goog.editor.node.replaceInnerHtml(field, html);
     this.resetOriginalElemProperties();
   }
@@ -2631,7 +2555,6 @@ goog.editor.Field.prototype.makeUneditable = function(opt_skipRestore) {
  * @protected
  */
 goog.editor.Field.prototype.restoreDom = function() {
-  'use strict';
   // TODO(user): Consider only removing the iframe if we are
   // restoring the original node, aka, if opt_html.
   var field = this.getOriginalElement();
@@ -2651,12 +2574,9 @@ goog.editor.Field.prototype.restoreDom = function() {
  * Returns true if the field needs to be loaded asynchrnously.
  * @return {boolean} True if loads are async.
  * @protected
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.Field.prototype.shouldLoadAsynchronously = function() {
-  'use strict';
-  if (this.isHttps_ === undefined) {
-    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
+  if (!goog.isDef(this.isHttps_)) {
     this.isHttps_ = false;
 
     if (goog.userAgent.IE && this.usesIframe()) {
@@ -2677,9 +2597,6 @@ goog.editor.Field.prototype.shouldLoadAsynchronously = function() {
         }
       }
       var loc = win.location;
-      /**
-       * @suppress {strictMissingProperties} Added to tighten compiler checks
-       */
       this.isHttps_ =
           loc.protocol == 'https:' && loc.search.indexOf('nocheckhttps') == -1;
     }
@@ -2697,7 +2614,6 @@ goog.editor.Field.prototype.shouldLoadAsynchronously = function() {
  * @private
  */
 goog.editor.Field.prototype.makeIframeField_ = function(opt_iframeSrc) {
-  'use strict';
   var field = this.getOriginalElement();
   // TODO(robbyw): Consider throwing an error if !field.
   if (field) {
@@ -2709,7 +2625,7 @@ goog.editor.Field.prototype.makeIframeField_ = function(opt_iframeSrc) {
     // element is still in its original position in DOM.
     var styles = {};
     html = this.reduceOp_(
-        goog.editor.PluginImpl.Op.PREPARE_CONTENTS_HTML, html, styles);
+        goog.editor.Plugin.Op.PREPARE_CONTENTS_HTML, html, styles);
 
     var iframe = this.originalDomHelper.createDom(
         goog.dom.TagName.IFRAME, this.getIframeAttributes());
@@ -2728,9 +2644,6 @@ goog.editor.Field.prototype.makeIframeField_ = function(opt_iframeSrc) {
       var onLoad =
           goog.bind(this.iframeFieldLoadHandler, this, iframe, html, styles);
 
-      /**
-       * @suppress {strictMissingProperties} Added to tighten compiler checks
-       */
       this.fieldLoadListenerKey_ =
           goog.events.listen(iframe, goog.events.EventType.LOAD, onLoad, true);
 
@@ -2758,7 +2671,6 @@ goog.editor.Field.prototype.makeIframeField_ = function(opt_iframeSrc) {
  * @protected
  */
 goog.editor.Field.prototype.attachIframe = function(iframe) {
-  'use strict';
   var field = this.getOriginalElement();
   // TODO(user): Why do we do these two lines .. and why whitebox only?
   iframe.className = field.className;
@@ -2774,7 +2686,6 @@ goog.editor.Field.prototype.attachIframe = function(iframe) {
  * @protected
  */
 goog.editor.Field.prototype.getFieldFormatInfo = function(extraStyles) {
-  'use strict';
   var originalElement = this.getOriginalElement();
   var isStandardsMode = goog.editor.node.isStandardsMode(originalElement);
 
@@ -2793,7 +2704,6 @@ goog.editor.Field.prototype.getFieldFormatInfo = function(extraStyles) {
  */
 goog.editor.Field.prototype.writeIframeContent = function(
     iframe, innerHtml, extraStyles) {
-  'use strict';
   var formatInfo = this.getFieldFormatInfo(extraStyles);
 
   if (this.shouldLoadAsynchronously()) {
@@ -2819,7 +2729,6 @@ goog.editor.Field.prototype.writeIframeContent = function(
  */
 goog.editor.Field.prototype.iframeFieldLoadHandler = function(
     iframe, innerHtml, styles) {
-  'use strict';
   this.clearFieldLoadListener_();
 
   iframe.allowTransparency = 'true';
@@ -2843,13 +2752,10 @@ goog.editor.Field.prototype.iframeFieldLoadHandler = function(
  * Clears fieldLoadListener for a field. Must be called even (especially?) if
  * the field is not yet loaded and therefore not in this.fieldMap_
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.Field.prototype.clearFieldLoadListener_ = function() {
-  'use strict';
   if (this.fieldLoadListenerKey_) {
     goog.events.unlistenByKey(this.fieldLoadListenerKey_);
-    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.fieldLoadListenerKey_ = null;
   }
 };
@@ -2860,7 +2766,6 @@ goog.editor.Field.prototype.clearFieldLoadListener_ = function() {
  * @protected
  */
 goog.editor.Field.prototype.getIframeAttributes = function() {
-  'use strict';
   var iframeStyle = 'padding:0;' + this.getOriginalElement().style.cssText;
 
   if (!goog.string.endsWith(iframeStyle, ';')) {

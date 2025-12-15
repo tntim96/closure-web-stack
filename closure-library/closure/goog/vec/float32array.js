@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 
 /**
@@ -15,6 +23,7 @@
  *
  *     Adding support for the other TypedArray classes here does not make sense
  *     since this vector math library only needs Float32Array.
+ *
  */
 goog.provide('goog.vec.Float32Array');
 
@@ -31,10 +40,9 @@ goog.provide('goog.vec.Float32Array');
  * @final
  */
 goog.vec.Float32Array = function(p0) {
-  'use strict';
   /** @type {number} */
-  this.length = /** @type {number} */ (/** @type {?} */ (p0).length || p0);
-  for (let i = 0; i < this.length; i++) {
+  this.length = /** @type {number} */ (p0.length || p0);
+  for (var i = 0; i < this.length; i++) {
     this[i] = p0[i] || 0;
   }
 };
@@ -64,9 +72,8 @@ goog.vec.Float32Array.prototype.BYTES_PER_ELEMENT = 4;
  * @param {number=} opt_offset The offset in this array to start.
  */
 goog.vec.Float32Array.prototype.set = function(values, opt_offset) {
-  'use strict';
   opt_offset = opt_offset || 0;
-  for (let i = 0; i < values.length && opt_offset + i < this.length; i++) {
+  for (var i = 0; i < values.length && opt_offset + i < this.length; i++) {
     this[opt_offset + i] = values[i];
   }
 };

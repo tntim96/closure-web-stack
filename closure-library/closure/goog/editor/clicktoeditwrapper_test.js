@@ -1,125 +1,132 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.editor.ClickToEditWrapperTest');
-goog.setTestOnly();
+goog.provide('goog.editor.ClickToEditWrapperTest');
+goog.setTestOnly('goog.editor.ClickToEditWrapperTest');
 
-const ClickToEditWrapper = goog.require('goog.editor.ClickToEditWrapper');
-const MockClock = goog.require('goog.testing.MockClock');
-const Range = goog.require('goog.dom.Range');
-const SeamlessField = goog.require('goog.editor.SeamlessField');
-const TagName = goog.require('goog.dom.TagName');
-const events = goog.require('goog.testing.events');
-const googDom = goog.require('goog.dom');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.dom');
+goog.require('goog.dom.Range');
+goog.require('goog.dom.TagName');
+goog.require('goog.editor.ClickToEditWrapper');
+goog.require('goog.editor.SeamlessField');
+goog.require('goog.testing.MockClock');
+goog.require('goog.testing.events');
+goog.require('goog.testing.jsunit');
 
-let FIELD;
-let CLOCK;
-let HTML;
+var FIELD;
+var CLOCK;
+var HTML;
 
-/** @param {boolean=} isBlended */
-function setUpField(isBlended = undefined) {
-  FIELD = isBlended ? new SeamlessField('testField') :
-                      new SeamlessField('testField');
+function setUp() {
+  HTML = goog.dom.getElement('root').innerHTML;
+  CLOCK = new goog.testing.MockClock(true);
 
-  (new ClickToEditWrapper(FIELD));
-
-  Range.clearSelection();
+  // The following 3 lines are to get around an IE bug where it says
+  // 'Incompatible markup pointers for this operation'.
+  // Must be done in the setup, not teardown, or else it won't take effect for
+  // the first test that is run, or any test that runs immediately after a
+  // "breaking async" message from the jsunit framework.
+  goog.dom.Range.clearSelection();
+  window.blur();
+  window.focus();
 }
 
-testSuite({
-  setUp() {
-    HTML = googDom.getElement('root').innerHTML;
-    CLOCK = new MockClock(true);
+/** @param {boolean=} opt_isBlended */
+function setUpField(opt_isBlended) {
+  FIELD = opt_isBlended ? new goog.editor.SeamlessField('testField') :
+                          new goog.editor.SeamlessField('testField');
 
-    // The following 3 lines are to get around an IE bug where it says
-    // 'Incompatible markup pointers for this operation'.
-    // Must be done in the setup, not teardown, or else it won't take effect for
-    // the first test that is run, or any test that runs immediately after a
-    // "breaking async" message from the jsunit framework.
-    Range.clearSelection();
-    window.blur();
-    window.focus();
-  },
+  (new goog.editor.ClickToEditWrapper(FIELD));
 
-  tearDown() {
-    if (FIELD) {
-      FIELD.dispose();
-    }
+  goog.dom.Range.clearSelection();
+}
 
-    CLOCK.dispose();
+function tearDown() {
+  if (FIELD) {
+    FIELD.dispose();
+  }
 
-    googDom.getElement('root').innerHTML = HTML;
-  },
+  CLOCK.dispose();
 
-  testClickToEdit(isBlended = undefined) {
-    setUpField(isBlended);
+  goog.dom.getElement('root').innerHTML = HTML;
+}
 
-    let text = googDom.getElement('testField').firstChild;
-    Range.createFromNodes(text, 4, text, 8).select();
+function testClickToEdit(opt_isBlended) {
+  setUpField(opt_isBlended);
 
-    events.fireClickSequence(text.parentNode);
+  var text = goog.dom.getElement('testField').firstChild;
+  goog.dom.Range.createFromNodes(text, 4, text, 8).select();
 
-    assertFalse(
-        'Field should not be made editable immediately after clicking',
-        FIELD.isLoaded());
-    CLOCK.tick(1);
-    assertTrue('Field should be editable', FIELD.isLoaded());
+  goog.testing.events.fireClickSequence(text.parentNode);
 
-    const dom = FIELD.getEditableDomHelper();
-    const selection = Range.createFromWindow(dom.getWindow());
+  assertFalse(
+      'Field should not be made editable immediately after clicking',
+      FIELD.isLoaded());
+  CLOCK.tick(1);
+  assertTrue('Field should be editable', FIELD.isLoaded());
 
-    const body = FIELD.getElement();
-    text = body.firstChild;
+  var dom = FIELD.getEditableDomHelper();
+  var selection = goog.dom.Range.createFromWindow(dom.getWindow());
 
+  var body = FIELD.getElement();
+  text = body.firstChild;
+
+  assertEquals('Wrong start node', text, selection.getStartNode());
+  assertEquals('Wrong end node', text, selection.getEndNode());
+  assertEquals('Wrong start offset', 4, selection.getStartOffset());
+  assertEquals('Wrong end offset', 8, selection.getEndOffset());
+}
+
+function testBlendedClickToEdit() {
+  testClickToEdit(true);
+}
+
+
+function testClickToEditWithAnchor(opt_isBlended) {
+  setUpField(opt_isBlended);
+
+  goog.dom.getElement('testAnchor').focus();
+  goog.testing.events.fireClickSequence(goog.dom.getElement('testAnchor'));
+
+  CLOCK.tick(1);
+  assertTrue('Field should be editable', FIELD.isLoaded());
+
+  var dom = FIELD.getEditableDomHelper();
+  var selection = goog.dom.Range.createFromWindow(dom.getWindow());
+
+  // TODO(brndn): the location of the cursor is not yet specified by the W3C
+  // Editing APIs (https://dvcs.w3.org/hg/editing/raw-file/tip/editing.html).
+  // See b/15678403.  IE and some webkit (all Safari, and up to Chrome 57)
+  // return the end of the previous text node, while other browsers return
+  // the start of the next node.
+  var body = FIELD.getElement();
+  var text = body.firstChild;
+  var link = dom.getElementsByTagNameAndClass(goog.dom.TagName.A, null, body)[0]
+                 .firstChild;
+  if (selection.getStartNode() == text) {
     assertEquals('Wrong start node', text, selection.getStartNode());
+    assertEquals('Wrong start offset', 17, selection.getStartOffset());
     assertEquals('Wrong end node', text, selection.getEndNode());
-    assertEquals('Wrong start offset', 4, selection.getStartOffset());
-    assertEquals('Wrong end offset', 8, selection.getEndOffset());
-  },
+    assertEquals('Wrong end offset', 17, selection.getEndOffset());
+  } else {
+    assertEquals('Wrong start node', link, selection.getStartNode());
+    assertEquals('Wrong start offset', 0, selection.getStartOffset());
+    assertEquals('Wrong end node', link, selection.getEndNode());
+    assertEquals('Wrong end offset', 0, selection.getEndOffset());
+  }
+}
 
-  testBlendedClickToEdit() {
-    this.testClickToEdit(true);
-  },
-
-  testClickToEditWithAnchor(isBlended = undefined) {
-    setUpField(isBlended);
-
-    googDom.getElement('testAnchor').focus();
-    events.fireClickSequence(googDom.getElement('testAnchor'));
-
-    CLOCK.tick(1);
-    assertTrue('Field should be editable', FIELD.isLoaded());
-
-    const dom = FIELD.getEditableDomHelper();
-    const selection = Range.createFromWindow(dom.getWindow());
-
-    // TODO(brndn): the location of the cursor is not yet specified by the W3C
-    // Editing APIs (https://dvcs.w3.org/hg/editing/raw-file/tip/editing.html).
-    // See b/15678403.  IE and some webkit (all Safari, and up to Chrome 57)
-    // return the end of the previous text node, while other browsers return
-    // the start of the next node.
-    const body = FIELD.getElement();
-    const text = body.firstChild;
-    const link =
-        dom.getElementsByTagNameAndClass(TagName.A, null, body)[0].firstChild;
-    if (selection.getStartNode() == text) {
-      assertEquals('Wrong start node', text, selection.getStartNode());
-      assertEquals('Wrong start offset', 17, selection.getStartOffset());
-      assertEquals('Wrong end node', text, selection.getEndNode());
-      assertEquals('Wrong end offset', 17, selection.getEndOffset());
-    } else {
-      assertEquals('Wrong start node', link, selection.getStartNode());
-      assertEquals('Wrong start offset', 0, selection.getStartOffset());
-      assertEquals('Wrong end node', link, selection.getEndNode());
-      assertEquals('Wrong end offset', 0, selection.getEndOffset());
-    }
-  },
-
-  testBlendedClickToEditWithAnchor() {
-    this.testClickToEditWithAnchor(true);
-  },
-});
+function testBlendedClickToEditWithAnchor() {
+  testClickToEditWithAnchor(true);
+}

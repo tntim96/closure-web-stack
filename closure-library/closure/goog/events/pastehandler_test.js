@@ -1,433 +1,410 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2009 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.events.PasteHandlerTest');
-goog.setTestOnly();
+goog.provide('goog.events.PasteHandlerTest');
+goog.setTestOnly('goog.events.PasteHandlerTest');
 
-const BrowserEvent = goog.require('goog.events.BrowserEvent');
-const EventType = goog.require('goog.events.EventType');
-const GoogEventTarget = goog.require('goog.events.EventTarget');
-const KeyCodes = goog.require('goog.events.KeyCodes');
-const MockClock = goog.require('goog.testing.MockClock');
-const PasteHandler = goog.require('goog.events.PasteHandler');
-const dom = goog.require('goog.dom');
-const events = goog.require('goog.events');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.dom');
+goog.require('goog.events');
+goog.require('goog.events.BrowserEvent');
+goog.require('goog.events.EventTarget');
+goog.require('goog.events.EventType');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.events.PasteHandler');
+goog.require('goog.testing.MockClock');
+goog.require('goog.testing.jsunit');
+goog.require('goog.userAgent');
 
-/** @suppress {checkTypes} suppression added to enable type checking */
+function setUp() {
+  textarea = new goog.events.EventTarget();
+  textarea.value = '';
+  clock = new goog.testing.MockClock(true);
+  handler = new goog.events.PasteHandler(textarea);
+  pasted = false;
+  goog.events.listen(
+      handler, goog.events.PasteHandler.EventType.PASTE,
+      function() { pasted = true; });
+}
+
+function tearDown() {
+  textarea.dispose();
+  handler.dispose();
+  clock.dispose();
+}
+
 function newBrowserEvent(type) {
-  if (typeof type === 'string') {
-    return new BrowserEvent({type: type});
+  if (goog.isString(type)) {
+    return new goog.events.BrowserEvent({type: type});
   } else {
-    return new BrowserEvent(type);
+    return new goog.events.BrowserEvent(type);
   }
 }
 
-let textarea;
-let clock;
-let handler;
-let pasted;
+function testDispatchingPasteEventSupportedByAFewBrowsersWork() {
+  if (!goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  var handlerThatSupportsPasteEvents = new goog.events.PasteHandler(textarea);
+  // user clicks on the textarea and give it focus
+  goog.events.listen(
+      handlerThatSupportsPasteEvents, goog.events.PasteHandler.EventType.PASTE,
+      function() { pasted = true; });
+  textarea.dispatchEvent(newBrowserEvent('paste'));
+  assertTrue(pasted);
+}
 
-testSuite({
-  setUp() {
-    textarea = new GoogEventTarget();
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = '';
-    clock = new MockClock(true);
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    handler = new PasteHandler(textarea);
-    pasted = false;
-    events.listen(handler, PasteHandler.EventType.PASTE, () => {
-      pasted = true;
-    });
-  },
+function testJustTypingDoesntFirePasteEvent() {
+  if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  // user clicks on the textarea and give it focus
+  textarea.dispatchEvent(newBrowserEvent(goog.events.EventType.FOCUS));
+  assertFalse(pasted);
+  // user starts typing
+  textarea.dispatchEvent(newBrowserEvent({
+    type: goog.events.EventType.KEYDOWN,
+    keyCode: goog.events.KeyCodes.A
+  }));
+  textarea.value = 'a';
+  assertFalse(pasted);
 
-  tearDown() {
-    textarea.dispose();
-    handler.dispose();
-    clock.dispose();
-  },
+  // still typing
+  textarea.dispatchEvent(
+      {type: goog.events.EventType.KEYDOWN, keyCode: goog.events.KeyCodes.B});
+  textarea.value = 'ab';
+  assertFalse(pasted);
 
-  testDispatchingPasteEventSupportedByAFewBrowsersWork() {
-    if (!PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const handlerThatSupportsPasteEvents = new PasteHandler(textarea);
-    // user clicks on the textarea and give it focus
-    events.listen(
-        handlerThatSupportsPasteEvents, PasteHandler.EventType.PASTE, () => {
-          pasted = true;
-        });
-    textarea.dispatchEvent(newBrowserEvent('paste'));
-    assertTrue(pasted);
-  },
+  // ends typing
+  textarea.dispatchEvent(
+      {type: goog.events.EventType.KEYDOWN, keyCode: goog.events.KeyCodes.C});
+  textarea.value = 'abc';
+  assertFalse(pasted);
+}
 
-  testJustTypingDoesntFirePasteEvent() {
-    if (PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    // user clicks on the textarea and give it focus
-    textarea.dispatchEvent(newBrowserEvent(EventType.FOCUS));
-    assertFalse(pasted);
-    // user starts typing
-    textarea.dispatchEvent(newBrowserEvent({
-      type: EventType.KEYDOWN,
-      keyCode: KeyCodes.A,
-    }));
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'a';
-    assertFalse(pasted);
+function testStartsOnInitialState() {
+  assertTrue(handler.getState() == goog.events.PasteHandler.State.INIT);
+  assertFalse(pasted);
+}
 
-    // still typing
-    textarea.dispatchEvent({type: EventType.KEYDOWN, keyCode: KeyCodes.B});
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'ab';
-    assertFalse(pasted);
+function testBlurOnInit() {
+  if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  textarea.dispatchEvent(goog.events.EventType.BLUR);
+  assertTrue(handler.getState() == goog.events.PasteHandler.State.INIT);
+  assertFalse(pasted);
+}
 
-    // ends typing
-    textarea.dispatchEvent({type: EventType.KEYDOWN, keyCode: KeyCodes.C});
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'abc';
-    assertFalse(pasted);
-  },
+function testFocusOnInit() {
+  if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  textarea.dispatchEvent(goog.events.EventType.FOCUS);
+  assertTrue(handler.getState() == goog.events.PasteHandler.State.FOCUSED);
+  assertFalse(pasted);
+}
 
-  testStartsOnInitialState() {
-    assertTrue(handler.getState() == PasteHandler.State.INIT);
-    assertFalse(pasted);
-  },
+function testInputOnFocus() {
+  if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  // user clicks on the textarea
+  textarea.dispatchEvent(newBrowserEvent(goog.events.EventType.FOCUS));
+  clock.tick(
+      goog.events.PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER +
+      1);
+  // and right click -> paste a text!
+  textarea.dispatchEvent(newBrowserEvent('input'));
+  assertTrue(handler.getState() == goog.events.PasteHandler.State.FOCUSED);
+  // make sure we detected it
+  assertTrue(pasted);
+}
 
-  testBlurOnInit() {
-    if (PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    textarea.dispatchEvent(EventType.BLUR);
-    assertTrue(handler.getState() == PasteHandler.State.INIT);
-    assertFalse(pasted);
-  },
+function testKeyPressOnFocus() {
+  if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  // user clicks on the textarea
+  textarea.dispatchEvent(newBrowserEvent(goog.events.EventType.FOCUS));
 
-  testFocusOnInit() {
-    if (PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    textarea.dispatchEvent(EventType.FOCUS);
-    assertTrue(handler.getState() == PasteHandler.State.FOCUSED);
-    assertFalse(pasted);
-  },
+  // starts typing something
+  textarea.dispatchEvent(newBrowserEvent({
+    type: goog.events.EventType.KEYDOWN,
+    keyCode: goog.events.KeyCodes.A
+  }));
+  assertTrue(handler.getState() == goog.events.PasteHandler.State.TYPING);
+  assertFalse(pasted);
 
-  testInputOnFocus() {
-    if (PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    // user clicks on the textarea
-    textarea.dispatchEvent(newBrowserEvent(EventType.FOCUS));
-    clock.tick(PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER + 1);
-    // and right click -> paste a text!
-    textarea.dispatchEvent(newBrowserEvent('input'));
-    assertTrue(handler.getState() == PasteHandler.State.FOCUSED);
-    // make sure we detected it
-    assertTrue(pasted);
-  },
+  // and then presses ctrl+v
+  textarea.dispatchEvent(newBrowserEvent({
+    type: goog.events.EventType.KEYDOWN,
+    keyCode: goog.events.KeyCodes.V,
+    ctrlKey: true
+  }));
+  assertTrue(handler.getState() == goog.events.PasteHandler.State.TYPING);
 
-  testKeyPressOnFocus() {
-    if (PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    // user clicks on the textarea
-    textarea.dispatchEvent(newBrowserEvent(EventType.FOCUS));
+  // makes sure we detected it
+  assertTrue(pasted);
+}
 
-    // starts typing something
-    textarea.dispatchEvent(newBrowserEvent({
-      type: EventType.KEYDOWN,
-      keyCode: KeyCodes.A,
-    }));
-    assertTrue(handler.getState() == PasteHandler.State.TYPING);
-    assertFalse(pasted);
+function testMouseOverOnInit() {
+  if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  // user has something on the events
+  textarea.value = 'pasted string';
+  // and right click -> paste it on the textarea, WITHOUT giving focus
+  textarea.dispatchEvent(newBrowserEvent(goog.events.EventType.MOUSEOVER));
+  assertTrue(handler.getState() == goog.events.PasteHandler.State.INIT);
+  // makes sure we detect it
+  assertTrue(pasted);
 
-    // and then presses ctrl+v
-    textarea.dispatchEvent(newBrowserEvent({
-      type: EventType.KEYDOWN,
-      keyCode: KeyCodes.V,
-      ctrlKey: true,
-    }));
-    assertTrue(handler.getState() == PasteHandler.State.TYPING);
+  pasted = false;
 
-    // makes sure we detected it
-    assertTrue(pasted);
-  },
+  // user normaly mouseovers the textarea, with no text change
+  textarea.dispatchEvent(goog.events.EventType.MOUSEOVER);
+  assertTrue(handler.getState() == goog.events.PasteHandler.State.INIT);
+  // text area value doesn't change
+  assertFalse(pasted);
+}
 
-  testMouseOverOnInit() {
-    if (PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    // user has something on the events
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'pasted string';
-    // and right click -> paste it on the textarea, WITHOUT giving focus
-    textarea.dispatchEvent(newBrowserEvent(EventType.MOUSEOVER));
-    assertTrue(handler.getState() == PasteHandler.State.INIT);
-    // makes sure we detect it
-    assertTrue(pasted);
+function testMouseOverAfterTyping() {
+  if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  textarea.dispatchEvent(goog.events.EventType.FOCUS);
+  assertFalse(pasted);
+  textarea.dispatchEvent(
+      {type: goog.events.EventType.KEYDOWN, keyCode: goog.events.KeyCodes.A});
+  assertFalse(pasted);
+  textarea.value = 'a';
+  textarea.dispatchEvent('input');
+  assertFalse(pasted);
+  assertEquals('a', handler.oldValue_);
+  textarea.dispatchEvent(goog.events.EventType.MOUSEOVER);
+  assertFalse(pasted);
+}
 
-    pasted = false;
+function testTypingAndThenRightClickPaste() {
+  if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  textarea.dispatchEvent(goog.events.EventType.FOCUS);
 
-    // user normaly mouseovers the textarea, with no text change
-    textarea.dispatchEvent(EventType.MOUSEOVER);
-    assertTrue(handler.getState() == PasteHandler.State.INIT);
-    // text area value doesn't change
-    assertFalse(pasted);
-  },
+  textarea.dispatchEvent(
+      {type: goog.events.EventType.KEYDOWN, keyCode: goog.events.KeyCodes.A});
+  assertFalse(pasted);
+  textarea.value = 'a';
+  clock.tick(
+      goog.events.PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER +
+      1);
+  textarea.dispatchEvent('input');
+  assertFalse(pasted);
 
-  /** @suppress {visibility} suppression added to enable type checking */
-  testMouseOverAfterTyping() {
-    if (PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    textarea.dispatchEvent(EventType.FOCUS);
-    assertFalse(pasted);
-    textarea.dispatchEvent({type: EventType.KEYDOWN, keyCode: KeyCodes.A});
-    assertFalse(pasted);
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'a';
-    textarea.dispatchEvent('input');
-    assertFalse(pasted);
-    assertEquals('a', handler.oldValue_);
-    textarea.dispatchEvent(EventType.MOUSEOVER);
-    assertFalse(pasted);
-  },
+  assertEquals('a', handler.oldValue_);
 
-  /** @suppress {visibility} suppression added to enable type checking */
-  testTypingAndThenRightClickPaste() {
-    if (PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    textarea.dispatchEvent(EventType.FOCUS);
+  textarea.value = 'ab';
+  clock.tick(
+      goog.events.PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER +
+      1);
+  textarea.dispatchEvent(newBrowserEvent('input'));
+  assertTrue(pasted);
+}
 
-    textarea.dispatchEvent({type: EventType.KEYDOWN, keyCode: KeyCodes.A});
-    assertFalse(pasted);
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'a';
-    clock.tick(PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER + 1);
-    textarea.dispatchEvent('input');
-    assertFalse(pasted);
+function testTypingReallyFastDispatchesTwoInputEventsBeforeTheKeyDownEvent() {
+  if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  textarea.dispatchEvent(goog.events.EventType.FOCUS);
 
-    assertEquals('a', handler.oldValue_);
+  // keydown and input events seems to be fired indepently: even though input
+  // should happen after the key event, it doesn't if the user types fast
+  // enough. FF2 + linux doesn't fire keydown events for every key pressed when
+  // you type fast enough. if one of the keydown events gets swallowed, two
+  // input events are fired consecutively. notice that there is a similar
+  // scenario, that actually does produce a valid paste action.
+  // {@see testRightClickRightClickAlsoDispatchesTwoConsecutiveInputEvents}
 
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'ab';
-    clock.tick(PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER + 1);
-    textarea.dispatchEvent(newBrowserEvent('input'));
-    assertTrue(pasted);
-  },
+  textarea.dispatchEvent(
+      {type: goog.events.EventType.KEYDOWN, keyCode: goog.events.KeyCodes.A});
+  assertFalse(pasted);
+  textarea.value = 'a';
+  clock.tick(
+      goog.events.PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER -
+      1);
+  textarea.dispatchEvent('input');
+  assertFalse(pasted);
 
-  testTypingReallyFastDispatchesTwoInputEventsBeforeTheKeyDownEvent() {
-    if (PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    textarea.dispatchEvent(EventType.FOCUS);
+  // second key down events gets fired on a different order
+  textarea.value = 'ab';
+  clock.tick(
+      goog.events.PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER -
+      1);
+  textarea.dispatchEvent('input');
+  assertFalse(pasted);
+}
 
-    // keydown and input events seems to be fired indepently: even though input
-    // should happen after the key event, it doesn't if the user types fast
-    // enough. FF2 + linux doesn't fire keydown events for every key pressed
-    // when you type fast enough. if one of the keydown events gets swallowed,
-    // two input events are fired consecutively. notice that there is a similar
-    // scenario, that actually does produce a valid paste action.
-    // {@see testRightClickRightClickAlsoDispatchesTwoConsecutiveInputEvents}
+function testRightClickRightClickAlsoDispatchesTwoConsecutiveInputEvents() {
+  if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  textarea.dispatchEvent(goog.events.EventType.FOCUS);
 
-    textarea.dispatchEvent({type: EventType.KEYDOWN, keyCode: KeyCodes.A});
-    assertFalse(pasted);
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'a';
-    clock.tick(PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER - 1);
-    textarea.dispatchEvent('input');
-    assertFalse(pasted);
+  // there is also another case that two consecutive INPUT events are fired,
+  // but in a valid paste action: if the user edit -> paste -> edit -> paste,
+  // it is a valid paste action.
 
-    // second key down events gets fired on a different order
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'ab';
-    clock.tick(PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER - 1);
-    textarea.dispatchEvent('input');
-    assertFalse(pasted);
-  },
+  textarea.value = 'a';
+  clock.tick(
+      goog.events.PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER +
+      1);
+  textarea.dispatchEvent(newBrowserEvent('input'));
+  assertTrue(pasted);
 
-  testRightClickRightClickAlsoDispatchesTwoConsecutiveInputEvents() {
-    if (PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    textarea.dispatchEvent(EventType.FOCUS);
+  // second key down events gets fired on a different order
+  textarea.value = 'ab';
+  clock.tick(
+      goog.events.PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER +
+      1);
+  textarea.dispatchEvent(newBrowserEvent('input'));
+  assertTrue(pasted);
+}
 
-    // there is also another case that two consecutive INPUT events are fired,
-    // but in a valid paste action: if the user edit -> paste -> edit -> paste,
-    // it is a valid paste action.
+function testMiddleClickWithoutFocusTriggersPasteEvent() {
+  if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  // if the textarea is NOT selected, and then we use the middle button,
+  // FF2+linux pastes what was last highlighted, causing a paste action.
+  textarea.dispatchEvent(goog.events.EventType.FOCUS);
+  textarea.dispatchEvent(newBrowserEvent('input'));
+  assertTrue(pasted);
+}
 
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'a';
-    clock.tick(PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER + 1);
-    textarea.dispatchEvent(newBrowserEvent('input'));
-    assertTrue(pasted);
 
-    // second key down events gets fired on a different order
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'ab';
-    clock.tick(PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER + 1);
-    textarea.dispatchEvent(newBrowserEvent('input'));
-    assertTrue(pasted);
-  },
+function testMacRightClickPasteRequiresCtrlBecauseItHasOneButton() {
+  if (!goog.userAgent.OPERA || !goog.userAgent.MAC) {
+    return;
+  }
+  var handler = new goog.events.PasteHandler(textarea);
+  // user clicks on the textarea and give it focus
+  goog.events.listen(
+      handler, goog.events.PasteHandler.EventType.PASTE,
+      function() { pasted = true; });
+  textarea.dispatchEvent(goog.events.EventType.FOCUS);
+  assertFalse(pasted);
+  textarea.dispatchEvent({type: goog.events.EventType.KEYDOWN, keyCode: 0});
+  assertFalse(pasted);
+  clock.tick(
+      goog.events.PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER +
+      1);
+  textarea.dispatchEvent(newBrowserEvent('input'));
+  assertTrue(pasted);
+}
 
-  testMiddleClickWithoutFocusTriggersPasteEvent() {
-    if (PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    // if the textarea is NOT selected, and then we use the middle button,
-    // FF2+linux pastes what was last highlighted, causing a paste action.
-    textarea.dispatchEvent(EventType.FOCUS);
-    textarea.dispatchEvent(newBrowserEvent('input'));
-    assertTrue(pasted);
-  },
+function testOperaMacFiresKeyCode17WhenAppleKeyPressedButDoesNotFireKeyDown() {
+  if (!goog.userAgent.OPERA || !goog.userAgent.MAC) {
+    return;
+  }
+  var handler = new goog.events.PasteHandler(textarea);
+  // user clicks on the textarea and give it focus
+  goog.events.listen(
+      handler, goog.events.PasteHandler.EventType.PASTE,
+      function() { pasted = true; });
+  textarea.dispatchEvent(goog.events.EventType.FOCUS);
+  assertFalse(pasted);
+  // apple key is pressed, generating a keydown event
+  textarea.dispatchEvent({type: goog.events.EventType.KEYDOWN, keyCode: 17});
+  assertFalse(pasted);
+  clock.tick(
+      goog.events.PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER +
+      1);
+  // and then text is added magically without any extra keydown events.
+  textarea.dispatchEvent(newBrowserEvent('input'));
+  assertTrue(pasted);
+}
 
-  testScriptingDoesntTriggerPasteEvents() {
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const handlerUsedToListenForScriptingChanges = new PasteHandler(textarea);
-    pasted = false;
-    // user clicks on the textarea and give it focus
-    events.listen(
-        handlerUsedToListenForScriptingChanges, PasteHandler.EventType.PASTE,
-        () => {
-          pasted = true;
-        });
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    dom.getElement('foo').value = 'dear paste handler,';
-    assertFalse(pasted);
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    dom.getElement('foo').value = 'please dont misunderstand script changes';
-    assertFalse(pasted);
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    dom.getElement('foo').value = 'with user generated paste events';
-    assertFalse(pasted);
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    dom.getElement('foo').value = 'thanks!';
-    assertFalse(pasted);
-  },
+function testScriptingDoesntTriggerPasteEvents() {
+  var handlerUsedToListenForScriptingChanges =
+      new goog.events.PasteHandler(textarea);
+  pasted = false;
+  // user clicks on the textarea and give it focus
+  goog.events.listen(
+      handlerUsedToListenForScriptingChanges,
+      goog.events.PasteHandler.EventType.PASTE, function() { pasted = true; });
+  goog.dom.getElement('foo').value = 'dear paste handler,';
+  assertFalse(pasted);
+  goog.dom.getElement('foo').value = 'please dont misunderstand script changes';
+  assertFalse(pasted);
+  goog.dom.getElement('foo').value = 'with user generated paste events';
+  assertFalse(pasted);
+  goog.dom.getElement('foo').value = 'thanks!';
+  assertFalse(pasted);
+}
 
-  /** @suppress {visibility} suppression added to enable type checking */
-  testAfterPaste() {
-    if (!PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const handlerThatSupportsPasteEvents = new PasteHandler(textarea);
-    pasted = false;
-    events.listen(
-        handlerThatSupportsPasteEvents, PasteHandler.EventType.PASTE, () => {
-          pasted = true;
-        });
-    let afterPasteFired = false;
-    events.listen(
-        handlerThatSupportsPasteEvents, PasteHandler.EventType.AFTER_PASTE,
-        () => {
-          afterPasteFired = true;
-        });
+function testAfterPaste() {
+  if (!goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  var handlerThatSupportsPasteEvents = new goog.events.PasteHandler(textarea);
+  pasted = false;
+  goog.events.listen(
+      handlerThatSupportsPasteEvents, goog.events.PasteHandler.EventType.PASTE,
+      function() { pasted = true; });
+  var afterPasteFired = false;
+  goog.events.listen(
+      handlerThatSupportsPasteEvents,
+      goog.events.PasteHandler.EventType.AFTER_PASTE,
+      function() { afterPasteFired = true; });
 
-    // Initial paste event comes before AFTER_PASTE has fired.
-    textarea.dispatchEvent(newBrowserEvent('paste'));
-    assertTrue(pasted);
-    assertFalse(afterPasteFired);
+  // Initial paste event comes before AFTER_PASTE has fired.
+  textarea.dispatchEvent(newBrowserEvent('paste'));
+  assertTrue(pasted);
+  assertFalse(afterPasteFired);
 
-    // Once text is pasted, it takes a bit to detect it, at which point
-    // AFTER_PASTE is fired.
-    clock.tick(PasteHandler.PASTE_POLLING_PERIOD_MS_);
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'text';
-    clock.tick(PasteHandler.PASTE_POLLING_PERIOD_MS_);
-    assertTrue(afterPasteFired);
-  },
+  // Once text is pasted, it takes a bit to detect it, at which point
+  // AFTER_PASTE is fired.
+  clock.tick(goog.events.PasteHandler.PASTE_POLLING_PERIOD_MS_);
+  textarea.value = 'text';
+  clock.tick(goog.events.PasteHandler.PASTE_POLLING_PERIOD_MS_);
+  assertTrue(afterPasteFired);
+}
 
-  /** @suppress {visibility} suppression added to enable type checking */
-  testAfterPasteNotFiredIfDelayTooLong() {
-    if (!PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
-      return;
-    }
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const handlerThatSupportsPasteEvents = new PasteHandler(textarea);
-    pasted = false;
-    events.listen(
-        handlerThatSupportsPasteEvents, PasteHandler.EventType.PASTE, () => {
-          pasted = true;
-        });
-    let afterPasteFired = false;
-    events.listen(
-        handlerThatSupportsPasteEvents, PasteHandler.EventType.AFTER_PASTE,
-        () => {
-          afterPasteFired = true;
-        });
 
-    // Initial paste event comes before AFTER_PASTE has fired.
-    textarea.dispatchEvent(newBrowserEvent('paste'));
-    assertTrue(pasted);
-    assertFalse(afterPasteFired);
+function testAfterPasteNotFiredIfDelayTooLong() {
+  if (!goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
+    return;
+  }
+  var handlerThatSupportsPasteEvents = new goog.events.PasteHandler(textarea);
+  pasted = false;
+  goog.events.listen(
+      handlerThatSupportsPasteEvents, goog.events.PasteHandler.EventType.PASTE,
+      function() { pasted = true; });
+  var afterPasteFired = false;
+  goog.events.listen(
+      handlerThatSupportsPasteEvents,
+      goog.events.PasteHandler.EventType.AFTER_PASTE,
+      function() { afterPasteFired = true; });
 
-    // If the new text doesn't show up in time, we never fire AFTER_PASTE.
-    clock.tick(PasteHandler.PASTE_POLLING_TIMEOUT_MS_);
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    textarea.value = 'text';
-    clock.tick(PasteHandler.PASTE_POLLING_PERIOD_MS_);
-    assertFalse(afterPasteFired);
-  },
-});
+  // Initial paste event comes before AFTER_PASTE has fired.
+  textarea.dispatchEvent(newBrowserEvent('paste'));
+  assertTrue(pasted);
+  assertFalse(afterPasteFired);
+
+  // If the new text doesn't show up in time, we never fire AFTER_PASTE.
+  clock.tick(goog.events.PasteHandler.PASTE_POLLING_TIMEOUT_MS_);
+  textarea.value = 'text';
+  clock.tick(goog.events.PasteHandler.PASTE_POLLING_PERIOD_MS_);
+  assertFalse(afterPasteFired);
+}

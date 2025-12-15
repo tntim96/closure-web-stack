@@ -1,213 +1,224 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2014 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.ui.CharCounterTest');
-goog.setTestOnly();
+goog.provide('goog.ui.CharCounterTest');
+goog.setTestOnly('goog.ui.CharCounterTest');
 
-const CharCounter = goog.require('goog.ui.CharCounter');
-const dom = goog.require('goog.dom');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.dom');
+goog.require('goog.testing.asserts');
+goog.require('goog.testing.jsunit');
+goog.require('goog.ui.CharCounter');
+goog.require('goog.userAgent');
 
-let charCounter;
-let countElement;
-let inputElement;
+var countElement, charCounter, inputElement;
+var incremental = goog.ui.CharCounter.Display.INCREMENTAL;
+var remaining = goog.ui.CharCounter.Display.REMAINING;
+var maxLength = 25;
 
-const incremental = CharCounter.Display.INCREMENTAL;
-const remaining = CharCounter.Display.REMAINING;
-const maxLength = 25;
+function setUp() {
+  inputElement = goog.dom.getElement('test-textarea-id');
+  inputElement.value = '';
+  countElement = goog.dom.getElementByClass('char-count');
+  goog.dom.setTextContent(countElement, '');
+  charCounter = new goog.ui.CharCounter(inputElement, countElement, maxLength);
+}
+
+function tearDown() {
+  charCounter.dispose();
+}
 
 function setupCheckLength(content, mode) {
-  /**
-   * @suppress {strictMissingProperties} suppression added to enable type
-   * checking
-   */
   inputElement.value = content;
   charCounter.setDisplayMode(mode);
   charCounter.checkLength();
 }
 
-testSuite({
-  setUp() {
-    inputElement = dom.getElement('test-textarea-id');
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    inputElement.value = '';
-    countElement = dom.getElementByClass('char-count');
-    dom.setTextContent(countElement, '');
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    charCounter = new CharCounter(inputElement, countElement, maxLength);
-  },
+function testConstructor() {
+  assertNotNull('Character counter can not be null', charCounter);
+  assertEquals(maxLength.toString(), goog.dom.getTextContent(countElement));
+}
 
-  tearDown() {
-    charCounter.dispose();
-  },
+function testSetMaxLength() {
+  charCounter.setMaxLength(10);
+  assertEquals('10', goog.dom.getTextContent(countElement));
 
-  testConstructor() {
-    assertNotNull('Character counter can not be null', charCounter);
-    assertEquals(maxLength.toString(), dom.getTextContent(countElement));
-  },
+  var tooLongContent = 'This is too long text content';
+  inputElement.value = tooLongContent;
+  charCounter.setMaxLength(10);
+  assertEquals('0', goog.dom.getTextContent(countElement));
+  assertEquals('This is to', inputElement.value);
+}
 
-  /**
-     @suppress {strictMissingProperties} suppression added to enable type
-     checking
-   */
-  testSetMaxLength() {
-    charCounter.setMaxLength(10);
-    assertEquals('10', dom.getTextContent(countElement));
+function testGetMaxLength() {
+  assertEquals(maxLength, charCounter.getMaxLength());
+}
 
-    const tooLongContent = 'This is too long text content';
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    inputElement.value = tooLongContent;
-    charCounter.setMaxLength(10);
-    assertEquals('0', dom.getTextContent(countElement));
-    assertEquals('This is to', inputElement.value);
-  },
+function testSetDisplayMode() {
+  // Test counter to be in incremental mode
+  charCounter.setDisplayMode(incremental);
+  assertEquals('0', goog.dom.getTextContent(countElement));
 
-  testGetMaxLength() {
-    assertEquals(maxLength, charCounter.getMaxLength());
-  },
+  // Test counter to be in remaining mode
+  charCounter.setDisplayMode(remaining);
+  assertEquals(maxLength.toString(), goog.dom.getTextContent(countElement));
+}
 
-  testSetDisplayMode() {
-    // Test counter to be in incremental mode
-    charCounter.setDisplayMode(incremental);
-    assertEquals('0', dom.getTextContent(countElement));
+function testGetDisplayMode() {
+  assertEquals(remaining, charCounter.getDisplayMode());
 
-    // Test counter to be in remaining mode
-    charCounter.setDisplayMode(remaining);
-    assertEquals(maxLength.toString(), dom.getTextContent(countElement));
-  },
+  var incrementalCharCounter = new goog.ui.CharCounter(
+      inputElement, countElement, maxLength, incremental);
+  assertEquals(incremental, incrementalCharCounter.getDisplayMode());
+}
 
-  testGetDisplayMode() {
-    assertEquals(remaining, charCounter.getDisplayMode());
+function testCheckLength() {
+  // Test the characters remaining in DOM
+  setupCheckLength('', remaining);
+  assertEquals(maxLength.toString(), goog.dom.getTextContent(countElement));
 
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const incrementalCharCounter =
-        new CharCounter(inputElement, countElement, maxLength, incremental);
-    assertEquals(incremental, incrementalCharCounter.getDisplayMode());
-  },
+  // Test the characters incremental in DOM
+  setupCheckLength('', incremental);
+  assertEquals('0', goog.dom.getTextContent(countElement));
+}
 
-  testCheckLength() {
-    // Test the characters remaining in DOM
-    setupCheckLength('', remaining);
-    assertEquals(maxLength.toString(), dom.getTextContent(countElement));
+function testCheckLength_limitedContent() {
+  var limitedContent = 'Limited text content';
+  var limitedContentLength = limitedContent.length;
+  var remainingLimitedContentLength = maxLength - limitedContentLength;
 
-    // Test the characters incremental in DOM
-    setupCheckLength('', incremental);
-    assertEquals('0', dom.getTextContent(countElement));
-  },
+  // Set some content and test the characters remaining in DOM
+  setupCheckLength(limitedContent, remaining);
 
-  /**
-     @suppress {strictMissingProperties} suppression added to enable type
-     checking
-   */
-  testCheckLength_limitedContent() {
-    const limitedContent = 'Limited text content';
-    const limitedContentLength = limitedContent.length;
-    const remainingLimitedContentLength = maxLength - limitedContentLength;
+  assertEquals(limitedContent, inputElement.value);
+  assertEquals(
+      remainingLimitedContentLength.toString(),
+      goog.dom.getTextContent(countElement));
 
-    // Set some content and test the characters remaining in DOM
-    setupCheckLength(limitedContent, remaining);
+  // Test the characters incremented in DOM with limited content
+  charCounter.setDisplayMode(incremental);
+  charCounter.checkLength();
 
-    assertEquals(limitedContent, inputElement.value);
+  assertEquals(limitedContent, inputElement.value);
+  assertEquals(
+      limitedContentLength.toString(), goog.dom.getTextContent(countElement));
+}
+
+function testCheckLength_overflowContent() {
+  var tooLongContent = 'This is too long text content';
+  var truncatedContent = 'This is too long text con';
+
+  // Set content longer than the maxLength and test the characters remaining
+  // in DOM with overflowing content
+  setupCheckLength(tooLongContent, remaining);
+
+  assertEquals(truncatedContent, inputElement.value);
+  assertEquals('0', goog.dom.getTextContent(countElement));
+
+  // Set content longer than the maxLength and test the characters
+  // incremented in DOM with overflowing content
+  setupCheckLength(tooLongContent, incremental);
+
+  assertEquals(truncatedContent, inputElement.value);
+  assertEquals(maxLength.toString(), goog.dom.getTextContent(countElement));
+}
+
+function testCheckLength_newLineContent() {
+  var newLineContent = 'New\nline';
+  var newLineContentLength = newLineContent.length;
+  var remainingNewLineContentLength = maxLength - newLineContentLength;
+
+  var carriageReturnContent = 'New\r\nline';
+  var carriageReturnContentLength = carriageReturnContent.length;
+  var remainingCarriageReturnContentLength =
+      maxLength - carriageReturnContentLength;
+
+  // Set some content with new line characters and test the characters
+  // remaining in DOM
+  setupCheckLength(newLineContent, remaining);
+
+  // Test for IE 7,8 which appends \r to \n
+  if (goog.userAgent.IE && !goog.userAgent.isVersionOrHigher('9.0')) {
+    assertEquals(carriageReturnContent, inputElement.value);
     assertEquals(
-        remainingLimitedContentLength.toString(),
-        dom.getTextContent(countElement));
-
-    // Test the characters incremented in DOM with limited content
-    charCounter.setDisplayMode(incremental);
-    charCounter.checkLength();
-
-    assertEquals(limitedContent, inputElement.value);
-    assertEquals(
-        limitedContentLength.toString(), dom.getTextContent(countElement));
-  },
-
-  /**
-     @suppress {strictMissingProperties} suppression added to enable type
-     checking
-   */
-  testCheckLength_overflowContent() {
-    const tooLongContent = 'This is too long text content';
-    const truncatedContent = 'This is too long text con';
-
-    // Set content longer than the maxLength and test the characters remaining
-    // in DOM with overflowing content
-    setupCheckLength(tooLongContent, remaining);
-
-    assertEquals(truncatedContent, inputElement.value);
-    assertEquals('0', dom.getTextContent(countElement));
-
-    // Set content longer than the maxLength and test the characters
-    // incremented in DOM with overflowing content
-    setupCheckLength(tooLongContent, incremental);
-
-    assertEquals(truncatedContent, inputElement.value);
-    assertEquals(maxLength.toString(), dom.getTextContent(countElement));
-  },
-
-  /**
-     @suppress {strictMissingProperties} suppression added to enable type
-     checking
-   */
-  testCheckLength_newLineContent() {
-    const newLineContent = 'New\nline';
-    const newLineContentLength = newLineContent.length;
-    const remainingNewLineContentLength = maxLength - newLineContentLength;
-
-    // Set some content with new line characters and test the characters
-    // remaining in DOM
-    setupCheckLength(newLineContent, remaining);
-
+        remainingCarriageReturnContentLength.toString(),
+        goog.dom.getTextContent(countElement));
+  } else {
     assertEquals(newLineContent, inputElement.value);
     assertEquals(
         remainingNewLineContentLength.toString(),
-        dom.getTextContent(countElement));
+        goog.dom.getTextContent(countElement));
+  }
 
-    // Set some content with new line characters and test the characters
-    // incremental in DOM
-    setupCheckLength(newLineContent, incremental);
+  // Set some content with new line characters and test the characters
+  // incremental in DOM
+  setupCheckLength(newLineContent, incremental);
 
+  // Test for IE 7,8 which appends \r to \n
+  if (goog.userAgent.IE && !goog.userAgent.isVersionOrHigher('9.0')) {
+    assertEquals(carriageReturnContent, inputElement.value);
+    assertEquals(
+        carriageReturnContentLength.toString(),
+        goog.dom.getTextContent(countElement));
+  } else {
     assertEquals(newLineContent, inputElement.value);
     assertEquals(
-        newLineContentLength.toString(), dom.getTextContent(countElement));
-  },
+        newLineContentLength.toString(), goog.dom.getTextContent(countElement));
+  }
+}
 
-  /**
-     @suppress {strictMissingProperties} suppression added to enable type
-     checking
-   */
-  testCheckLength_carriageReturnContent() {
-    const newLineContent = 'New\nline';
-    const newLineContentLength = newLineContent.length;
-    const remainingNewLineContentLength = maxLength - newLineContentLength;
+function testCheckLength_carriageReturnContent() {
+  var newLineContent = 'New\nline';
+  var newLineContentLength = newLineContent.length;
+  var remainingNewLineContentLength = maxLength - newLineContentLength;
 
-    const carriageReturnContent = 'New\r\nline';
+  var carriageReturnContent = 'New\r\nline';
+  var carriageReturnContentLength = carriageReturnContent.length;
+  var remainingCarriageReturnContentLength =
+      maxLength - carriageReturnContentLength;
 
-    // Set some content with carriage return characters and test the
-    // characters remaining in DOM
-    setupCheckLength(carriageReturnContent, remaining);
+  // Set some content with carriage return characters and test the
+  // characters remaining in DOM
+  setupCheckLength(carriageReturnContent, remaining);
 
+  // Test for IE 7,8
+  if (goog.userAgent.IE && !goog.userAgent.isVersionOrHigher('9.0')) {
+    assertEquals(carriageReturnContent, inputElement.value);
+    assertEquals(
+        remainingCarriageReturnContentLength.toString(),
+        goog.dom.getTextContent(countElement));
+  } else {
     // Others replace \r\n with \n
     assertEquals(newLineContent, inputElement.value);
     assertEquals(
         remainingNewLineContentLength.toString(),
-        dom.getTextContent(countElement));
+        goog.dom.getTextContent(countElement));
+  }
 
-    // Set some content with carriage return characters and test the
-    // characters incremental in DOM
-    setupCheckLength(carriageReturnContent, incremental);
+  // Set some content with carriage return characters and test the
+  // characters incremental in DOM
+  setupCheckLength(carriageReturnContent, incremental);
 
+  // Test for IE 7,8
+  if (goog.userAgent.IE && !goog.userAgent.isVersionOrHigher('9.0')) {
+    assertEquals(carriageReturnContent, inputElement.value);
+    assertEquals(
+        carriageReturnContentLength.toString(),
+        goog.dom.getTextContent(countElement));
+  } else {
     // Others replace \r\n with \n
     assertEquals(newLineContent, inputElement.value);
     assertEquals(
-        newLineContentLength.toString(), dom.getTextContent(countElement));
-  },
-});
+        newLineContentLength.toString(), goog.dom.getTextContent(countElement));
+  }
+}

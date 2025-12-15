@@ -8,12 +8,8 @@
 /**
  * Styles for the Editor's Edit Link dialog.
  *
+ * @author marcosalmeida@google.com (Marcos Almeida)
  */
-
-@provide 'goog.css.editor.linkdialog';
-
-@require './dialog';
-@require '../linkbutton';
 
 
 .tr-link-dialog-explanation-text {
@@ -22,10 +18,9 @@
 }
 
 .tr-link-dialog-target-input {
-  width: 100%;
+  width: 98%; /* 98% prevents scroll bars in standards mode. */
   /* Input boxes for URLs and email address should always be LTR. */
   direction: ltr;
-  box-sizing: border-box;
 }
 
 .tr-link-dialog-email-warning {

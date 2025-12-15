@@ -1,24 +1,33 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2009 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.testing.AsyncTestCaseSyncTest');
-goog.setTestOnly();
+goog.provide('goog.testing.AsyncTestCaseSyncTest');
+goog.setTestOnly('goog.testing.AsyncTestCaseSyncTest');
 
-const AsyncTestCase = goog.require('goog.testing.AsyncTestCase');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.testing.AsyncTestCase');
+goog.require('goog.testing.jsunit');
 
 // Has the setUp() function been called.
-const setUpCalled = false;
+var setUpCalled = false;
 // Has the current test function completed. This helps us to ensure that the
 // next test is not started before the previous completed.
-let curTestIsDone = true;
+var curTestIsDone = true;
 // For restoring it later.
-const oldTimeout = window.setTimeout;
+var oldTimeout = window.setTimeout;
 // Use an asynchronous test runner for our tests.
-const asyncTestCase = AsyncTestCase.createAndInstall(document.title);
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+
 
 /**
  * Uses window.setTimeout() to perform asynchronous behaviour and uses
@@ -31,89 +40,65 @@ function doAsyncStuff(numAsyncCalls, name) {
   if (numAsyncCalls > 0) {
     curTestIsDone = false;
     asyncTestCase.waitForAsync(
-        `doAsyncStuff-${name}` +
-        '(' + numAsyncCalls + ')');
-    window.setTimeout(() => {
-      doAsyncStuff(numAsyncCalls - 1, name);
-    }, 0);
+        'doAsyncStuff-' + name + '(' + numAsyncCalls + ')');
+    window.setTimeout(function() { doAsyncStuff(numAsyncCalls - 1, name); }, 0);
   } else {
     curTestIsDone = true;
     asyncTestCase.continueTesting();
   }
 }
 
-const callback = () => {
+function setUpPage() {
+  debug('setUpPage was called.');
+  // Don't do anything asynchronously.
+  window.setTimeout = function(callback, time) { callback(); };
+  doAsyncStuff(3, 'setUpPage');
+}
+function setUp() {
+  assertTrue(curTestIsDone);
+  doAsyncStuff(3, 'setUp');
+}
+function tearDown() {
+  assertTrue(curTestIsDone);
+}
+function test1() {
+  assertTrue(curTestIsDone);
+  doAsyncStuff(1, 'test1');
+}
+function test2() {
+  assertTrue(curTestIsDone);
+  doAsyncStuff(2, 'test2');
+}
+function test3() {
+  assertTrue(curTestIsDone);
+  doAsyncStuff(5, 'test3');
+}
+var callback = function() {
   curTestIsDone = true;
   asyncTestCase.signal();
 };
-const doAsyncSignals = () => {
+var doAsyncSignals = function() {
   curTestIsDone = false;
   window.setTimeout(callback, 0);
 };
+function testSignalsReturn() {
+  doAsyncSignals();
+  doAsyncSignals();
+  doAsyncSignals();
+  asyncTestCase.waitForSignals(3);
+}
+function testSignalsCallContinueTestingBeforeFinishing() {
+  doAsyncSignals();
+  asyncTestCase.waitForSignals(2);
 
-testSuite({
-  /** @suppress {missingProperties} suppression added to enable type checking */
-  setUpPage() {
-    globalThis.debug('setUpPage was called.');
-    // Don't do anything asynchronously.
-    /**
-     * @suppress {missingReturn,checkTypes} suppression added to enable type
-     * checking
-     */
-    window.setTimeout = (callback, time) => {
-      callback();
-    };
-    doAsyncStuff(3, 'setUpPage');
-  },
-
-  setUp() {
-    assertTrue(curTestIsDone);
-    doAsyncStuff(3, 'setUp');
-  },
-
-  tearDown() {
-    assertTrue(curTestIsDone);
-  },
-
-  test1() {
-    assertTrue(curTestIsDone);
-    doAsyncStuff(1, 'test1');
-  },
-
-  test2() {
-    assertTrue(curTestIsDone);
-    doAsyncStuff(2, 'test2');
-  },
-
-  test3() {
-    assertTrue(curTestIsDone);
-    doAsyncStuff(5, 'test3');
-  },
-
-  testSignalsReturn() {
-    doAsyncSignals();
-    doAsyncSignals();
-    doAsyncSignals();
-    asyncTestCase.waitForSignals(3);
-  },
-
-  testSignalsCallContinueTestingBeforeFinishing() {
-    doAsyncSignals();
-    asyncTestCase.waitForSignals(2);
-
-    window.setTimeout(() => {
-      const thrown = assertThrows(() => {
-        asyncTestCase.continueTesting();
-      });
-      assertEquals('Still waiting for 1 signals.', thrown.message);
-    }, 0);
-    doAsyncSignals();  // To not timeout.
-  },
-
-  /** @suppress {missingProperties} suppression added to enable type checking */
-  tearDownPage() {
-    globalThis.debug('tearDownPage was called.');
-    assertTrue(curTestIsDone);
-    window.setTimeout = oldTimeout;
-  },
-});
+  window.setTimeout(function() {
+    var thrown = assertThrows(function() { asyncTestCase.continueTesting(); });
+    assertEquals('Still waiting for 1 signals.', thrown.message);
+  }, 0);
+  doAsyncSignals();  // To not timeout.
+}
+function tearDownPage() {
+  debug('tearDownPage was called.');
+  assertTrue(curTestIsDone);
+  window.setTimeout = oldTimeout;
+}

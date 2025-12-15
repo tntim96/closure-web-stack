@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Datastructure: Priority Queue.
@@ -17,37 +25,42 @@
 //     interface?
 
 
-goog.module('goog.structs.PriorityQueue');
-goog.module.declareLegacyNamespace();
+goog.provide('goog.structs.PriorityQueue');
 
-const Heap = goog.require('goog.structs.Heap');
+goog.require('goog.structs.Heap');
+
 
 
 /**
  * Class for Priority Queue datastructure.
  *
- * @extends {Heap<number, VALUE>}
+ * @constructor
+ * @extends {goog.structs.Heap<number, VALUE>}
  * @template VALUE
  * @final
  */
-class PriorityQueue extends Heap {
-  /**
-   * Puts the specified value in the queue.
-   * @param {number} priority The priority of the value. A smaller value here
-   *     means a higher priority.
-   * @param {VALUE} value The value.
-   */
-  enqueue(priority, value) {
-    this.insert(priority, value);
-  }
+goog.structs.PriorityQueue = function() {
+  goog.structs.Heap.call(this);
+};
+goog.inherits(goog.structs.PriorityQueue, goog.structs.Heap);
 
-  /**
-   * Retrieves and removes the head of this queue.
-   * @return {VALUE} The element at the head of this queue. Returns undefined if
-   *     the queue is empty.
-   */
-  dequeue() {
-    return this.remove();
-  }
-}
-exports = PriorityQueue;
+
+/**
+ * Puts the specified value in the queue.
+ * @param {number} priority The priority of the value. A smaller value here
+ *     means a higher priority.
+ * @param {VALUE} value The value.
+ */
+goog.structs.PriorityQueue.prototype.enqueue = function(priority, value) {
+  this.insert(priority, value);
+};
+
+
+/**
+ * Retrieves and removes the head of this queue.
+ * @return {VALUE} The element at the head of this queue. Returns undefined if
+ *     the queue is empty.
+ */
+goog.structs.PriorityQueue.prototype.dequeue = function() {
+  return this.remove();
+};

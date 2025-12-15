@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2009 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Definitions for all tweak entries.
@@ -19,6 +27,8 @@
  * Most clients should not use these classes directly, but instead use the API
  * defined in tweak.js. One possible use case for directly using them is to
  * register tweaks that are not known at compile time.
+ *
+ * @author agrieve@google.com (Andrew Grieve)
  */
 
 goog.provide('goog.tweak.BaseEntry');
@@ -46,7 +56,6 @@ goog.require('goog.object');
  * @constructor
  */
 goog.tweak.BaseEntry = function(id, description) {
-  'use strict';
   /**
    * An ID to uniquely identify the entry.
    * @type {string}
@@ -97,7 +106,6 @@ goog.tweak.BaseEntry.prototype.restartRequired_ = true;
  * @return {string} Returns the entry's ID.
  */
 goog.tweak.BaseEntry.prototype.getId = function() {
-  'use strict';
   return this.id_;
 };
 
@@ -108,7 +116,6 @@ goog.tweak.BaseEntry.prototype.getId = function() {
  * @return {boolean} The value.
  */
 goog.tweak.BaseEntry.prototype.isRestartRequired = function() {
-  'use strict';
   return this.restartRequired_;
 };
 
@@ -119,7 +126,6 @@ goog.tweak.BaseEntry.prototype.isRestartRequired = function() {
  * @param {boolean} value The new value.
  */
 goog.tweak.BaseEntry.prototype.setRestartRequired = function(value) {
-  'use strict';
   this.restartRequired_ = value;
 };
 
@@ -130,7 +136,6 @@ goog.tweak.BaseEntry.prototype.setRestartRequired = function(value) {
  * @param {!Function} callback The callback to add.
  */
 goog.tweak.BaseEntry.prototype.addCallback = function(callback) {
-  'use strict';
   this.callbacks_.push(callback);
 };
 
@@ -140,7 +145,6 @@ goog.tweak.BaseEntry.prototype.addCallback = function(callback) {
  * @param {!Function} callback The callback to add.
  */
 goog.tweak.BaseEntry.prototype.removeCallback = function(callback) {
-  'use strict';
   goog.array.remove(this.callbacks_, callback);
 };
 
@@ -149,7 +153,6 @@ goog.tweak.BaseEntry.prototype.removeCallback = function(callback) {
  * Calls all registered callbacks.
  */
 goog.tweak.BaseEntry.prototype.fireCallbacks = function() {
-  'use strict';
   for (var i = 0, callback; callback = this.callbacks_[i]; ++i) {
     callback(this);
   }
@@ -166,7 +169,6 @@ goog.tweak.BaseEntry.prototype.fireCallbacks = function() {
  * @extends {goog.tweak.BaseEntry}
  */
 goog.tweak.BaseSetting = function(id, description) {
-  'use strict';
   goog.tweak.BaseEntry.call(this, id, description);
   // Apply this restriction for settings since they turn in to query
   // parameters. For buttons, it's not really important.
@@ -252,7 +254,6 @@ goog.tweak.BaseSetting.prototype.getNewValueEncoded = goog.abstractMethod;
  * @protected
  */
 goog.tweak.BaseSetting.prototype.assertNotInitialized = function(funcName) {
-  'use strict';
   goog.asserts.assert(
       this.initializeState_ !=
           goog.tweak.BaseSetting.InitializeState_.INITIALIZED,
@@ -266,7 +267,6 @@ goog.tweak.BaseSetting.prototype.assertNotInitialized = function(funcName) {
  * @protected
  */
 goog.tweak.BaseSetting.prototype.isInitializing = function() {
-  'use strict';
   return this.initializeState_ ==
       goog.tweak.BaseSetting.InitializeState_.INITIALIZING;
 };
@@ -278,7 +278,6 @@ goog.tweak.BaseSetting.prototype.isInitializing = function() {
  * @param {string} value The initial query parameter value for this setting.
  */
 goog.tweak.BaseSetting.prototype.setInitialQueryParamValue = function(value) {
-  'use strict';
   this.assertNotInitialized('setInitialQueryParamValue');
   this.initialQueryParamValue = value;
 };
@@ -290,18 +289,16 @@ goog.tweak.BaseSetting.prototype.setInitialQueryParamValue = function(value) {
  *     associated with the setting.
  */
 goog.tweak.BaseSetting.prototype.getParamName = function() {
-  'use strict';
   return this.paramName_;
 };
 
 
 /**
  * Sets the name of the query parameter used for this setting. If null is
- * passed the setting will not appear in the top-level query string.
+ * passed the the setting will not appear in the top-level query string.
  * @param {?string} value The new value.
  */
 goog.tweak.BaseSetting.prototype.setParamName = function(value) {
-  'use strict';
   this.assertNotInitialized('setParamName');
   this.paramName_ = value;
 };
@@ -313,7 +310,6 @@ goog.tweak.BaseSetting.prototype.setParamName = function(value) {
  * @protected
  */
 goog.tweak.BaseSetting.prototype.ensureInitialized = function() {
-  'use strict';
   if (this.initializeState_ ==
       goog.tweak.BaseSetting.InitializeState_.NOT_INITIALIZED) {
     // Instead of having only initialized / not initialized, there is a
@@ -341,7 +337,6 @@ goog.tweak.BaseSetting.prototype.ensureInitialized = function() {
  * @extends {goog.tweak.BaseSetting}
  */
 goog.tweak.BasePrimitiveSetting = function(id, description, defaultValue) {
-  'use strict';
   goog.tweak.BaseSetting.call(this, id, description);
   /**
    * The default value of the setting.
@@ -391,7 +386,6 @@ goog.tweak.BasePrimitiveSetting.prototype.encodeNewValue = goog.abstractMethod;
  * @return {?} The value.
  */
 goog.tweak.BasePrimitiveSetting.prototype.getValue = function() {
-  'use strict';
   this.ensureInitialized();
   return this.value_;
 };
@@ -402,7 +396,6 @@ goog.tweak.BasePrimitiveSetting.prototype.getValue = function() {
  * @return {?} The value.
  */
 goog.tweak.BasePrimitiveSetting.prototype.getNewValue = function() {
-  'use strict';
   this.ensureInitialized();
   return this.newValue_;
 };
@@ -416,7 +409,6 @@ goog.tweak.BasePrimitiveSetting.prototype.getNewValue = function() {
  * @param {?} value The value.
  */
 goog.tweak.BasePrimitiveSetting.prototype.setValue = function(value) {
-  'use strict';
   this.ensureInitialized();
   var changed = this.newValue_ != value;
   this.newValue_ = value;
@@ -441,7 +433,6 @@ goog.tweak.BasePrimitiveSetting.prototype.setValue = function(value) {
  * @return {?} The default value.
  */
 goog.tweak.BasePrimitiveSetting.prototype.getDefaultValue = function() {
-  'use strict';
   return this.defaultValue_;
 };
 
@@ -451,7 +442,6 @@ goog.tweak.BasePrimitiveSetting.prototype.getDefaultValue = function() {
  * @param {?} value The new value.
  */
 goog.tweak.BasePrimitiveSetting.prototype.setDefaultValue = function(value) {
-  'use strict';
   this.assertNotInitialized('setDefaultValue');
   this.defaultValue_ = value;
 };
@@ -461,7 +451,6 @@ goog.tweak.BasePrimitiveSetting.prototype.setDefaultValue = function(value) {
  * @override
  */
 goog.tweak.BasePrimitiveSetting.prototype.getNewValueEncoded = function() {
-  'use strict';
   this.ensureInitialized();
   return this.newValue_ == this.defaultValue_ ? null : this.encodeNewValue();
 };
@@ -477,7 +466,6 @@ goog.tweak.BasePrimitiveSetting.prototype.getNewValueEncoded = function() {
  * @final
  */
 goog.tweak.StringSetting = function(id, description) {
-  'use strict';
   goog.tweak.BasePrimitiveSetting.call(this, id, description, '');
   /**
    * Valid values for the setting.
@@ -537,7 +525,6 @@ goog.tweak.StringSetting.prototype.getDefaultValue;
  * @override
  */
 goog.tweak.StringSetting.prototype.encodeNewValue = function() {
-  'use strict';
   return this.getNewValue();
 };
 
@@ -547,7 +534,6 @@ goog.tweak.StringSetting.prototype.encodeNewValue = function() {
  * @param {Array<string>|undefined} values Valid values.
  */
 goog.tweak.StringSetting.prototype.setValidValues = function(values) {
-  'use strict';
   this.assertNotInitialized('setValidValues');
   this.validValues_ = values;
   // Set the default value to the first value in the list if the current
@@ -563,7 +549,6 @@ goog.tweak.StringSetting.prototype.setValidValues = function(values) {
  * @return {Array<string>|undefined} Valid values.
  */
 goog.tweak.StringSetting.prototype.getValidValues = function() {
-  'use strict';
   return this.validValues_;
 };
 
@@ -572,7 +557,6 @@ goog.tweak.StringSetting.prototype.getValidValues = function() {
  * @override
  */
 goog.tweak.StringSetting.prototype.initialize = function(value) {
-  'use strict';
   if (value == null) {
     this.setValue(this.getDefaultValue());
   } else {
@@ -608,7 +592,6 @@ goog.tweak.StringSetting.prototype.initialize = function(value) {
  * @final
  */
 goog.tweak.NumericSetting = function(id, description) {
-  'use strict';
   goog.tweak.BasePrimitiveSetting.call(this, id, description, 0);
   /**
    * Valid values for the setting.
@@ -668,7 +651,6 @@ goog.tweak.NumericSetting.prototype.getDefaultValue;
  * @override
  */
 goog.tweak.NumericSetting.prototype.encodeNewValue = function() {
-  'use strict';
   return '' + this.getNewValue();
 };
 
@@ -678,7 +660,6 @@ goog.tweak.NumericSetting.prototype.encodeNewValue = function() {
  * @param {Array<number>|undefined} values Valid values.
  */
 goog.tweak.NumericSetting.prototype.setValidValues = function(values) {
-  'use strict';
   this.assertNotInitialized('setValidValues');
   this.validValues_ = values;
   // Set the default value to the first value in the list if the current
@@ -694,7 +675,6 @@ goog.tweak.NumericSetting.prototype.setValidValues = function(values) {
  * @return {Array<number>|undefined} Valid values.
  */
 goog.tweak.NumericSetting.prototype.getValidValues = function() {
-  'use strict';
   return this.validValues_;
 };
 
@@ -703,7 +683,6 @@ goog.tweak.NumericSetting.prototype.getValidValues = function() {
  * @override
  */
 goog.tweak.NumericSetting.prototype.initialize = function(value) {
-  'use strict';
   if (value == null) {
     this.setValue(this.getDefaultValue());
   } else {
@@ -737,7 +716,6 @@ goog.tweak.NumericSetting.prototype.initialize = function(value) {
  * @extends {goog.tweak.BasePrimitiveSetting}
  */
 goog.tweak.BooleanSetting = function(id, description) {
-  'use strict';
   goog.tweak.BasePrimitiveSetting.call(this, id, description, false);
 };
 goog.inherits(goog.tweak.BooleanSetting, goog.tweak.BasePrimitiveSetting);
@@ -792,7 +770,6 @@ goog.tweak.BooleanSetting.prototype.getDefaultValue;
  * @override
  */
 goog.tweak.BooleanSetting.prototype.encodeNewValue = function() {
-  'use strict';
   return this.getNewValue() ? '1' : '0';
 };
 
@@ -801,7 +778,6 @@ goog.tweak.BooleanSetting.prototype.encodeNewValue = function() {
  * @override
  */
 goog.tweak.BooleanSetting.prototype.initialize = function(value) {
-  'use strict';
   if (value == null) {
     this.setValue(this.getDefaultValue());
   } else {
@@ -823,7 +799,6 @@ goog.tweak.BooleanSetting.prototype.initialize = function(value) {
  * @final
  */
 goog.tweak.BooleanInGroupSetting = function(id, description, group) {
-  'use strict';
   goog.tweak.BooleanSetting.call(this, id, description);
 
   /**
@@ -860,7 +835,6 @@ goog.tweak.BooleanInGroupSetting.prototype.logger =
  * @override
  */
 goog.tweak.BooleanInGroupSetting.prototype.setParamName = function(value) {
-  'use strict';
   goog.asserts.fail('Use setToken() for BooleanInGroupSetting.');
 };
 
@@ -870,7 +844,6 @@ goog.tweak.BooleanInGroupSetting.prototype.setParamName = function(value) {
  * @param {string} value The value.
  */
 goog.tweak.BooleanInGroupSetting.prototype.setToken = function(value) {
-  'use strict';
   this.token_ = value;
 };
 
@@ -880,7 +853,6 @@ goog.tweak.BooleanInGroupSetting.prototype.setToken = function(value) {
  * @return {string} The value.
  */
 goog.tweak.BooleanInGroupSetting.prototype.getToken = function() {
-  'use strict';
   return this.token_;
 };
 
@@ -891,7 +863,6 @@ goog.tweak.BooleanInGroupSetting.prototype.getToken = function() {
  *     belongs to.
  */
 goog.tweak.BooleanInGroupSetting.prototype.getGroup = function() {
-  'use strict';
   return this.group_;
 };
 
@@ -908,7 +879,6 @@ goog.tweak.BooleanInGroupSetting.prototype.getGroup = function() {
  * @final
  */
 goog.tweak.BooleanGroup = function(id, description) {
-  'use strict';
   goog.tweak.BaseSetting.call(this, id, description);
 
   /**
@@ -926,6 +896,7 @@ goog.tweak.BooleanGroup = function(id, description) {
    * @private
    */
   this.queryParamValues_ = {};
+
 };
 goog.inherits(goog.tweak.BooleanGroup, goog.tweak.BaseSetting);
 
@@ -945,7 +916,6 @@ goog.tweak.BooleanGroup.prototype.logger =
  * @return {!Object<!goog.tweak.BooleanSetting>} The child settings.
  */
 goog.tweak.BooleanGroup.prototype.getChildEntries = function() {
-  'use strict';
   return this.entriesByToken_;
 };
 
@@ -955,7 +925,6 @@ goog.tweak.BooleanGroup.prototype.getChildEntries = function() {
  * @param {goog.tweak.BooleanInGroupSetting} boolEntry The entry.
  */
 goog.tweak.BooleanGroup.prototype.addChild = function(boolEntry) {
-  'use strict';
   this.ensureInitialized();
 
   var token = boolEntry.getToken();
@@ -978,7 +947,6 @@ goog.tweak.BooleanGroup.prototype.addChild = function(boolEntry) {
  * @override
  */
 goog.tweak.BooleanGroup.prototype.initialize = function(value) {
-  'use strict';
   var queryParamValues = {};
 
   if (value) {
@@ -987,7 +955,7 @@ goog.tweak.BooleanGroup.prototype.initialize = function(value) {
       var token = tokens[i].toLowerCase();
       var negative = token.charAt(0) == '-';
       if (negative) {
-        token = token.slice(1);
+        token = token.substr(1);
       }
       queryParamValues[token] = !negative;
     }
@@ -998,10 +966,8 @@ goog.tweak.BooleanGroup.prototype.initialize = function(value) {
 
 /**
  * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.tweak.BooleanGroup.prototype.getNewValueEncoded = function() {
-  'use strict';
   this.ensureInitialized();
   var nonDefaultValues = [];
   // Sort the keys so that the generate value is stable.
@@ -1029,7 +995,6 @@ goog.tweak.BooleanGroup.prototype.getNewValueEncoded = function() {
  * @final
  */
 goog.tweak.ButtonAction = function(id, description, callback) {
-  'use strict';
   goog.tweak.BaseEntry.call(this, id, description);
   this.addCallback(callback);
   this.setRestartRequired(false);

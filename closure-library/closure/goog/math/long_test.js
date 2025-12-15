@@ -1,26 +1,34 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2009 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.math.LongTest');
-goog.setTestOnly();
+goog.provide('goog.math.LongTest');
+goog.setTestOnly('goog.math.LongTest');
 
-const Long = goog.require('goog.math.Long');
-const asserts = goog.require('goog.asserts');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.asserts');
+goog.require('goog.math.Long');
+goog.require('goog.testing.jsunit');
 
 // Interprets the given numbers as the bits of a 32-bit int.  In particular,
 // this takes care of the 32-bit being interpretted as the sign.
 function toInt32s(arr) {
-  for (let i = 0; i < arr.length; ++i) {
+  for (var i = 0; i < arr.length; ++i) {
     arr[i] = arr[i] & 0xFFFFFFFF;
   }
 }
 
 // Note that these are in numerical order.
-const TEST_BITS = [
+var TEST_BITS = [
   0x80000000, 0x00000000, 0xb776d5f5, 0x5634e2db, 0xffefffff, 0xffffffff,
   0xfff00000, 0x00000000, 0xfffeffff, 0xffffffff, 0xffff0000, 0x00000000,
   0xfffffffe, 0xffffffff, 0xffffffff, 0x00000000, 0xffffffff, 0xfeffffff,
@@ -32,11 +40,11 @@ const TEST_BITS = [
   0x00000000, 0x01000000, 0x00000000, 0x5634e2db, 0x00000000, 0xb776d5f5,
   0x00000000, 0xffffffff, 0x00000001, 0x00000000, 0x0000ffff, 0xffffffff,
   0x00010000, 0x00000000, 0x000fffff, 0xffffffff, 0x00100000, 0x00000000,
-  0x5634e2db, 0xb776d5f5, 0x7fffffff, 0xffffffff,
+  0x5634e2db, 0xb776d5f5, 0x7fffffff, 0xffffffff
 ];
 toInt32s(TEST_BITS);
 
-const TEST_ADD_BITS = [
+var TEST_ADD_BITS = [
   0x3776d5f5, 0x5634e2db, 0x7fefffff, 0xffffffff, 0xb766d5f5, 0x5634e2da,
   0x7ff00000, 0x00000000, 0xb766d5f5, 0x5634e2db, 0xffdfffff, 0xffffffff,
   0x7ffeffff, 0xffffffff, 0xb775d5f5, 0x5634e2da, 0xffeeffff, 0xfffffffe,
@@ -235,11 +243,11 @@ const TEST_ADD_BITS = [
   0x80000000, 0x00ffffff, 0x80000000, 0x5634e2da, 0x80000000, 0xb776d5f4,
   0x80000000, 0xfffffffe, 0x80000000, 0xffffffff, 0x8000ffff, 0xfffffffe,
   0x8000ffff, 0xffffffff, 0x800fffff, 0xfffffffe, 0x800fffff, 0xffffffff,
-  0xd634e2db, 0xb776d5f4,
+  0xd634e2db, 0xb776d5f4
 ];
 toInt32s(TEST_ADD_BITS);
 
-const TEST_SUB_BITS = [
+var TEST_SUB_BITS = [
   0x00000000, 0x00000000, 0xc8892a0a, 0xa9cb1d25, 0x80100000, 0x00000001,
   0x80100000, 0x00000000, 0x80010000, 0x00000001, 0x80010000, 0x00000000,
   0x80000001, 0x00000001, 0x80000001, 0x00000000, 0x80000000, 0x01000001,
@@ -648,11 +656,11 @@ const TEST_SUB_BITS = [
   0x7fffffff, 0xa9cb1d24, 0x7fffffff, 0x48892a0a, 0x7fffffff, 0x00000000,
   0x7ffffffe, 0xffffffff, 0x7fff0000, 0x00000000, 0x7ffeffff, 0xffffffff,
   0x7ff00000, 0x00000000, 0x7fefffff, 0xffffffff, 0x29cb1d24, 0x48892a0a,
-  0x00000000, 0x00000000,
+  0x00000000, 0x00000000
 ];
 toInt32s(TEST_SUB_BITS);
 
-const TEST_MUL_BITS = [
+var TEST_MUL_BITS = [
   0x80000000, 0x00000000, 0x80000000, 0x00000000, 0x1ad92a0a, 0xa9cb1d25,
   0x00000000, 0x00000000, 0xd2500000, 0x00000000, 0x00100000, 0x00000000,
   0x80000000, 0x00000000, 0x65ae2a0a, 0xa9cb1d25, 0x00110000, 0x00000001,
@@ -851,11 +859,11 @@ const TEST_MUL_BITS = [
   0xffffffff, 0xff000000, 0x7fffffff, 0xa9cb1d25, 0x7fffffff, 0x48892a0b,
   0x7fffffff, 0x00000001, 0xffffffff, 0x00000000, 0x7fff0000, 0x00000001,
   0xffff0000, 0x00000000, 0x7ff00000, 0x00000001, 0xfff00000, 0x00000000,
-  0x29cb1d24, 0x48892a0b,
+  0x29cb1d24, 0x48892a0b
 ];
 toInt32s(TEST_MUL_BITS);
 
-const TEST_DIV_BITS = [
+var TEST_DIV_BITS = [
   0x00000000, 0x00000001, 0x00000000, 0x00000001, 0x00000000, 0x000007ff,
   0x00000000, 0x00000800, 0x00000000, 0x00007fff, 0x00000000, 0x00008000,
   0x00000000, 0x7fffffff, 0x00000000, 0x80000000, 0x0000007f, 0xffff8000,
@@ -1252,11 +1260,11 @@ const TEST_DIV_BITS = [
   0x0000007f, 0xffffffff, 0x00000001, 0x7c1c33e6, 0x00000000, 0xb29b67a6,
   0x00000000, 0x80000000, 0x00000000, 0x7fffffff, 0x00000000, 0x00008000,
   0x00000000, 0x00007fff, 0x00000000, 0x00000800, 0x00000000, 0x000007ff,
-  0x00000000, 0x00000001, 0x00000000, 0x00000001,
+  0x00000000, 0x00000001, 0x00000000, 0x00000001
 ];
 toInt32s(TEST_DIV_BITS);
 
-const TEST_STRINGS = [
+var TEST_STRINGS = [
   '-9223372036854775808',
   '-5226755067826871589',
   '-4503599627370497',
@@ -1291,427 +1299,325 @@ const TEST_STRINGS = [
   '4503599627370495',
   '4503599627370496',
   '6211839219354490357',
-  '9223372036854775807',
+  '9223372036854775807'
 ];
 
-const TEST_UNSIGNED_STRINGS = [
-  '9223372036854775808',
-  '13219989005882680027',
-  '18442240474082181119',
-  '18442240474082181120',
-  '18446462598732840959',
-  '18446462598732840960',
-  '18446744069414584319',
-  '18446744069414584320',
-  '18446744073692774399',
-  '18446744073692774400',
-  '18446744073709486079',
-  '18446744073709486080',
-  '18446744073709518847',
-  '18446744073709518848',
-  '18446744073709551614',
-  '18446744073709551615',
-  '0',
-  '1',
-  '2',
-  '32767',
-  '32768',
-  '65535',
-  '65536',
-  '16777215',
-  '16777216',
-  '1446306523',
-  '3078018549',
-  '4294967295',
-  '4294967296',
-  '281474976710655',
-  '281474976710656',
-  '4503599627370495',
-  '4503599627370496',
-  '6211839219354490357',
-  '9223372036854775807',
-];
+function setUp() {
+  if (Object.seal) {
+    Object.seal(goog.math.Long);
+  }
+}
 
-testSuite({
-  setUp() {
-    if (Object.seal) {
-      Object.seal(Long);
+function testSealingDoesntMakeLazyInitializersUndefined() {
+  assertNotNull(goog.math.Long.getZero());
+  assertNotNull(goog.math.Long.getOne());
+  assertNotNull(goog.math.Long.getNegOne());
+  assertNotNull(goog.math.Long.getMaxValue());
+  assertNotNull(goog.math.Long.getMinValue());
+  assertNotNull(goog.math.Long.getTwoPwr24());
+}
+
+function testToFromBits() {
+  for (var i = 0; i < TEST_BITS.length; i += 2) {
+    var val = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    assertEquals(TEST_BITS[i], val.getHighBits());
+    assertEquals(TEST_BITS[i + 1], val.getLowBits());
+  }
+}
+
+function testToFromInt() {
+  for (var i = 0; i < TEST_BITS.length; i += 1) {
+    var val = goog.math.Long.fromInt(TEST_BITS[i]);
+    assertEquals(TEST_BITS[i], val.toInt());
+  }
+}
+
+function testToFromNumber() {
+  for (var i = 0; i < TEST_BITS.length; i += 2) {
+    var num = TEST_BITS[i] * Math.pow(2, 32) + TEST_BITS[i + 1] >= 0 ?
+        TEST_BITS[i + 1] :
+        Math.pow(2, 32) + TEST_BITS[i + 1];
+    var val = goog.math.Long.fromNumber(num);
+    assertEquals(num, val.toNumber());
+  }
+  // Test edge cases
+  assertEquals(goog.math.Long.getZero(), goog.math.Long.fromNumber(NaN));
+  assertEquals(
+      goog.math.Long.getMaxValue(), goog.math.Long.fromNumber(Infinity));
+  assertEquals(
+      goog.math.Long.getMinValue(), goog.math.Long.fromNumber(-Infinity));
+}
+
+
+// Make sure we are not leaking longs by incorrect caching of decimal numbers
+// and failing-fast in debug mode.
+function testFromDecimalCachedValues() {
+  try {
+    var handledException;
+    goog.asserts.setErrorHandler(function(e) { handledException = e; });
+
+    assertEquals(goog.math.Long.getZero(), goog.math.Long.fromInt(0.1));
+    assertTrue(handledException != null);
+
+    handledException = null;
+    assertEquals(goog.math.Long.getZero(), goog.math.Long.fromInt(0.2));
+    assertTrue(handledException != null);
+
+    handledException = null;
+    assertEquals(goog.math.Long.getOne(), goog.math.Long.fromInt(1.1));
+    assertTrue(handledException != null);
+  } finally {
+    goog.asserts.setErrorHandler(goog.asserts.DEFAULT_ERROR_HANDLER);
+  }
+}
+
+function testIsZero() {
+  for (var i = 0; i < TEST_BITS.length; i += 2) {
+    var val = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    assertEquals(TEST_BITS[i] == 0 && TEST_BITS[i + 1] == 0, val.isZero());
+  }
+}
+
+function testIsNegative() {
+  for (var i = 0; i < TEST_BITS.length; i += 2) {
+    var val = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    assertEquals((TEST_BITS[i] >> 31) != 0, val.isNegative());
+  }
+}
+
+function testIsOdd() {
+  for (var i = 0; i < TEST_BITS.length; i += 2) {
+    var val = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    assertEquals((TEST_BITS[i + 1] & 1) != 0, val.isOdd());
+  }
+}
+
+function createTestComparisons(i) {
+  return function() {
+    var vi = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    for (var j = 0; j < TEST_BITS.length; j += 2) {
+      var vj = goog.math.Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
+      assertEquals(i == j, vi.equals(vj));
+      assertEquals(i != j, vi.notEquals(vj));
+      assertEquals(i < j, vi.lessThan(vj));
+      assertEquals(i <= j, vi.lessThanOrEqual(vj));
+      assertEquals(i > j, vi.greaterThan(vj));
+      assertEquals(i >= j, vi.greaterThanOrEqual(vj));
     }
-  },
+  };
+}
 
-  /** Nested test suite for comparison operations. */
-  get testComparisons() {
-    const /** !Object<string, function()> */ testCases = {};
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      testCases[`test${i}`] = () => {
-        const vi = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-        for (let j = 0; j < TEST_BITS.length; j += 2) {
-          const vj = Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
-          assertEquals(i == j, vi.equals(vj));
-          assertEquals(i != j, vi.notEquals(vj));
-          assertEquals(i < j, vi.lessThan(vj));
-          assertEquals(i <= j, vi.lessThanOrEqual(vj));
-          assertEquals(i > j, vi.greaterThan(vj));
-          assertEquals(i >= j, vi.greaterThanOrEqual(vj));
-        }
-      };
-    }
-    return testCases;
-  },
+// Here and below, we translate one conceptual test (e.g., "testComparisons")
+// into a number of test functions that will be run separately by jsunit. This
+// is necessary because, in some testing configurations, the full combined test
+// can take so long that it times out. These smaller tests run much faster.
+for (var i = 0; i < TEST_BITS.length; i += 2) {
+  goog.global['testComparisons' + i] = createTestComparisons(i);
+}
 
-  /** Nested test suite for bitwise operations. */
-  get testBitOperations() {
-    const /** !Object<string, function()> */ testCases = {};
+function createTestBitOperations(i) {
+  return function() {
+    var vi = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    assertEquals(~TEST_BITS[i], vi.not().getHighBits());
+    assertEquals(~TEST_BITS[i + 1], vi.not().getLowBits());
 
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      testCases[`test${i}`] = () => {
-        const vi = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-        assertEquals(~TEST_BITS[i], vi.not().getHighBits());
-        assertEquals(~TEST_BITS[i + 1], vi.not().getLowBits());
-
-        for (let j = 0; j < TEST_BITS.length; j += 2) {
-          const vj = Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
-          assertEquals(TEST_BITS[i] & TEST_BITS[j], vi.and(vj).getHighBits());
-          assertEquals(
-              TEST_BITS[i + 1] & TEST_BITS[j + 1], vi.and(vj).getLowBits());
-          assertEquals(TEST_BITS[i] | TEST_BITS[j], vi.or(vj).getHighBits());
-          assertEquals(
-              TEST_BITS[i + 1] | TEST_BITS[j + 1], vi.or(vj).getLowBits());
-          assertEquals(TEST_BITS[i] ^ TEST_BITS[j], vi.xor(vj).getHighBits());
-          assertEquals(
-              TEST_BITS[i + 1] ^ TEST_BITS[j + 1], vi.xor(vj).getLowBits());
-        }
-
-        assertEquals(TEST_BITS[i], vi.shiftLeft(0).getHighBits());
-        assertEquals(TEST_BITS[i + 1], vi.shiftLeft(0).getLowBits());
-        assertEquals(TEST_BITS[i], vi.shiftRight(0).getHighBits());
-        assertEquals(TEST_BITS[i + 1], vi.shiftRight(0).getLowBits());
-        assertEquals(TEST_BITS[i], vi.shiftRightUnsigned(0).getHighBits());
-        assertEquals(TEST_BITS[i + 1], vi.shiftRightUnsigned(0).getLowBits());
-
-        for (let len = 1; len < 64; ++len) {
-          if (len < 32) {
-            assertEquals(
-                (TEST_BITS[i] << len) | (TEST_BITS[i + 1] >>> (32 - len)),
-                vi.shiftLeft(len).getHighBits());
-            assertEquals(
-                TEST_BITS[i + 1] << len, vi.shiftLeft(len).getLowBits());
-
-            assertEquals(TEST_BITS[i] >> len, vi.shiftRight(len).getHighBits());
-            assertEquals(
-                (TEST_BITS[i + 1] >>> len) | (TEST_BITS[i] << (32 - len)),
-                vi.shiftRight(len).getLowBits());
-
-            assertEquals(
-                TEST_BITS[i] >>> len, vi.shiftRightUnsigned(len).getHighBits());
-            assertEquals(
-                (TEST_BITS[i + 1] >>> len) | (TEST_BITS[i] << (32 - len)),
-                vi.shiftRightUnsigned(len).getLowBits());
-          } else {
-            assertEquals(
-                TEST_BITS[i + 1] << (len - 32),
-                vi.shiftLeft(len).getHighBits());
-            assertEquals(0, vi.shiftLeft(len).getLowBits());
-
-            assertEquals(
-                TEST_BITS[i] >= 0 ? 0 : -1, vi.shiftRight(len).getHighBits());
-            assertEquals(
-                TEST_BITS[i] >> (len - 32), vi.shiftRight(len).getLowBits());
-
-            assertEquals(0, vi.shiftRightUnsigned(len).getHighBits());
-            if (len == 32) {
-              assertEquals(
-                  TEST_BITS[i], vi.shiftRightUnsigned(len).getLowBits());
-            } else {
-              assertEquals(
-                  TEST_BITS[i] >>> (len - 32),
-                  vi.shiftRightUnsigned(len).getLowBits());
-            }
-          }
-        }
-
-        assertEquals(TEST_BITS[i], vi.shiftLeft(64).getHighBits());
-        assertEquals(TEST_BITS[i + 1], vi.shiftLeft(64).getLowBits());
-        assertEquals(TEST_BITS[i], vi.shiftRight(64).getHighBits());
-        assertEquals(TEST_BITS[i + 1], vi.shiftRight(64).getLowBits());
-        assertEquals(TEST_BITS[i], vi.shiftRightUnsigned(64).getHighBits());
-        assertEquals(TEST_BITS[i + 1], vi.shiftRightUnsigned(64).getLowBits());
-      };
-    }
-    return testCases;
-  },
-
-  /** Nested test suite for division operations. */
-  get testDivMod() {
-    const /** !Object<string, function()> */ testCases = {};
-
-    /** @return {function()} */
-    const createTestDivMod = (/** number */ i, /** number */ count) => {
-      return () => {
-        const vi = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-        for (let j = 0; j < TEST_BITS.length; j += 2) {
-          const vj = Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
-          if (!vj.isZero()) {
-            const divResult = vi.div(vj);
-            assertEquals(TEST_DIV_BITS[count++], divResult.getHighBits());
-            assertEquals(TEST_DIV_BITS[count++], divResult.getLowBits());
-
-            const modResult = vi.modulo(vj);
-            const combinedResult = divResult.multiply(vj).add(modResult);
-            assertTrue(vi.equals(combinedResult));
-          }
-        }
-      };
-    };
-
-    let countPerDivModCall = 0;
-    for (let j = 0; j < TEST_BITS.length; j += 2) {
-      const vj = Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
-      if (!vj.isZero()) {
-        countPerDivModCall += 2;
-      }
+    for (var j = 0; j < TEST_BITS.length; j += 2) {
+      var vj = goog.math.Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
+      assertEquals(TEST_BITS[i] & TEST_BITS[j], vi.and(vj).getHighBits());
+      assertEquals(
+          TEST_BITS[i + 1] & TEST_BITS[j + 1], vi.and(vj).getLowBits());
+      assertEquals(TEST_BITS[i] | TEST_BITS[j], vi.or(vj).getHighBits());
+      assertEquals(TEST_BITS[i + 1] | TEST_BITS[j + 1], vi.or(vj).getLowBits());
+      assertEquals(TEST_BITS[i] ^ TEST_BITS[j], vi.xor(vj).getHighBits());
+      assertEquals(
+          TEST_BITS[i + 1] ^ TEST_BITS[j + 1], vi.xor(vj).getLowBits());
     }
 
-    let countDivMod = 0;
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      testCases[`test${i}`] = createTestDivMod(i, countDivMod);
-      countDivMod += countPerDivModCall;
-    }
+    assertEquals(TEST_BITS[i], vi.shiftLeft(0).getHighBits());
+    assertEquals(TEST_BITS[i + 1], vi.shiftLeft(0).getLowBits());
+    assertEquals(TEST_BITS[i], vi.shiftRight(0).getHighBits());
+    assertEquals(TEST_BITS[i + 1], vi.shiftRight(0).getLowBits());
+    assertEquals(TEST_BITS[i], vi.shiftRightUnsigned(0).getHighBits());
+    assertEquals(TEST_BITS[i + 1], vi.shiftRightUnsigned(0).getLowBits());
 
-    return testCases;
-  },
+    for (var len = 1; len < 64; ++len) {
+      if (len < 32) {
+        assertEquals(
+            (TEST_BITS[i] << len) | (TEST_BITS[i + 1] >>> (32 - len)),
+            vi.shiftLeft(len).getHighBits());
+        assertEquals(TEST_BITS[i + 1] << len, vi.shiftLeft(len).getLowBits());
 
-  /** Nested test suite for string conversions. */
-  get testToFromString() {
-    const /** !Object<string, function()> */ testCases = {};
+        assertEquals(TEST_BITS[i] >> len, vi.shiftRight(len).getHighBits());
+        assertEquals(
+            (TEST_BITS[i + 1] >>> len) | (TEST_BITS[i] << (32 - len)),
+            vi.shiftRight(len).getLowBits());
 
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      testCases[`test${i}`] = () => {
-        const vi = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-        const str = vi.toString(10);
-        assertEquals(TEST_STRINGS[i / 2], str);
-        assertEquals(TEST_BITS[i], Long.fromString(str, 10).getHighBits());
-        assertEquals(TEST_BITS[i + 1], Long.fromString(str, 10).getLowBits());
-
-        for (let radix = 2; radix <= 36; ++radix) {
-          const result = vi.toString(radix);
-          assertEquals(
-              TEST_BITS[i], Long.fromString(result, radix).getHighBits());
-          assertEquals(
-              TEST_BITS[i + 1], Long.fromString(result, radix).getLowBits());
-        }
-      };
-    }
-
-    return testCases;
-  },
-
-  /** Nested test suite for unsigned string conversions. */
-  get testToFromUnsignedString() {
-    const /** !Object<string, function()> */ testCases = {};
-
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      testCases[`test${i}`] = () => {
-        const vi = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-        const str = vi.toUnsignedString(10);
-        assertEquals(TEST_UNSIGNED_STRINGS[i / 2], str);
-        assertEquals(TEST_BITS[i], Long.fromString(str, 10).getHighBits());
-        assertEquals(TEST_BITS[i + 1], Long.fromString(str, 10).getLowBits());
-
-        for (let radix = 2; radix <= 36; ++radix) {
-          const result = vi.toUnsignedString(radix);
-          assertEquals(
-            TEST_BITS[i], Long.fromString(result, radix).getHighBits());
-          assertEquals(
-              TEST_BITS[i + 1], Long.fromString(result, radix).getLowBits());
-        }
-      };
-    }
-
-    return testCases;
-  },
-
-  testSealingDoesntMakeLazyInitializersUndefined() {
-    assertNotNull(Long.getZero());
-    assertNotNull(Long.getOne());
-    assertNotNull(Long.getNegOne());
-    assertNotNull(Long.getMaxValue());
-    assertNotNull(Long.getMinValue());
-    assertNotNull(Long.getTwoPwr24());
-  },
-
-  testToFromBits() {
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      const val = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-      assertEquals(TEST_BITS[i], val.getHighBits());
-      assertEquals(TEST_BITS[i + 1], val.getLowBits());
-    }
-  },
-
-  testToFromInt() {
-    for (let i = 0; i < TEST_BITS.length; i += 1) {
-      const val = Long.fromInt(TEST_BITS[i]);
-      assertEquals(TEST_BITS[i], val.toInt());
-    }
-  },
-
-  testToFromNumber() {
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      const num = TEST_BITS[i] * Math.pow(2, 32) + TEST_BITS[i + 1] >= 0 ?
-          TEST_BITS[i + 1] :
-          Math.pow(2, 32) + TEST_BITS[i + 1];
-      const val = Long.fromNumber(num);
-      assertEquals(num, val.toNumber());
-    }
-    // Test edge cases
-    assertEquals(Long.getZero(), Long.fromNumber(NaN));
-    assertEquals(Long.getMaxValue(), Long.fromNumber(Infinity));
-    assertEquals(Long.getMinValue(), Long.fromNumber(-Infinity));
-  },
-
-  testFromDecimalCachedValues() {
-    // Make sure we are not leaking longs by incorrect caching of decimal
-    // numbers and failing-fast in debug mode.
-    try {
-      let handledException;
-      asserts.setErrorHandler((e) => {
-        handledException = e;
-      });
-
-      assertEquals(Long.fromInt(0), Long.fromInt(0.1));
-      assertTrue(handledException != null);
-
-      handledException = null;
-      assertEquals(Long.fromInt(0), Long.fromInt(0.2));
-      assertTrue(handledException != null);
-
-      handledException = null;
-      assertEquals(Long.fromInt(1), Long.fromInt(1.1));
-      assertTrue(handledException != null);
-    } finally {
-      asserts.setErrorHandler(asserts.DEFAULT_ERROR_HANDLER);
-    }
-  },
-
-  testIsZero() {
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      const val = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-      assertEquals(TEST_BITS[i] == 0 && TEST_BITS[i + 1] == 0, val.isZero());
-    }
-  },
-
-  testIsNegative() {
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      const val = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-      assertEquals((TEST_BITS[i] >> 31) != 0, val.isNegative());
-    }
-  },
-
-  testIsOdd() {
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      const val = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-      assertEquals((TEST_BITS[i + 1] & 1) != 0, val.isOdd());
-    }
-  },
-
-  testNegation() {
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      const vi = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-      if (TEST_BITS[i + 1] == 0) {
-        assertEquals((~TEST_BITS[i] + 1) | 0, vi.negate().getHighBits());
-        assertEquals(0, vi.negate().getLowBits());
+        assertEquals(
+            TEST_BITS[i] >>> len, vi.shiftRightUnsigned(len).getHighBits());
+        assertEquals(
+            (TEST_BITS[i + 1] >>> len) | (TEST_BITS[i] << (32 - len)),
+            vi.shiftRightUnsigned(len).getLowBits());
       } else {
-        assertEquals(~TEST_BITS[i], vi.negate().getHighBits());
-        assertEquals((~TEST_BITS[i + 1] + 1) | 0, vi.negate().getLowBits());
+        assertEquals(
+            TEST_BITS[i + 1] << (len - 32), vi.shiftLeft(len).getHighBits());
+        assertEquals(0, vi.shiftLeft(len).getLowBits());
+
+        assertEquals(
+            TEST_BITS[i] >= 0 ? 0 : -1, vi.shiftRight(len).getHighBits());
+        assertEquals(
+            TEST_BITS[i] >> (len - 32), vi.shiftRight(len).getLowBits());
+
+        assertEquals(0, vi.shiftRightUnsigned(len).getHighBits());
+        if (len == 32) {
+          assertEquals(TEST_BITS[i], vi.shiftRightUnsigned(len).getLowBits());
+        } else {
+          assertEquals(
+              TEST_BITS[i] >>> (len - 32),
+              vi.shiftRightUnsigned(len).getLowBits());
+        }
       }
     }
-  },
 
-  testAdd() {
-    let count = 0;
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      const vi = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-      for (let j = 0; j < i; j += 2) {
-        const vj = Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
-        const result = vi.add(vj);
-        assertEquals(TEST_ADD_BITS[count++], result.getHighBits());
-        assertEquals(TEST_ADD_BITS[count++], result.getLowBits());
+    assertEquals(TEST_BITS[i], vi.shiftLeft(64).getHighBits());
+    assertEquals(TEST_BITS[i + 1], vi.shiftLeft(64).getLowBits());
+    assertEquals(TEST_BITS[i], vi.shiftRight(64).getHighBits());
+    assertEquals(TEST_BITS[i + 1], vi.shiftRight(64).getLowBits());
+    assertEquals(TEST_BITS[i], vi.shiftRightUnsigned(64).getHighBits());
+    assertEquals(TEST_BITS[i + 1], vi.shiftRightUnsigned(64).getLowBits());
+  };
+}
+
+for (var i = 0; i < TEST_BITS.length; i += 2) {
+  goog.global['testBitOperations' + i] = createTestBitOperations(i);
+}
+
+function testNegation() {
+  for (var i = 0; i < TEST_BITS.length; i += 2) {
+    var vi = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    if (TEST_BITS[i + 1] == 0) {
+      assertEquals((~TEST_BITS[i] + 1) | 0, vi.negate().getHighBits());
+      assertEquals(0, vi.negate().getLowBits());
+    } else {
+      assertEquals(~TEST_BITS[i], vi.negate().getHighBits());
+      assertEquals((~TEST_BITS[i + 1] + 1) | 0, vi.negate().getLowBits());
+    }
+  }
+}
+
+function testAdd() {
+  var count = 0;
+  for (var i = 0; i < TEST_BITS.length; i += 2) {
+    var vi = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    for (var j = 0; j < i; j += 2) {
+      var vj = goog.math.Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
+      var result = vi.add(vj);
+      assertEquals(TEST_ADD_BITS[count++], result.getHighBits());
+      assertEquals(TEST_ADD_BITS[count++], result.getLowBits());
+    }
+  }
+}
+
+function testSubtract() {
+  var count = 0;
+  for (var i = 0; i < TEST_BITS.length; i += 2) {
+    var vi = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    for (var j = 0; j < TEST_BITS.length; j += 2) {
+      var vj = goog.math.Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
+      var result = vi.subtract(vj);
+      assertEquals(TEST_SUB_BITS[count++], result.getHighBits());
+      assertEquals(TEST_SUB_BITS[count++], result.getLowBits());
+    }
+  }
+}
+
+function testMultiply() {
+  var count = 0;
+  for (var i = 0; i < TEST_BITS.length; i += 2) {
+    var vi = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    for (var j = 0; j < i; j += 2) {
+      var vj = goog.math.Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
+      var result = vi.multiply(vj);
+      assertEquals(TEST_MUL_BITS[count++], result.getHighBits());
+      assertEquals(TEST_MUL_BITS[count++], result.getLowBits());
+    }
+  }
+}
+
+function createTestDivMod(i, count) {
+  return function() {
+    var vi = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    for (var j = 0; j < TEST_BITS.length; j += 2) {
+      var vj = goog.math.Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
+      if (!vj.isZero()) {
+        var divResult = vi.div(vj);
+        assertEquals(TEST_DIV_BITS[count++], divResult.getHighBits());
+        assertEquals(TEST_DIV_BITS[count++], divResult.getLowBits());
+
+        var modResult = vi.modulo(vj);
+        var combinedResult = divResult.multiply(vj).add(modResult);
+        assertTrue(vi.equals(combinedResult));
       }
     }
-  },
+  }
+}
 
-  testSubtract() {
-    let count = 0;
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      const vi = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-      for (let j = 0; j < TEST_BITS.length; j += 2) {
-        const vj = Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
-        const result = vi.subtract(vj);
-        assertEquals(TEST_SUB_BITS[count++], result.getHighBits());
-        assertEquals(TEST_SUB_BITS[count++], result.getLowBits());
-      }
-    }
-  },
+var countPerDivModCall = 0;
+for (var j = 0; j < TEST_BITS.length; j += 2) {
+  var vj = goog.math.Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
+  if (!vj.isZero()) {
+    countPerDivModCall += 2;
+  }
+}
 
-  testMultiply() {
-    let count = 0;
-    for (let i = 0; i < TEST_BITS.length; i += 2) {
-      const vi = Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
-      for (let j = 0; j < i; j += 2) {
-        const vj = Long.fromBits(TEST_BITS[j + 1], TEST_BITS[j]);
-        const result = vi.multiply(vj);
-        assertEquals(TEST_MUL_BITS[count++], result.getHighBits());
-        assertEquals(TEST_MUL_BITS[count++], result.getLowBits());
-      }
-    }
-  },
+var countDivMod = 0;
+for (var i = 0; i < TEST_BITS.length; i += 2) {
+  goog.global['testDivMod' + i] = createTestDivMod(i, countDivMod);
+  countDivMod += countPerDivModCall;
+}
 
-  testIsStringInRange() {
-    const string1 = '9223372036854775808';
-    const string2 = '1000000000000000000000000';
-    const string3 = '-9223372036854775809';
-    const string4 = '-1000000000000000000000000';
-    assertEquals(false, Long.isStringInRange(string1, 10));
-    assertEquals(false, Long.isStringInRange(string2, 10));
-    assertEquals(false, Long.isStringInRange(string3, 10));
-    assertEquals(false, Long.isStringInRange(string4, 10));
-
-    for (let i = 0; i < TEST_STRINGS.length; i++) {
-      assertEquals(true, Long.isStringInRange(TEST_STRINGS[i], 10));
-    }
-  },
-
-  testBase36ToString() {
-    // Regression test for
-    // https://github.com/google/closure-library/pull/498
-    assertEquals('zzzzzz', Long.fromString('zzzzzz', 36).toString(36));
-  },
-
-  testBaseDefaultFromString() {
-    assertEquals('0', Long.fromString('0xfoobar').toString());
+function createTestToFromString(i) {
+  return function() {
+    var vi = goog.math.Long.fromBits(TEST_BITS[i + 1], TEST_BITS[i]);
+    var str = vi.toString(10);
+    assertEquals(TEST_STRINGS[i / 2], str);
     assertEquals(
-        '100000000000000000000000000000000000000000000000000000000000001',
-        Long.fromBits(1, 0x40000000).toString(2));
-  },
+        TEST_BITS[i], goog.math.Long.fromString(str, 10).getHighBits());
+    assertEquals(
+        TEST_BITS[i + 1], goog.math.Long.fromString(str, 10).getLowBits());
 
-  testHashCode() {
-    assertEquals(0, Long.fromString('0').hashCode());
-    assertEquals(1, Long.fromString('1').hashCode());
-    assertEquals(0, Long.fromString('-1').hashCode());
-    assertEquals(2147483647, Long.fromString('2147483647').hashCode());
-    assertEquals(-2147483648, Long.getMinValue().hashCode());
-    assertEquals(-2147483648, Long.getMaxValue().hashCode());
-  },
+    for (var radix = 2; radix <= 36; ++radix) {
+      var result = vi.toString(radix);
+      assertEquals(
+          TEST_BITS[i], goog.math.Long.fromString(result, radix).getHighBits());
+      assertEquals(
+          TEST_BITS[i + 1],
+          goog.math.Long.fromString(result, radix).getLowBits());
+    }
+  }
+}
 
-  testSafeInteger() {
-    assertTrue(Long.fromNumber(1).isSafeInteger());
-    assertTrue(Long.fromNumber(0).isSafeInteger());
-    assertTrue(Long.fromNumber(-1).isSafeInteger());
-    assertTrue(Long.fromNumber(Math.pow(2, 32)).isSafeInteger());
-    assertTrue(Long.fromNumber(-Math.pow(2, 32)).isSafeInteger());
-    assertTrue(Long.fromNumber(Math.pow(2, 53) - 1).isSafeInteger());
-    assertTrue(Long.fromNumber(-Math.pow(2, 53) + 1).isSafeInteger());
-    assertFalse(Long.fromNumber(Math.pow(2, 53)).isSafeInteger());
-    assertFalse(Long.fromNumber(-Math.pow(2, 53)).isSafeInteger());
-  },
-});
+for (var i = 0; i < TEST_BITS.length; i += 2) {
+  goog.global['testToFromString' + i] = createTestToFromString(i);
+}
+
+function testIsStringInRange() {
+  var string1 = '9223372036854775808';
+  var string2 = '1000000000000000000000000';
+  var string3 = '-9223372036854775809';
+  var string4 = '-1000000000000000000000000';
+  assertEquals(false, goog.math.Long.isStringInRange(string1, 10));
+  assertEquals(false, goog.math.Long.isStringInRange(string2, 10));
+  assertEquals(false, goog.math.Long.isStringInRange(string3, 10));
+  assertEquals(false, goog.math.Long.isStringInRange(string4, 10));
+
+  for (var i = 0; i < TEST_STRINGS.length; i++) {
+    assertEquals(true, goog.math.Long.isStringInRange(TEST_STRINGS[i], 10));
+  }
+}
+testIsStringInRange();
+
+// Regression test for
+// https://github.com/google/closure-library/pull/498
+function testBase36ToString() {
+  assertEquals('zzzzzz', goog.math.Long.fromString('zzzzzz', 36).toString(36));
+}

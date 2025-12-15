@@ -1,31 +1,38 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.storage.CollectableStorageTest');
-goog.setTestOnly();
+goog.provide('goog.storage.CollectableStorageTest');
+goog.setTestOnly('goog.storage.CollectableStorageTest');
 
-const CollectableStorage = goog.require('goog.storage.CollectableStorage');
-const FakeMechanism = goog.require('goog.testing.storage.FakeMechanism');
-const MockClock = goog.require('goog.testing.MockClock');
-const collectableStorageTester = goog.require('goog.storage.collectableStorageTester');
-const storageTester = goog.require('goog.storage.storageTester');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.storage.CollectableStorage');
+goog.require('goog.storage.collectableStorageTester');
+goog.require('goog.storage.storageTester');
+goog.require('goog.testing.MockClock');
+goog.require('goog.testing.jsunit');
+goog.require('goog.testing.storage.FakeMechanism');
 
-testSuite({
-  testBasicOperations() {
-    const mechanism = new FakeMechanism();
-    const storage = new CollectableStorage(mechanism);
-    storageTester.runBasicTests(storage);
-  },
+function testBasicOperations() {
+  var mechanism = new goog.testing.storage.FakeMechanism();
+  var storage = new goog.storage.CollectableStorage(mechanism);
+  goog.storage.storageTester.runBasicTests(storage);
+}
 
-  testExpiredKeyCollection() {
-    const mechanism = new FakeMechanism();
-    const clock = new MockClock(true);
-    const storage = new CollectableStorage(mechanism);
+function testExpiredKeyCollection() {
+  var mechanism = new goog.testing.storage.FakeMechanism();
+  var clock = new goog.testing.MockClock(true);
+  var storage = new goog.storage.CollectableStorage(mechanism);
 
-    collectableStorageTester.runBasicTests(mechanism, clock, storage);
-  },
-});
+  goog.storage.collectableStorageTester.runBasicTests(
+      mechanism, clock, storage);
+}

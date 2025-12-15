@@ -7,11 +7,10 @@
 
 /*
  * Standard styling for buttons created by goog.ui.MenuButtonRenderer.
+ *
+ * @author attila@google.com (Attila Bodis)
  */
 
-@provide 'goog.css.menubutton';
-
-@require './common';
 
 /* State: resting. */
 .goog-menu-button {
@@ -53,7 +52,6 @@
 }
 
 /* Pre-IE7 BiDi fixes. */
-/* rtl:begin:ignore */
 * html .goog-menu-button-rtl .goog-menu-button-outer-box {
   /* @noflip */ left: -1px;
   /* @noflip */ right: auto;
@@ -61,7 +59,6 @@
 * html .goog-menu-button-rtl .goog-menu-button-inner-box {
   /* @noflip */ right: auto;
 }
-/* rtl:end:ignore */
 
 /* IE7-only hack; ignored by all other browsers. */
 *:first-child+html .goog-menu-button-inner-box {
@@ -69,12 +66,10 @@
   left: -1px;
 }
 /* IE7 BiDi fix. */
-/* rtl:begin:ignore */
 *:first-child+html .goog-menu-button-rtl .goog-menu-button-inner-box {
   /* @noflip */ left: 1px;
   /* @noflip */ right: auto;
 }
-/* rtl:end:ignore */
 
 /* Safari-only hacks. */
 ::root .goog-menu-button,

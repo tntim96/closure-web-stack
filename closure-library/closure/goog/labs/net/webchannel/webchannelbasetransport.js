@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Implementation of a WebChannel transport using WebChannelBase.
@@ -11,22 +19,22 @@
  * of the WebChannel are limited to what's supported by the implementation.
  * Particularly, multiplexing is not possible, and only strings are
  * supported as message types.
+ *
  */
 
 goog.provide('goog.labs.net.webChannel.WebChannelBaseTransport');
 
 goog.require('goog.asserts');
-goog.require('goog.collections.maps');
 goog.require('goog.events.EventTarget');
 goog.require('goog.json');
 goog.require('goog.labs.net.webChannel.ChannelRequest');
 goog.require('goog.labs.net.webChannel.WebChannelBase');
-goog.require('goog.labs.net.webChannel.Wire');
 goog.require('goog.log');
 goog.require('goog.net.WebChannel');
 goog.require('goog.net.WebChannelTransport');
 goog.require('goog.object');
 goog.require('goog.string');
+goog.require('goog.string.path');
 
 
 
@@ -41,7 +49,6 @@ goog.require('goog.string');
  * @final
  */
 goog.labs.net.webChannel.WebChannelBaseTransport = function() {
-  'use strict';
   if (!goog.labs.net.webChannel.ChannelRequest.supportsXhrStreaming()) {
     throw new Error('Environmental error: no available transport.');
   }
@@ -49,11 +56,8 @@ goog.labs.net.webChannel.WebChannelBaseTransport = function() {
 
 
 goog.scope(function() {
-'use strict';
-const WebChannelBaseTransport =
-    goog.labs.net.webChannel.WebChannelBaseTransport;
-const WebChannelBase = goog.labs.net.webChannel.WebChannelBase;
-const Wire = goog.labs.net.webChannel.Wire;
+var WebChannelBaseTransport = goog.labs.net.webChannel.WebChannelBaseTransport;
+var WebChannelBase = goog.labs.net.webChannel.WebChannelBase;
 
 
 /**
@@ -61,7 +65,6 @@ const Wire = goog.labs.net.webChannel.Wire;
  */
 WebChannelBaseTransport.prototype.createWebChannel = function(
     url, opt_options) {
-  'use strict';
   return new WebChannelBaseTransport.Channel(url, opt_options);
 };
 
@@ -80,7 +83,6 @@ WebChannelBaseTransport.prototype.createWebChannel = function(
  * @final
  */
 WebChannelBaseTransport.Channel = function(url, opt_options) {
-  'use strict';
   WebChannelBaseTransport.Channel.base(this, 'constructor');
 
   /**
@@ -95,6 +97,16 @@ WebChannelBaseTransport.Channel = function(url, opt_options) {
   this.url_ = url;
 
   /**
+   * The test URL of the target server end-point. This value defaults to
+   * this.url_ + '/test'.
+   *
+   * @private {string}
+   */
+  this.testUrl_ = (opt_options && opt_options.testUrl) ?
+      opt_options.testUrl :
+      goog.string.path.join(this.url_, 'test');
+
+  /**
    * @private {goog.log.Logger} The logger for this class.
    */
   this.logger_ =
@@ -107,7 +119,7 @@ WebChannelBaseTransport.Channel = function(url, opt_options) {
   this.messageUrlParams_ =
       (opt_options && opt_options.messageUrlParams) || null;
 
-  let messageHeaders = (opt_options && opt_options.messageHeaders) || null;
+  var messageHeaders = (opt_options && opt_options.messageHeaders) || null;
 
   // default is false
   if (opt_options && opt_options.clientProtocolHeaderRequired) {
@@ -124,7 +136,7 @@ WebChannelBaseTransport.Channel = function(url, opt_options) {
 
   this.channel_.setExtraHeaders(messageHeaders);
 
-  let initHeaders = (opt_options && opt_options.initMessageHeaders) || null;
+  var initHeaders = (opt_options && opt_options.initMessageHeaders) || null;
 
   if (opt_options && opt_options.messageContentType) {
     if (initHeaders) {
@@ -152,7 +164,7 @@ WebChannelBaseTransport.Channel = function(url, opt_options) {
 
   this.channel_.setInitHeaders(initHeaders);
 
-  const httpHeadersOverwriteParam =
+  var httpHeadersOverwriteParam =
       opt_options && opt_options.httpHeadersOverwriteParam;
   if (httpHeadersOverwriteParam &&
       !goog.string.isEmptyOrWhitespace(httpHeadersOverwriteParam)) {
@@ -172,16 +184,15 @@ WebChannelBaseTransport.Channel = function(url, opt_options) {
 
   // Note that httpSessionIdParam will be ignored if the same parameter name
   // has already been specified with messageUrlParams
-  const httpSessionIdParam = opt_options && opt_options.httpSessionIdParam;
+  var httpSessionIdParam = opt_options && opt_options.httpSessionIdParam;
   if (httpSessionIdParam &&
       !goog.string.isEmptyOrWhitespace(httpSessionIdParam)) {
     this.channel_.setHttpSessionIdParam(httpSessionIdParam);
     if (goog.object.containsKey(this.messageUrlParams_, httpSessionIdParam)) {
       goog.object.remove(this.messageUrlParams_, httpSessionIdParam);
-      goog.log.warning(
-          this.logger_,
-          'Ignore httpSessionIdParam also specified with messageUrlParams: ' +
-              httpSessionIdParam);
+      goog.log.warning(this.logger_,
+          'Ignore httpSessionIdParam also specified with messageUrlParams: '
+          + httpSessionIdParam);
     }
   }
 
@@ -197,14 +208,39 @@ goog.inherits(WebChannelBaseTransport.Channel, goog.events.EventTarget);
 
 /**
  * @override
+ * @suppress {checkTypes}
+ */
+WebChannelBaseTransport.Channel.prototype.addEventListener = function(
+    type, handler, /** boolean= */ opt_capture, opt_handlerScope) {
+  WebChannelBaseTransport.Channel.base(
+      this, 'addEventListener', type, handler, opt_capture, opt_handlerScope);
+};
+
+
+/**
+ * @override
+ * @suppress {checkTypes}
+ */
+WebChannelBaseTransport.Channel.prototype.removeEventListener = function(
+    type, handler, /** boolean= */ opt_capture, opt_handlerScope) {
+  WebChannelBaseTransport.Channel.base(
+      this, 'removeEventListener', type, handler, opt_capture,
+      opt_handlerScope);
+};
+
+
+/**
+ * Test path is always set to "/url/test".
+ *
+ * @override
  */
 WebChannelBaseTransport.Channel.prototype.open = function() {
-  'use strict';
   this.channel_.setHandler(this.channelHandler_);
   if (this.supportsCrossDomainXhr_) {
     this.channel_.setSupportsCrossDomainXhrs(true);
   }
-  this.channel_.connect(this.url_, (this.messageUrlParams_ || undefined));
+  this.channel_.connect(
+      this.testUrl_, this.url_, (this.messageUrlParams_ || undefined));
 };
 
 
@@ -212,7 +248,6 @@ WebChannelBaseTransport.Channel.prototype.open = function() {
  * @override
  */
 WebChannelBaseTransport.Channel.prototype.close = function() {
-  'use strict';
   this.channel_.disconnect();
 };
 
@@ -221,9 +256,8 @@ WebChannelBaseTransport.Channel.prototype.close = function() {
  * @override
  */
 WebChannelBaseTransport.Channel.prototype.halfClose = function() {
-  'use strict';
   // to be implemented
-  throw new Error('Not implemented');
+  this.close();
 };
 
 
@@ -235,64 +269,21 @@ WebChannelBaseTransport.Channel.prototype.halfClose = function() {
  * @override
  */
 WebChannelBaseTransport.Channel.prototype.send = function(message) {
-  'use strict';
-  this.channel_.sendMap(this.messageToMapObject_(message));
-};
-
-
-/**
- * Converts a message to the map used by the underlying channel.
- *
- * @param {!goog.net.WebChannel.MessageData} message
- * @return {!Object|!goog.collections.maps.MapLike}
- */
-WebChannelBaseTransport.Channel.prototype.messageToMapObject_ = function(
-    message) {
-  'use strict';
   goog.asserts.assert(
-      goog.isObject(message) || typeof message === 'string',
+      goog.isObject(message) || goog.isString(message),
       'only object type or raw string is supported');
 
-  if (typeof message === 'string') {
-    const rawJson = {};
-    rawJson[Wire.RAW_DATA_KEY] = message;
-    return rawJson;
+  if (goog.isString(message)) {
+    var rawJson = {};
+    rawJson['__data__'] = message;
+    this.channel_.sendMap(rawJson);
+  } else if (this.sendRawJson_) {
+    var rawJson = {};
+    rawJson['__data__'] = goog.json.serialize(message);
+    this.channel_.sendMap(rawJson);
+  } else {
+    this.channel_.sendMap(message);
   }
-
-  if (this.sendRawJson_) {
-    const rawJson = {};
-    rawJson[Wire.RAW_DATA_KEY] = goog.json.serialize(message);
-    return rawJson;
-  }
-
-  return message;
-};
-
-
-/**
- * Converts the map used by the underlying channel to a message.
- *
- * NOTE: In the case of the message being JS Object or string, the exact same
- * object passed during `messageToMapObject_()` is returned. In the case of raw
- * JSON, an equal (but not the same) object is returned (due to serialization).
- *
- * @param {!Object|!goog.collections.maps.MapLike} map
- * @return {!goog.net.WebChannel.MessageData}
- */
-WebChannelBaseTransport.Channel.prototype.mapObjectToMessage_ = function(map) {
-  'use strict';
-  if (Wire.RAW_DATA_KEY in map) {
-    const rawMessage = map[Wire.RAW_DATA_KEY];
-
-    if (this.sendRawJson_) {
-      return /** @type {!goog.net.WebChannel.MessageData} */ (
-          goog.json.parse(rawMessage));
-    } else {  // string message
-      return rawMessage;
-    }
-  }
-
-  return map;
 };
 
 
@@ -300,7 +291,6 @@ WebChannelBaseTransport.Channel.prototype.mapObjectToMessage_ = function(map) {
  * @override
  */
 WebChannelBaseTransport.Channel.prototype.disposeInternal = function() {
-  'use strict';
   this.channel_.setHandler(null);
   delete this.channelHandler_;
   this.channel_.disconnect();
@@ -320,19 +310,10 @@ WebChannelBaseTransport.Channel.prototype.disposeInternal = function() {
  * @final
  */
 WebChannelBaseTransport.Channel.MessageEvent = function(array) {
-  'use strict';
   WebChannelBaseTransport.Channel.MessageEvent.base(this, 'constructor');
 
-  // Metadata as HTTP headers and status code (always come in a pair).
-  if (array['__headers__']) {
-    this.headers = array['__headers__'];
-    this.statusCode = array['__status__'];
-    delete array['__headers__'];
-    delete array['__status__'];
-  }
-
   // single-metadata only
-  const metadata = array['__sm__'];
+  var metadata = array['__sm__'];
   if (metadata) {
     this.metadataKey = goog.object.getAnyKey(metadata);
     if (this.metadataKey) {
@@ -359,7 +340,6 @@ goog.inherits(
  * @final
  */
 WebChannelBaseTransport.Channel.ErrorEvent = function(error) {
-  'use strict';
   WebChannelBaseTransport.Channel.ErrorEvent.base(this, 'constructor');
 
   /**
@@ -387,7 +367,6 @@ goog.inherits(
  * @private
  */
 WebChannelBaseTransport.Channel.Handler_ = function(channel) {
-  'use strict';
   WebChannelBaseTransport.Channel.Handler_.base(this, 'constructor');
 
   /**
@@ -404,7 +383,6 @@ goog.inherits(WebChannelBaseTransport.Channel.Handler_, WebChannelBase.Handler);
  */
 WebChannelBaseTransport.Channel.Handler_.prototype.channelOpened = function(
     channel) {
-  'use strict';
   goog.log.info(
       this.channel_.logger_, 'WebChannel opened on ' + this.channel_.url_);
   this.channel_.dispatchEvent(goog.net.WebChannel.EventType.OPEN);
@@ -416,7 +394,6 @@ WebChannelBaseTransport.Channel.Handler_.prototype.channelOpened = function(
  */
 WebChannelBaseTransport.Channel.Handler_.prototype.channelHandleArray =
     function(channel, array) {
-  'use strict';
   goog.asserts.assert(array, 'array expected to be defined');
   this.channel_.dispatchEvent(
       new WebChannelBaseTransport.Channel.MessageEvent(array));
@@ -428,10 +405,8 @@ WebChannelBaseTransport.Channel.Handler_.prototype.channelHandleArray =
  */
 WebChannelBaseTransport.Channel.Handler_.prototype.channelError = function(
     channel, error) {
-  'use strict';
   goog.log.info(
-      this.channel_.logger_,
-      'WebChannel aborted on ' + this.channel_.url_ +
+      this.channel_.logger_, 'WebChannel aborted on ' + this.channel_.url_ +
           ' due to channel error: ' + error);
   this.channel_.dispatchEvent(
       new WebChannelBaseTransport.Channel.ErrorEvent(error));
@@ -443,7 +418,6 @@ WebChannelBaseTransport.Channel.Handler_.prototype.channelError = function(
  */
 WebChannelBaseTransport.Channel.Handler_.prototype.channelClosed = function(
     channel, opt_pendingMaps, opt_undeliveredMaps) {
-  'use strict';
   goog.log.info(
       this.channel_.logger_, 'WebChannel closed on ' + this.channel_.url_);
   this.channel_.dispatchEvent(goog.net.WebChannel.EventType.CLOSE);
@@ -454,8 +428,7 @@ WebChannelBaseTransport.Channel.Handler_.prototype.channelClosed = function(
  * @override
  */
 WebChannelBaseTransport.Channel.prototype.getRuntimeProperties = function() {
-  'use strict';
-  return new WebChannelBaseTransport.ChannelProperties(this, this.channel_);
+  return new WebChannelBaseTransport.ChannelProperties(this.channel_);
 };
 
 
@@ -463,30 +436,20 @@ WebChannelBaseTransport.Channel.prototype.getRuntimeProperties = function() {
 /**
  * Implementation of the {@link goog.net.WebChannel.RuntimeProperties}.
  *
- * @param {!WebChannelBaseTransport.Channel} transportChannel The transport
- *     channel object.
  * @param {!WebChannelBase} channel The underlying channel object.
  *
  * @constructor
  * @implements {goog.net.WebChannel.RuntimeProperties}
  * @final
  */
-WebChannelBaseTransport.ChannelProperties = function(
-    transportChannel, channel) {
-  'use strict';
-  /**
-   * The transport channel object.
-   *
-   * @private @const {!WebChannelBaseTransport.Channel}
-   */
-  this.transportChannel_ = transportChannel;
-
+WebChannelBaseTransport.ChannelProperties = function(channel) {
   /**
    * The underlying channel object.
    *
-   * @private @const {!WebChannelBase}
+   * @private {!WebChannelBase}
    */
   this.channel_ = channel;
+
 };
 
 
@@ -495,7 +458,6 @@ WebChannelBaseTransport.ChannelProperties = function(
  */
 WebChannelBaseTransport.ChannelProperties.prototype.getConcurrentRequestLimit =
     function() {
-  'use strict';
   return this.channel_.getForwardChannelRequestPool().getMaxSize();
 };
 
@@ -504,7 +466,6 @@ WebChannelBaseTransport.ChannelProperties.prototype.getConcurrentRequestLimit =
  * @override
  */
 WebChannelBaseTransport.ChannelProperties.prototype.isSpdyEnabled = function() {
-  'use strict';
   return this.getConcurrentRequestLimit() > 1;
 };
 
@@ -514,20 +475,7 @@ WebChannelBaseTransport.ChannelProperties.prototype.isSpdyEnabled = function() {
  */
 WebChannelBaseTransport.ChannelProperties.prototype.getPendingRequestCount =
     function() {
-  'use strict';
   return this.channel_.getForwardChannelRequestPool().getRequestCount();
-};
-
-
-/**
- * @override
- * @return {!Array<!goog.net.WebChannel.MessageData>}
- */
-WebChannelBaseTransport.ChannelProperties.prototype.getNonAckedMessages =
-    function() {
-  'use strict';
-  return this.channel_.getNonAckedMaps().map(
-      queued_map => this.transportChannel_.mapObjectToMessage_(queued_map.map));
 };
 
 
@@ -536,7 +484,6 @@ WebChannelBaseTransport.ChannelProperties.prototype.getNonAckedMessages =
  */
 WebChannelBaseTransport.ChannelProperties.prototype.getHttpSessionId =
     function() {
-  'use strict';
   return this.channel_.getHttpSessionId();
 };
 
@@ -544,11 +491,15 @@ WebChannelBaseTransport.ChannelProperties.prototype.getHttpSessionId =
 /**
  * @override
  */
-WebChannelBaseTransport.ChannelProperties.prototype.commit = function(
-    callback) {
-  'use strict';
-  this.channel_.setForwardChannelFlushCallback(callback);
-};
+WebChannelBaseTransport.ChannelProperties.prototype.commit =
+    goog.abstractMethod;
+
+
+/**
+ * @override
+ */
+WebChannelBaseTransport.ChannelProperties.prototype.getNonAckedMessageCount =
+    goog.abstractMethod;
 
 
 /**
@@ -572,20 +523,9 @@ WebChannelBaseTransport.ChannelProperties.prototype.ackCommit =
     goog.abstractMethod;
 
 
-/**
- * @override
- * @return {!Object<string, string>|undefined}
- */
-WebChannelBaseTransport.ChannelProperties.prototype.getLastResponseHeaders =
-    function() {
-  'use strict';
-  return this.channel_.getLastResponseHeaders();
-};
-
 /** @override */
 WebChannelBaseTransport.ChannelProperties.prototype.getLastStatusCode =
     function() {
-  'use strict';
   return this.channel_.getLastStatusCode();
 };
 });  // goog.scope

@@ -1,89 +1,67 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.storage.mechanism.HTML5SessionStorageTest');
-goog.setTestOnly();
+goog.provide('goog.storage.mechanism.HTML5SessionStorageTest');
+goog.setTestOnly('goog.storage.mechanism.HTML5SessionStorageTest');
 
-const HTML5SessionStorage = goog.require('goog.storage.mechanism.HTML5SessionStorage');
-const iterableMechanismTests = goog.require('goog.storage.mechanism.iterableMechanismTests');
-const mechanismSharingTests = goog.require('goog.storage.mechanism.mechanismSharingTests');
-const mechanismTests = goog.require('goog.storage.mechanism.mechanismTests');
-const product = goog.require('goog.userAgent.product');
-const testSuite = goog.require('goog.testing.testSuite');
-const userAgent = goog.require('goog.userAgent');
+goog.require('goog.storage.mechanism.HTML5SessionStorage');
+/** @suppress {extraRequire} */
+goog.require('goog.storage.mechanism.mechanismSeparationTester');
+/** @suppress {extraRequire} */
+goog.require('goog.storage.mechanism.mechanismSharingTester');
+/** @suppress {extraRequire} */
+goog.require('goog.storage.mechanism.mechanismTestDefinition');
+goog.require('goog.testing.jsunit');
+goog.require('goog.userAgent');
+goog.require('goog.userAgent.product');
 
-let mechanism;
-let mechanismShared;
-let minimumQuota;
+function shouldRunTests() {
+  // Disabled in Safari because Apple SafariDriver runs tests in Private
+  // Browsing mode, and Safari does not permit writing to sessionStorage in
+  // Private Browsing windows.
+  return !goog.userAgent.product.SAFARI;
+}
 
-testSuite({
-  shouldRunTests() {
-    // Disabled in Safari because Apple SafariDriver runs tests in Private
-    // Browsing mode, and Safari does not permit writing to sessionStorage in
-    // Private Browsing windows.
-    return !product.SAFARI;
-  },
+function setUp() {
+  var sessionStorage = new goog.storage.mechanism.HTML5SessionStorage();
+  if (sessionStorage.isAvailable()) {
+    mechanism = sessionStorage;
+    // There should be at least 2 MiB.
+    minimumQuota = 2 * 1024 * 1024;
+    mechanism_shared = new goog.storage.mechanism.HTML5SessionStorage();
+  }
+}
 
-  setUp() {
-    const sessionStorage = new HTML5SessionStorage();
-    if (sessionStorage.isAvailable()) {
-      mechanism = sessionStorage;
-      // There should be at least 2 MiB.
-      minimumQuota = 2 * 1024 * 1024;
-      mechanismShared = new HTML5SessionStorage();
-    }
-  },
+function tearDown() {
+  if (!!mechanism) {
+    mechanism.clear();
+    mechanism = null;
+  }
+  if (!!mechanism_shared) {
+    mechanism_shared.clear();
+    mechanism_shared = null;
+  }
+}
 
-  tearDown() {
-    if (!!mechanism) {
-      mechanism.clear();
-      mechanism = null;
-    }
-    if (!!mechanismShared) {
-      mechanismShared.clear();
-      mechanismShared = null;
-    }
-  },
-
-  /**
-     @suppress {strictMissingProperties} suppression added to enable type
-     checking
-   */
-  testAvailability() {
-    if (userAgent.WEBKIT ||
-        userAgent.GECKO && window.location.protocol != 'file:' ||
-        userAgent.IE) {
-      assertNotNull(mechanism);
-      assertTrue(mechanism.isAvailable());
-      assertNotNull(mechanismShared);
-      assertTrue(mechanismShared.isAvailable());
-    }
-  },
-
-  ...mechanismTests.register({
-    getMechanism: function() {
-      return mechanism;
-    },
-    getMinimumQuota: function() {
-      return minimumQuota;
-    },
-  }),
-
-  ...iterableMechanismTests.register({
-    getMechanism: function() {
-      return mechanism;
-    },
-  }),
-
-  ...mechanismSharingTests.register({
-    getMechanism: function() {
-      return mechanism;
-    },
-    getMechanismShared: function() {
-      return mechanismShared;
-    },
-  }),
-});
+function testAvailability() {
+  if (goog.userAgent.WEBKIT && goog.userAgent.isVersionOrHigher('532.5') ||
+      goog.userAgent.GECKO && goog.userAgent.isVersionOrHigher('1.9.1') &&
+          window.location.protocol != 'file:' ||
+      goog.userAgent.IE && goog.userAgent.isVersionOrHigher('8')) {
+    assertNotNull(mechanism);
+    assertTrue(mechanism.isAvailable());
+    assertNotNull(mechanism_shared);
+    assertTrue(mechanism_shared.isAvailable());
+  }
+}

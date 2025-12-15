@@ -1,52 +1,42 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2009 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-/**
- * @fileoverview
- * @suppress {missingRequire} Stubbing goog.net.XhrIo
- */
+goog.provide('goog.ui.ac.RichRemoteArrayMatcherTest');
+goog.setTestOnly('goog.ui.ac.RichRemoteArrayMatcherTest');
 
-goog.module('goog.ui.ac.RichRemoteArrayMatcherTest');
-goog.setTestOnly();
+goog.require('goog.net.XhrIo');
+goog.require('goog.testing.MockControl');
+goog.require('goog.testing.jsunit');
+goog.require('goog.testing.net.XhrIo');
+goog.require('goog.ui.ac.RichRemoteArrayMatcher');
 
-const ArgumentMatcher = goog.require('goog.testing.mockmatchers.ArgumentMatcher');
-const MockControl = goog.require('goog.testing.MockControl');
-const NetXhrIo = goog.require('goog.testing.net.XhrIo');
-const RichRemoteArrayMatcher = goog.require('goog.ui.ac.RichRemoteArrayMatcher');
-/** @suppress {extraRequire} */
-const XhrIo = goog.require('goog.net.XhrIo');
-const testSuite = goog.require('goog.testing.testSuite');
+var url = 'http://www.google.com';
+var token = 'goog';
+var maxMatches = 5;
 
-const url = 'http://www.google.com';
-const token = 'goog';
-const maxMatches = 5;
+var responseJsonText = '[["type1", "eric", "larry", "sergey"]]';
+var responseJsonType1 = ["eric", "larry", "sergey"];
 
-const responseJsonText =
-    '[["type1", {"name":"eric"}, {"name":"larry"}, {"name":"sergey"}]]';
-// This matcher is used to match the value used in the `matchHandler` callback
-// in tests.
-// The `RichRemoteArrayMatcher` takes in the parsed `responseJsonTest`
-// above and augments each object within the array with methods that it defines.
-// By default mocks do === comparison between the expected and actual value,
-// so to avoid copying those method implementations into the test, we instead
-// implement a matcher that checks to see that the value given to the callback
-// is roughly what we expected it to be: an array whose objects have the names
-// listed above.
-// Effectively, this is structurally matching the following:
-// [{name: 'eric'},{name:'larry'},{name:'sergey'}]
-const ignoresRenderAndSelectMatcher = new ArgumentMatcher((arg) => {
-  if (!Array.isArray(arg)) {
-    return false;
-  }
-  return arg[0].name === 'eric' && arg[1].name === 'larry' &&
-      arg[2].name === 'sergey';
-}, 'matchesType1');
+var mockControl;
+var mockMatchHandler;
 
-let mockControl;
-let mockMatchHandler;
+
+function setUp() {
+  goog.net.XhrIo = goog.testing.net.XhrIo;
+  mockControl = new goog.testing.MockControl();
+  mockMatchHandler = mockControl.createFunctionMock();
+}
 
 /**
  * Callback for type1 responses.
@@ -57,46 +47,26 @@ function type1(response) {
   return response;
 }
 
-testSuite({
-  setUp() {
-    goog.net.XhrIo = /** @type {?} */ (NetXhrIo);
-    mockControl = new MockControl();
-    mockMatchHandler = mockControl.createFunctionMock();
-  },
+function testRequestMatchingRows() {
+  var matcher = new goog.ui.ac.RichRemoteArrayMatcher(url);
+  mockMatchHandler(token, responseJsonType1);
+  mockControl.$replayAll();
+  matcher.requestMatchingRows(token, maxMatches, mockMatchHandler);
+  matcher.xhr_.simulateResponse(200, responseJsonText);
+  mockControl.$verifyAll();
+  mockControl.$resetAll();
+}
 
-  /**
-     @suppress {checkTypes,visibility,strictMissingProperties} suppression
-     added to enable type checking
-   */
-  testRequestMatchingRows() {
-    const matcher = new RichRemoteArrayMatcher(url);
-    mockMatchHandler(token, ignoresRenderAndSelectMatcher);
-    mockControl.$replayAll();
-    matcher.requestMatchingRows(token, maxMatches, mockMatchHandler);
-    matcher.xhr_.simulateResponse(200, responseJsonText);
-    mockControl.$verifyAll();
-    mockControl.$resetAll();
-  },
-
-  /**
-     @suppress {checkTypes,visibility,strictMissingProperties} suppression
-     added to enable type checking
-   */
-  testSetRowBuilder() {
-    const matcher = new RichRemoteArrayMatcher(url);
-    matcher.setRowBuilder(/**
-                             @suppress {checkTypes} suppression added to enable
-                             type checking
-                           */
-                          (type, response) => {
-                            assertEquals('type1', type);
-                            return response;
-                          });
-    mockMatchHandler(token, ignoresRenderAndSelectMatcher);
-    mockControl.$replayAll();
-    matcher.requestMatchingRows(token, maxMatches, mockMatchHandler);
-    matcher.xhr_.simulateResponse(200, responseJsonText);
-    mockControl.$verifyAll();
-    mockControl.$resetAll();
-  },
-});
+function testSetRowBuilder() {
+  var matcher = new goog.ui.ac.RichRemoteArrayMatcher(url);
+  matcher.setRowBuilder(function(type, response) {
+    assertEquals("type1", type);
+    return response;
+  });
+  mockMatchHandler(token, responseJsonType1);
+  mockControl.$replayAll();
+  matcher.requestMatchingRows(token, maxMatches, mockMatchHandler);
+  matcher.xhr_.simulateResponse(200, responseJsonText);
+  mockControl.$verifyAll();
+  mockControl.$resetAll();
+}

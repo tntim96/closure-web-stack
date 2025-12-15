@@ -1,48 +1,26 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Utility function for linkifying text.
+ * @author bolinfest@google.com (Michael Bolin)
  */
 
 goog.provide('goog.string.linkify');
 
-goog.require('goog.asserts');
 goog.require('goog.html.SafeHtml');
-goog.require('goog.html.uncheckedconversions');
 goog.require('goog.string');
-goog.require('goog.string.Const');
-
-
-/**
- * Options bag for linkifyPlainTextAsHtml's second parameter.
- * @record
- */
-goog.string.linkify.LinkifyOptions = class {
-  constructor() {
-    /**
-     * HTML attributes to add to all links created.  Default are `rel=nofollow`
-     * and `target=_blank`. To clear these defaults attributes, set them
-     * explicitly to '', i.e. `{rel: '', target: ''}`.
-     * @const {!Object<string, ?goog.html.SafeHtml.AttributeValue>|undefined}
-     */
-    this.attributes;
-    /**
-     * Whether to preserve newlines with &lt;br&gt;.
-     * @const {boolean|undefined}
-     */
-    this.preserveNewlines;
-    /**
-     * Whether to preserve spaces with non-breaking spaces and tabs with
-     * &lt;span style="white-space:pre"&gt;
-     * @const {boolean|undefined}
-     */
-    this.preserveSpacesAndTabs;
-  }
-};
 
 
 /**
@@ -51,69 +29,35 @@ goog.string.linkify.LinkifyOptions = class {
  * _blank and it will have a rel=nofollow attribute applied to it so that links
  * created by linkify will not be of interest to search engines.
  * @param {string} text Plain text.
- * @param {!goog.string.linkify.LinkifyOptions=} opt_options Options bag.
+ * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ *     Attributes to add to all links created. Default are rel=nofollow and
+ *     target=_blank. To clear those default attributes set rel='' and
+ *     target=''.
+ * @param {boolean=} opt_preserveNewlines Whether to preserve newlines with
+ *     &lt;br&gt;.
  * @return {!goog.html.SafeHtml} Linkified HTML. Any text that is not part of a
  *      link will be HTML-escaped.
- * @suppress {strictMissingProperties} opt_attributes type is a union
  */
-goog.string.linkify.linkifyPlainTextAsHtml = function(text, opt_options) {
-  'use strict';
-  const {attributes = {}, preserveNewlines, preserveSpacesAndTabs, ...rest} =
-      opt_options || {};
-  if (goog.DEBUG) {
-    for (const key in rest) {
-      if (rest.hasOwnProperty(key)) {
-        goog.asserts.fail(`Unexpected option: ${key}`);
-      }
-    }
-  }
-
-  /**
-   * @param {string} plainText
-   * @return {!goog.html.SafeHtml} html
-   */
-  const htmlEscape = function(plainText) {
-    if (preserveSpacesAndTabs) {
-      const html = goog.html.SafeHtml.htmlEscape(plainText);
-      let modifiedHtml =
-          goog.html.SafeHtml
-              .unwrap(html)
-              // Leading space is converted into a non-breaking space, and
-              // spaces following whitespace are converted into non-breaking
-              // spaces. This must happen first, to ensure we preserve spaces
-              // after newlines.
-              .replace(/(^|[\n\r\t\ ])\ /g, '$1&#160;')
-              // Preserve tabs by using style="white-space:pre"
-              .replace(/(\t+)/g, '<span style="white-space:pre">$1</span>');
-      if (preserveNewlines) {
-        modifiedHtml = goog.string.newLineToBr(modifiedHtml);
-      }
-      return goog.html.uncheckedconversions
-          .safeHtmlFromStringKnownToSatisfyTypeContract(
-              goog.string.Const.from('Escaped plain text'), modifiedHtml);
-    } else if (preserveNewlines) {
-      return goog.html.SafeHtml.htmlEscapePreservingNewlines(plainText);
-    } else {
-      return goog.html.SafeHtml.htmlEscape(plainText);
-    }
-  };
-
+goog.string.linkify.linkifyPlainTextAsHtml = function(
+    text, opt_attributes, opt_preserveNewlines) {
   // This shortcut makes linkifyPlainText ~10x faster if text doesn't contain
   // URLs or email addresses and adds insignificant performance penalty if it
   // does.
   if (text.indexOf('@') == -1 && text.indexOf('://') == -1 &&
       text.indexOf('www.') == -1 && text.indexOf('Www.') == -1 &&
       text.indexOf('WWW.') == -1) {
-    return htmlEscape(text);
+    return opt_preserveNewlines ?
+        goog.html.SafeHtml.htmlEscapePreservingNewlines(text) :
+        goog.html.SafeHtml.htmlEscape(text);
   }
 
-  const attributesMap = {};
-  for (let key in attributes) {
-    if (!attributes[key]) {
+  var attributesMap = {};
+  for (var key in opt_attributes) {
+    if (!opt_attributes[key]) {
       // Our API allows '' to omit the attribute, SafeHtml requires null.
       attributesMap[key] = null;
     } else {
-      attributesMap[key] = attributes[key];
+      attributesMap[key] = opt_attributes[key];
     }
   }
   // Set default options if they haven't been explicitly set.
@@ -124,21 +68,23 @@ goog.string.linkify.linkifyPlainTextAsHtml = function(text, opt_options) {
     attributesMap['target'] = '_blank';
   }
 
-  const output = [];
+  var output = [];
   // Return value is ignored.
   text.replace(
       goog.string.linkify.FIND_LINKS_RE_,
       function(part, before, original, email, protocol) {
-        'use strict';
-        output.push(htmlEscape(before));
+        output.push(
+            opt_preserveNewlines ?
+                goog.html.SafeHtml.htmlEscapePreservingNewlines(before) :
+                before);
         if (!original) {
           return '';
         }
-        let href = '';
+        var href = '';
         /** @type {string} */
-        let linkText;
+        var linkText;
         /** @type {string} */
-        let afterLink;
+        var afterLink;
         if (email) {
           href = 'mailto:';
           linkText = email;
@@ -148,33 +94,13 @@ goog.string.linkify.linkifyPlainTextAsHtml = function(text, opt_options) {
           if (!protocol) {
             href = 'http://';
           }
-          const splitEndingPunctuation =
+          var splitEndingPunctuation =
               original.match(goog.string.linkify.ENDS_WITH_PUNCTUATION_RE_);
           // An open paren in the link will often be matched with a close paren
-          // at the end, so skip cutting off ending punctuation if
-          // opening/closing parens are matched in the link. Same for curly
-          // brackets. For example:
-          // End symbol is linkified:
-          // * http://en.wikipedia.org/wiki/Titanic_(1997_film)
-          // * http://google.com/abc{arg=1}
-          // e.g. needEndingPunctuationForBalance for split
-          // 'http://google.com/abc{arg=', and '} is true.
-          // End symbol is not linkified because there is no open parens to
-          // close in the link itself, as the open parens occurs before the URL:
-          // * (http://google.com/)
-          // e.g. needEndingPunctuationForBalance for split 'http://google.com/
-          // and ')' is false.
-          function needEndingPunctuationForBalance(
-              split, openSymbol, closeSymbol) {
-            return goog.string.contains(split[2], closeSymbol) &&
-                goog.string.countOf(split[1], openSymbol) >
-                goog.string.countOf(split[1], closeSymbol);
-          }
-          if (splitEndingPunctuation &&
-              !needEndingPunctuationForBalance(
-                  splitEndingPunctuation, '(', ')') &&
-              !needEndingPunctuationForBalance(
-                  splitEndingPunctuation, '{', '}')) {
+          // at the end, so skip cutting off ending punctuation if there's an
+          // open paren. For example:
+          // http://en.wikipedia.org/wiki/Titanic_(1997_film)
+          if (splitEndingPunctuation && !goog.string.contains(original, '(')) {
             linkText = splitEndingPunctuation[1];
             afterLink = splitEndingPunctuation[2];
           } else {
@@ -184,7 +110,10 @@ goog.string.linkify.linkifyPlainTextAsHtml = function(text, opt_options) {
         }
         attributesMap['href'] = href + linkText;
         output.push(goog.html.SafeHtml.create('a', attributesMap, linkText));
-        output.push(htmlEscape(afterLink));
+        output.push(
+            opt_preserveNewlines ?
+                goog.html.SafeHtml.htmlEscapePreservingNewlines(afterLink) :
+                afterLink);
         return '';
       });
   return goog.html.SafeHtml.concat(output);
@@ -197,8 +126,7 @@ goog.string.linkify.linkifyPlainTextAsHtml = function(text, opt_options) {
  * @return {string} The first URL, or an empty string if not found.
  */
 goog.string.linkify.findFirstUrl = function(text) {
-  'use strict';
-  const link = text.match(goog.string.linkify.URL_RE_);
+  var link = text.match(goog.string.linkify.URL_RE_);
   return link != null ? link[0] : '';
 };
 
@@ -209,8 +137,7 @@ goog.string.linkify.findFirstUrl = function(text) {
  * @return {string} The first email address, or an empty string if not found.
  */
 goog.string.linkify.findFirstEmail = function(text) {
-  'use strict';
-  const email = text.match(goog.string.linkify.EMAIL_RE_);
+  var email = text.match(goog.string.linkify.EMAIL_RE_);
   return email != null ? email[0] : '';
 };
 
@@ -222,7 +149,7 @@ goog.string.linkify.findFirstEmail = function(text) {
  * @const
  * @private
  */
-goog.string.linkify.ENDING_PUNCTUATION_CHARS_ = '\':;,\\.?}\\]\\)!';
+goog.string.linkify.ENDING_PUNCTUATION_CHARS_ = ':;,\\.?}\\]\\)!';
 
 
 /**
@@ -283,10 +210,9 @@ goog.string.linkify.WWW_START_ = 'www\\.';
  * @const
  * @private
  */
-goog.string.linkify.URL_RE_STRING_ =
-    '(?:' + goog.string.linkify.PROTOCOL_START_ + '|' +
-    goog.string.linkify.WWW_START_ + ')[' +
-    goog.string.linkify.ACCEPTABLE_URL_CHARS_ + ']+';
+goog.string.linkify.URL_RE_STRING_ = '(?:' +
+    goog.string.linkify.PROTOCOL_START_ + '|' + goog.string.linkify.WWW_START_ +
+    ')[' + goog.string.linkify.ACCEPTABLE_URL_CHARS_ + ']+';
 
 
 /**

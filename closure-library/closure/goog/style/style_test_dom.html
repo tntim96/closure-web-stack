@@ -1,12 +1,17 @@
 <!--
-Copyright The Closure Library Authors. All Rights Reserved.
+
+  When changing this, make sure that style_quirks_test.html is kept in sync.
+
+-->
+<!--
+Copyright 2017 The Closure Library Authors. All Rights Reserved.
 
 Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0,
     maximum-scale=1.0, minimum-scale=1.0, user-scalable=0">
-<style nonce="NONCE">
+<style>
 
 i {
   font-family: Times, sans-serif;
@@ -39,7 +44,7 @@ i {
 }
 
 #bgcolorTest5 {
-  background-color: red;
+  background-color: lightblue;
 }
 
 #bgcolorTest6 {
@@ -452,6 +457,8 @@ xxxxxxxx x</div>
 
 <div id="test-opacity"></div>
 
+<iframe id="test-frame-offset"></iframe>
+
 <iframe id="test-translate-frame-standard" src="style_test_standard.html"
  style="overflow:auto;position:absolute;left:100px;top:150px;width:200px;height:200px;border:0px;">
 </iframe>
@@ -525,7 +532,7 @@ Test-visible
   </svg>
 </div>
 
-<script nonce="CSP+Nonce+For+Tests+Only">
+<script>
 if (!goog.userAgent.IE || goog.userAgent.isDocumentModeOrHigher(9)) {
   document.write(
       '<iframe id="svg-frame" src="style_test_rect.svg"></' + 'iframe>');

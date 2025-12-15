@@ -1,14 +1,23 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Detect Grapheme Cluster Break in a pair of codepoints. Follows
  * Unicode 10 UAX#29. Tailoring for Virama × Indic Letters is used.
  *
  * Reference: http://unicode.org/reports/tr29
+ *
  */
 
 goog.provide('goog.i18n.GraphemeBreak');
@@ -74,19 +83,18 @@ goog.i18n.GraphemeBreak.inversions_ = null;
  * @private
  */
 goog.i18n.GraphemeBreak.applyBreakRules_ = function(a, b, extended) {
-  'use strict';
   var prop = goog.i18n.GraphemeBreak.property;
 
-  var aCode = (typeof a === 'string') ?
+  var aCode = goog.isString(a) ?
       goog.i18n.GraphemeBreak.getCodePoint_(a, a.length - 1) :
       a;
   var bCode =
-      (typeof b === 'string') ? goog.i18n.GraphemeBreak.getCodePoint_(b, 0) : b;
+      goog.isString(b) ? goog.i18n.GraphemeBreak.getCodePoint_(b, 0) : b;
 
   var aProp = goog.i18n.GraphemeBreak.getBreakProp_(aCode);
   var bProp = goog.i18n.GraphemeBreak.getBreakProp_(bCode);
 
-  var isString = (typeof a === 'string');
+  var isString = goog.isString(a);
 
   // GB3.
   if (aProp === prop.CR && bProp === prop.LF) {
@@ -218,7 +226,6 @@ goog.i18n.GraphemeBreak.applyBreakRules_ = function(a, b, extended) {
  * @private
  */
 goog.i18n.GraphemeBreak.getBreakProp_ = function(codePoint) {
-  'use strict';
   if (0xAC00 <= codePoint && codePoint <= 0xD7A3) {
     var prop = goog.i18n.GraphemeBreak.property;
     if (codePoint % 0x1C === 0x10) {
@@ -388,7 +395,6 @@ goog.i18n.GraphemeBreak.getBreakProp_ = function(codePoint) {
  * @private
  */
 goog.i18n.GraphemeBreak.getCodePoint_ = function(str, index) {
-  'use strict';
   var codePoint = goog.i18n.uChar.getCodePointAround(str, index);
   return (codePoint < 0) ? -codePoint : codePoint;
 };
@@ -399,7 +405,7 @@ goog.i18n.GraphemeBreak.getCodePoint_ = function(str, index) {
  * Legacy function. Does not cover cases where a sequence of code points is
  * required in order to decide if there is a grapheme cluster boundary, such as
  * emoji modifier sequences and emoji flag sequences. To cover all cases please
- * use `hasGraphemeBreakStrings`.
+ * use {@code hasGraphemeBreakStrings}.
  *
  * There are two kinds of grapheme clusters: 1) Legacy 2) Extended. This method
  * is to check for both using a boolean flag to switch between them. If no flag
@@ -413,7 +419,6 @@ goog.i18n.GraphemeBreak.getCodePoint_ = function(str, index) {
  *     a and b; False otherwise.
  */
 goog.i18n.GraphemeBreak.hasGraphemeBreak = function(a, b, opt_extended) {
-  'use strict';
   return goog.i18n.GraphemeBreak.applyBreakRules_(a, b, opt_extended !== false);
 };
 
@@ -432,9 +437,8 @@ goog.i18n.GraphemeBreak.hasGraphemeBreak = function(a, b, opt_extended) {
  *     a and b; False otherwise.
  */
 goog.i18n.GraphemeBreak.hasGraphemeBreakStrings = function(a, b, opt_extended) {
-  'use strict';
-  goog.asserts.assert(a !== undefined, 'First string should be defined.');
-  goog.asserts.assert(b !== undefined, 'Second string should be defined.');
+  goog.asserts.assert(goog.isDef(a), 'First string should be defined.');
+  goog.asserts.assert(goog.isDef(b), 'Second string should be defined.');
 
   // Break if any of the strings is empty.
   if (a.length === 0 || b.length === 0) {

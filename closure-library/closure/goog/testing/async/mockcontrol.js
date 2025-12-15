@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2010 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview A wrapper for MockControl that provides mocks and assertions
@@ -32,6 +40,7 @@
  * asyncMockControl.run();
  * mockControl.$verifyAll();
  * </pre>
+ *
  */
 
 
@@ -41,9 +50,10 @@ goog.provide('goog.testing.async.MockControl');
 goog.require('goog.asserts');
 goog.require('goog.async.Deferred');
 goog.require('goog.debug');
-goog.require('goog.testing.MockControl');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.mockmatchers.IgnoreArgument');
+
+
 
 /**
  * Provides asynchronous mocks and assertions controlled by a parent
@@ -54,7 +64,6 @@ goog.require('goog.testing.mockmatchers.IgnoreArgument');
  * @final
  */
 goog.testing.async.MockControl = function(mockControl) {
-  'use strict';
   /**
    * The parent MockControl.
    * @type {goog.testing.MockControl}
@@ -68,37 +77,34 @@ goog.testing.async.MockControl = function(mockControl) {
  * Returns a function that will assert that it will be called, and run the given
  * callback when it is.
  *
- * @template THIS
  * @param {string} name The name of the callback mock.
- * @param {function(this:THIS, ...*) : *} callback The wrapped callback. This will be
+ * @param {function(...*) : *} callback The wrapped callback. This will be
  *     called when the returned function is called.
- * @param {THIS=} opt_selfObj The object which this should point to when the
+ * @param {Object=} opt_selfObj The object which this should point to when the
  *     callback is run.
  * @return {!Function} The mock callback.
  * @suppress {missingProperties} Mocks do not fit in the type system well.
  */
 goog.testing.async.MockControl.prototype.createCallbackMock = function(
     name, callback, opt_selfObj) {
-  'use strict';
   goog.asserts.assert(
-      typeof name === 'string',
+      goog.isString(name),
       'name parameter ' + goog.debug.deepExpose(name) + ' should be a string');
 
-  const ignored = new goog.testing.mockmatchers.IgnoreArgument();
+  var ignored = new goog.testing.mockmatchers.IgnoreArgument();
 
   // Use everyone's favorite "double-cast" trick to subvert the type system.
-  const mock = this.mockControl_.createFunctionMock(name);
-  const mockAsFn = /** @type {Function} */ (/** @type {*} */ (mock));
+  var obj = /** @type {Object} */ (this.mockControl_.createFunctionMock(name));
+  var fn = /** @type {Function} */ (obj);
 
-  mockAsFn(ignored).$does(function(args) {
-    'use strict';
-    return callback.apply(opt_selfObj || /** @type {?} */ (this), args);
+  fn(ignored).$does(function(args) {
+    if (opt_selfObj) {
+      callback = goog.bind(callback, opt_selfObj);
+    }
+    return callback.apply(this, args);
   });
-  mock.$replay();
-  return function() {
-    'use strict';
-    return mockAsFn(arguments);
-  };
+  fn.$replay();
+  return function() { return fn(arguments); };
 };
 
 
@@ -113,10 +119,8 @@ goog.testing.async.MockControl.prototype.createCallbackMock = function(
  */
 goog.testing.async.MockControl.prototype.asyncAssertEquals = function(
     message, var_args) {
-  'use strict';
-  const expectedArgs = Array.prototype.slice.call(arguments, 1);
+  var expectedArgs = Array.prototype.slice.call(arguments, 1);
   return this.createCallbackMock('asyncAssertEquals', function() {
-    'use strict';
     assertObjectEquals(
         message, expectedArgs, Array.prototype.slice.call(arguments));
   });
@@ -132,10 +136,9 @@ goog.testing.async.MockControl.prototype.asyncAssertEquals = function(
  */
 goog.testing.async.MockControl.prototype.assertDeferredError = function(
     deferred, fn) {
-  'use strict';
   deferred.addErrback(
       this.createCallbackMock('assertDeferredError', function() {}));
-  fn();
+  goog.testing.asserts.callWithoutLogging(fn);
 };
 
 
@@ -151,20 +154,20 @@ goog.testing.async.MockControl.prototype.assertDeferredError = function(
  */
 goog.testing.async.MockControl.prototype.assertDeferredEquals = function(
     message, expected, actual) {
-  'use strict';
-  if (expected instanceof goog.async.Deferred) {
+  if (expected instanceof goog.async.Deferred &&
+      actual instanceof goog.async.Deferred) {
     // Assert that the first deferred is resolved.
     expected.addCallback(
         this.createCallbackMock('assertDeferredEquals', function(exp) {
-          'use strict';
           // Assert that the second deferred is resolved, and that the value is
           // as expected.
-          if (actual instanceof goog.async.Deferred) {
-            actual.addCallback(this.asyncAssertEquals(message, exp));
-          } else {
-            assertObjectEquals(message, exp, actual);
-          }
+          actual.addCallback(this.asyncAssertEquals(message, exp));
         }, this));
+  } else if (expected instanceof goog.async.Deferred) {
+    expected.addCallback(
+        this.createCallbackMock('assertDeferredEquals', function(exp) {
+          assertObjectEquals(message, exp, actual);
+        }));
   } else if (actual instanceof goog.async.Deferred) {
     actual.addCallback(this.asyncAssertEquals(message, expected));
   } else {

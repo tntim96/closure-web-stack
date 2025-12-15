@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2009 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Provides a 'paste' event detector that works consistently
@@ -15,7 +23,7 @@
  * Known issue: will not detect paste events in FF2 if you pasted exactly the
  * same existing text.
  * Known issue: Opera + Mac doesn't work properly because of the meta key. We
- * can probably fix that. TODO(goto): {@link KeyboardShortcutHandler} does not
+ * can probably fix that. TODO(user): {@link KeyboardShortcutHandler} does not
  * work either very well with opera + mac. fix that.
  *
  * @see ../demos/pastehandler.html
@@ -33,13 +41,14 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.log');
+goog.require('goog.userAgent');
 
 
 
 /**
- * A paste event detector. Gets an `element` as parameter and fires
- * `goog.events.PasteHandler.EventType.PASTE` events when text is
- * pasted in the `element`. Uses heuristics to detect paste events in FF2.
+ * A paste event detector. Gets an {@code element} as parameter and fires
+ * {@code goog.events.PasteHandler.EventType.PASTE} events when text is
+ * pasted in the {@code element}. Uses heuristics to detect paste events in FF2.
  * See more details of the heuristic on {@link #handleEvent_}.
  *
  * @param {Element} element The textarea element we are listening on.
@@ -47,7 +56,6 @@ goog.require('goog.log');
  * @extends {goog.events.EventTarget}
  */
 goog.events.PasteHandler = function(element) {
-  'use strict';
   goog.events.EventTarget.call(this);
 
   /**
@@ -62,7 +70,6 @@ goog.events.PasteHandler = function(element) {
    * more details on {@link #handleEvent_}.
    * @type {string}
    * @private
-   * @suppress {strictMissingProperties} Added to tighten compiler checks
    */
   this.oldValue_ = this.element_.value;
 
@@ -80,7 +87,7 @@ goog.events.PasteHandler = function(element) {
    * @type {number}
    * @private
    */
-  this.lastTime_ = Date.now();
+  this.lastTime_ = goog.now();
 
   if (goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT) {
     // Most modern browsers support the paste event.
@@ -106,6 +113,7 @@ goog.events.PasteHandler = function(element) {
    */
   this.delay_ =
       new goog.async.ConditionalDelay(goog.bind(this.checkUpdatedText_, this));
+
 };
 goog.inherits(goog.events.PasteHandler, goog.events.EventTarget);
 
@@ -130,7 +138,7 @@ goog.events.PasteHandler.EventType = {
 
 
 /**
- * The mandatory delay we expect between two `input` events, used to
+ * The mandatory delay we expect between two {@code input} events, used to
  * differentiated between non key paste events and key events.
  * @type {number}
  */
@@ -141,7 +149,9 @@ goog.events.PasteHandler.MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER = 400;
  * Whether current UA supoprts the native "paste" event type.
  * @const {boolean}
  */
-goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT = true;
+goog.events.PasteHandler.SUPPORTS_NATIVE_PASTE_EVENT = goog.userAgent.WEBKIT ||
+    goog.userAgent.IE || goog.userAgent.EDGE ||
+    (goog.userAgent.GECKO && goog.userAgent.isVersionOrHigher('1.9'));
 
 
 /**
@@ -199,7 +209,6 @@ goog.events.PasteHandler.prototype.logger_ =
 
 /** @override */
 goog.events.PasteHandler.prototype.disposeInternal = function() {
-  'use strict';
   goog.events.PasteHandler.superClass_.disposeInternal.call(this);
   this.eventHandler_.dispose();
   this.eventHandler_ = null;
@@ -214,19 +223,18 @@ goog.events.PasteHandler.prototype.disposeInternal = function() {
  * @return {goog.events.PasteHandler.State} The current state of the class.
  */
 goog.events.PasteHandler.prototype.getState = function() {
-  'use strict';
   return this.state_;
 };
 
 
 /**
  * Returns the event handler.
- * @return {goog.events.EventHandler<!goog.events.PasteHandler>} The event
- *     handler.
+ * @return {goog.events.EventHandler<T>} The event handler.
  * @protected
+ * @this {T}
+ * @template T
  */
 goog.events.PasteHandler.prototype.getEventHandler = function() {
-  'use strict';
   return this.eventHandler_;
 };
 
@@ -237,10 +245,8 @@ goog.events.PasteHandler.prototype.getEventHandler = function() {
  * @return {boolean} Whether the polling should stop or not, based on whether
  *     we found a text change or not.
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.events.PasteHandler.prototype.checkUpdatedText_ = function() {
-  'use strict';
   if (this.oldValue_ == this.element_.value) {
     return false;
   }
@@ -256,7 +262,6 @@ goog.events.PasteHandler.prototype.checkUpdatedText_ = function() {
  * @private
  */
 goog.events.PasteHandler.prototype.dispatch_ = function(e) {
-  'use strict';
   var event = new goog.events.BrowserEvent(e.getBrowserEvent());
   event.type = goog.events.PasteHandler.EventType.PASTE;
   this.dispatchEvent(event);
@@ -266,7 +271,6 @@ goog.events.PasteHandler.prototype.dispatch_ = function(e) {
   // async delay of 0 msec since some browsers update the text right away and
   // our poller will always wait one period before checking).
   goog.Timer.callOnce(function() {
-    'use strict';
     if (!this.checkUpdatedText_()) {
       this.delay_.start(
           goog.events.PasteHandler.PASTE_POLLING_PERIOD_MS_,
@@ -304,9 +308,9 @@ goog.events.PasteHandler.prototype.dispatch_ = function(e) {
  * it fires e.keyCode = 17, which is the CTRL key code.
  * {@link http://www.quirksmode.org/js/keys.html}
  *
- * NOTE(goto, user): There is an interesting thing about (5): on Linux, (5)
+ * NOTE(user, pbarry): There is an interesting thing about (5): on Linux, (5)
  * pastes the last thing that you highlighted, not the last thing that you
- * ctrl+c'ed. This code will still generate a `PASTE` event though.
+ * ctrl+c'ed. This code will still generate a {@code PASTE} event though.
  *
  * We enumerate all the possible steps a user can take to paste text and we
  * implemented the transition between the steps in a state machine. The
@@ -327,7 +331,6 @@ goog.events.PasteHandler.prototype.dispatch_ = function(e) {
  * @private
  */
 goog.events.PasteHandler.prototype.handleEvent_ = function(e) {
-  'use strict';
   // transition between states happen at each browser event, and depend on the
   // current state, the event that led to this state, and the event input.
   switch (this.state_) {
@@ -347,8 +350,7 @@ goog.events.PasteHandler.prototype.handleEvent_ = function(e) {
       goog.log.error(this.logger_, 'invalid ' + this.state_ + ' state');
     }
   }
-  this.lastTime_ = Date.now();
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
+  this.lastTime_ = goog.now();
   this.oldValue_ = this.element_.value;
   goog.log.info(this.logger_, e.type + ' -> ' + this.state_);
   this.previousEvent_ = e.type;
@@ -356,21 +358,19 @@ goog.events.PasteHandler.prototype.handleEvent_ = function(e) {
 
 
 /**
- * `goog.events.PasteHandler.EventType.INIT` is the first initial state
+ * {@code goog.events.PasteHandler.EventType.INIT} is the first initial state
  * the textarea is found. You can only leave this state by setting focus on the
  * textarea, which is how users will input text. You can also paste things using
- * drag and drop, which will not generate a `goog.events.EventType.FOCUS`
- * event, but will generate a `goog.events.EventType.MOUSEOVER`.
+ * drag and drop, which will not generate a {@code goog.events.EventType.FOCUS}
+ * event, but will generate a {@code goog.events.EventType.MOUSEOVER}.
  *
  * For browsers that support the 'paste' event, we match it and stay on the same
  * state.
  *
  * @param {goog.events.BrowserEvent} e The underlying browser event.
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.events.PasteHandler.prototype.handleUnderInit_ = function(e) {
-  'use strict';
   switch (e.type) {
     case goog.events.EventType.BLUR: {
       this.state_ = goog.events.PasteHandler.State.INIT;
@@ -397,12 +397,12 @@ goog.events.PasteHandler.prototype.handleUnderInit_ = function(e) {
 
 
 /**
- * `goog.events.PasteHandler.EventType.FOCUSED` is typically the second
- * state the textarea will be, which is followed by the `INIT` state. On
+ * {@code goog.events.PasteHandler.EventType.FOCUSED} is typically the second
+ * state the textarea will be, which is followed by the {@code INIT} state. On
  * this state, users can paste in three different ways: edit -> paste,
  * right click -> paste and drag and drop.
  *
- * The latter will generate a `goog.events.EventType.MOUSEOVER` event,
+ * The latter will generate a {@code goog.events.EventType.MOUSEOVER} event,
  * which we match by making sure the textarea text changed. The first two will
  * generate an 'input', which we match by making sure it was NOT generated by a
  * key event (which also generates an 'input' event).
@@ -416,10 +416,8 @@ goog.events.PasteHandler.prototype.handleUnderInit_ = function(e) {
  *
  * @param {goog.events.BrowserEvent} e The underlying browser event.
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.events.PasteHandler.prototype.handleUnderFocused_ = function(e) {
-  'use strict';
   switch (e.type) {
     case 'input': {
       // there are two different events that happen in practice that involves
@@ -435,7 +433,7 @@ goog.events.PasteHandler.prototype.handleUnderFocused_ = function(e) {
       var minimumMilisecondsBetweenInputEvents = this.lastTime_ +
           goog.events.PasteHandler
               .MANDATORY_MS_BETWEEN_INPUT_EVENTS_TIE_BREAKER;
-      if (Date.now() > minimumMilisecondsBetweenInputEvents ||
+      if (goog.now() > minimumMilisecondsBetweenInputEvents ||
           this.previousEvent_ == goog.events.EventType.FOCUS) {
         goog.log.info(this.logger_, 'paste by textchange while focused!');
         this.dispatch_(e);
@@ -448,6 +446,12 @@ goog.events.PasteHandler.prototype.handleUnderFocused_ = function(e) {
     }
     case goog.events.EventType.KEYDOWN: {
       goog.log.info(this.logger_, 'key down ... looking for ctrl+v');
+      // Opera + MAC does not set e.ctrlKey. Instead, it gives me e.keyCode = 0.
+      // http://www.quirksmode.org/js/keys.html
+      if (goog.userAgent.MAC && goog.userAgent.OPERA && e.keyCode == 0 ||
+          goog.userAgent.MAC && goog.userAgent.OPERA && e.keyCode == 17) {
+        break;
+      }
       this.state_ = goog.events.PasteHandler.State.TYPING;
       break;
     }
@@ -467,7 +471,7 @@ goog.events.PasteHandler.prototype.handleUnderFocused_ = function(e) {
 
 
 /**
- * `goog.events.PasteHandler.EventType.TYPING` is the third state
+ * {@code goog.events.PasteHandler.EventType.TYPING} is the third state
  * this class can be. It exists because each KEYPRESS event will ALSO generate
  * an INPUT event (because the textarea value changes), and we need to
  * differentiate between an INPUT event generated by a key event and an INPUT
@@ -477,10 +481,8 @@ goog.events.PasteHandler.prototype.handleUnderFocused_ = function(e) {
  *
  * @param {goog.events.BrowserEvent} e The underlying browser event.
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.events.PasteHandler.prototype.handleUnderTyping_ = function(e) {
-  'use strict';
   switch (e.type) {
     case 'input': {
       this.state_ = goog.events.PasteHandler.State.FOCUSED;

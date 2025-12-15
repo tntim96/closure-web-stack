@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2012 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Base class for SHA-2 cryptographic hash.
@@ -11,6 +19,7 @@
  * http://csrc.nist.gov/publications/fips/fips180-3/fips180-3_final.pdf.
  *
  * Some code similar to SHA1 are borrowed from sha1.js written by mschilder@.
+ *
  */
 
 goog.provide('goog.crypt.Sha2');
@@ -32,7 +41,6 @@ goog.require('goog.crypt.Hash');
  * @struct
  */
 goog.crypt.Sha2 = function(numHashBlocks, initHashBlocks) {
-  'use strict';
   goog.crypt.Sha2.base(this, 'constructor');
 
   this.blockSize = goog.crypt.Sha2.BLOCKSIZE_;
@@ -85,7 +93,7 @@ goog.crypt.Sha2 = function(numHashBlocks, initHashBlocks) {
    */
   this.w_ = goog.global['Int32Array'] ? new Int32Array(64) : new Array(64);
 
-  if (goog.crypt.Sha2.Kx_ === undefined) {
+  if (!goog.isDef(goog.crypt.Sha2.Kx_)) {
     // This is the first time this constructor has been called.
     if (goog.global['Int32Array']) {
       // Typed arrays exist
@@ -112,13 +120,12 @@ goog.crypt.Sha2.BLOCKSIZE_ = 512 / 8;
  * Contains data needed to pad messages less than BLOCK_SIZE_ bytes.
  * @private {!Array<number>}
  */
-goog.crypt.Sha2.PADDING_ =
-    [].concat(128, goog.array.repeat(0, goog.crypt.Sha2.BLOCKSIZE_ - 1));
+goog.crypt.Sha2.PADDING_ = goog.array.concat(
+    128, goog.array.repeat(0, goog.crypt.Sha2.BLOCKSIZE_ - 1));
 
 
 /** @override */
 goog.crypt.Sha2.prototype.reset = function() {
-  'use strict';
   this.inChunk_ = 0;
   this.total_ = 0;
   this.hash_ = goog.global['Int32Array'] ?
@@ -132,7 +139,6 @@ goog.crypt.Sha2.prototype.reset = function() {
  * @private
  */
 goog.crypt.Sha2.prototype.computeChunk_ = function() {
-  'use strict';
   var chunk = this.chunk_;
   goog.asserts.assert(chunk.length == this.blockSize);
   var rounds = 64;
@@ -212,8 +218,7 @@ goog.crypt.Sha2.prototype.computeChunk_ = function() {
 
 /** @override */
 goog.crypt.Sha2.prototype.update = function(message, opt_length) {
-  'use strict';
-  if (opt_length === undefined) {
+  if (!goog.isDef(opt_length)) {
     opt_length = message.length;
   }
   // Process the message from left to right up to |opt_length| bytes.
@@ -226,7 +231,7 @@ goog.crypt.Sha2.prototype.update = function(message, opt_length) {
   var inChunk = this.inChunk_;
 
   // The input message could be either byte array of string.
-  if (typeof message === 'string') {
+  if (goog.isString(message)) {
     while (n < opt_length) {
       this.chunk_[inChunk++] = message.charCodeAt(n++);
       if (inChunk == this.blockSize) {
@@ -260,7 +265,6 @@ goog.crypt.Sha2.prototype.update = function(message, opt_length) {
 
 /** @override */
 goog.crypt.Sha2.prototype.digest = function() {
-  'use strict';
   var digest = [];
   var totalBits = this.total_ * 8;
 

@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2014 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview This event wrapper will dispatch an event when the user uses
@@ -26,6 +34,7 @@
  * touchpad with acceleration). There is no signal in the events to reliably
  * distinguish between these.
  *
+ * @author arv@google.com (Erik Arvidsson)
  * @see ../demos/wheelhandler.html
  */
 
@@ -38,7 +47,7 @@ goog.require('goog.events.WheelEvent');
 goog.require('goog.style');
 goog.require('goog.userAgent');
 goog.require('goog.userAgent.product');
-goog.requireType('goog.events.BrowserEvent');
+goog.require('goog.userAgent.product.isVersion');
 
 
 
@@ -52,7 +61,6 @@ goog.requireType('goog.events.BrowserEvent');
  * @extends {goog.events.EventTarget}
  */
 goog.events.WheelHandler = function(element, opt_capture) {
-  'use strict';
   goog.events.WheelHandler.base(this, 'constructor');
 
   /**
@@ -87,10 +95,10 @@ goog.inherits(goog.events.WheelHandler, goog.events.EventTarget);
  * @return {string} The dom event type.
  */
 goog.events.WheelHandler.getDomEventType = function() {
-  'use strict';
   // Prefer to use wheel events whenever supported.
-  if (goog.userAgent.GECKO || goog.userAgent.IE ||
-      goog.userAgent.product.CHROME) {
+  if (goog.userAgent.GECKO && goog.userAgent.isVersionOrHigher(17) ||
+      goog.userAgent.IE && goog.userAgent.isVersionOrHigher(9) ||
+      goog.userAgent.product.CHROME && goog.userAgent.product.isVersion(31)) {
     return 'wheel';
   }
 
@@ -102,10 +110,8 @@ goog.events.WheelHandler.getDomEventType = function() {
 /**
  * Handles the events on the element.
  * @param {!goog.events.BrowserEvent} e The underlying browser event.
- * @suppress {strictMissingProperties} Part of the go/strict_warnings_migration
  */
 goog.events.WheelHandler.prototype.handleEvent = function(e) {
-  'use strict';
   var deltaMode = goog.events.WheelEvent.DeltaMode.PIXEL;
   var deltaX = 0;
   var deltaY = 0;
@@ -119,7 +125,7 @@ goog.events.WheelHandler.prototype.handleEvent = function(e) {
   } else if (be.type == 'mousewheel') {
     // Assume that these are still comparable to pixels. This may not be true
     // for all old browsers.
-    if (be.wheelDeltaX !== undefined) {
+    if (goog.isDef(be.wheelDeltaX)) {
       deltaX = -be.wheelDeltaX;
       deltaY = -be.wheelDeltaY;
     } else {
@@ -129,7 +135,7 @@ goog.events.WheelHandler.prototype.handleEvent = function(e) {
     // Gecko returns multiple of 3 (representing the number of lines)
     deltaMode = goog.events.WheelEvent.DeltaMode.LINE;
     // Firefox 3.1 adds an axis field to the event to indicate axis.
-    if (be.axis !== undefined && be.axis === be.HORIZONTAL_AXIS) {
+    if (goog.isDef(be.axis) && be.axis === be.HORIZONTAL_AXIS) {
       deltaX = be.detail;
     } else {
       deltaY = be.detail;
@@ -147,7 +153,6 @@ goog.events.WheelHandler.prototype.handleEvent = function(e) {
 
 /** @override */
 goog.events.WheelHandler.prototype.disposeInternal = function() {
-  'use strict';
   goog.events.WheelHandler.superClass_.disposeInternal.call(this);
   goog.events.unlistenByKey(this.listenKey_);
   this.listenKey_ = null;

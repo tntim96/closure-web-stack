@@ -1,17 +1,29 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Helper class for creating stubs for testing.
+ *
  */
 
 goog.setTestOnly('goog.testing.PropertyReplacer');
 goog.provide('goog.testing.PropertyReplacer');
 
 goog.require('goog.asserts');
+/** @suppress {extraRequire} Needed for some tests to compile. */
+goog.require('goog.testing.ObjectPropertyString');
+goog.require('goog.userAgent');
 
 
 
@@ -50,15 +62,14 @@ goog.require('goog.asserts');
  *       the real constructor or kept untouched.
  * </ul>
  *
- * Code compiled with property renaming may need to use
- * `goog.reflect.objectProperty` instead of simply naming the property to
+ * Code compiled with property renaming may need to use {@code
+ * goog.reflect.objectProperty} instead of simply naming the property to
  * replace.
  *
  * @constructor
  * @final
  */
 goog.testing.PropertyReplacer = function() {
-  'use strict';
   /**
    * Stores the values changed by the set() method in chronological order.
    * Its items are objects with 3 fields: 'object', 'key', 'value'. The
@@ -88,7 +99,6 @@ goog.testing.PropertyReplacer.NO_SUCH_KEY_ = {};
  * @suppress {unusedLocalVariables}
  */
 goog.testing.PropertyReplacer.hasKey_ = function(obj, key) {
-  'use strict';
   if (!(key in obj)) {
     return false;
   }
@@ -100,7 +110,9 @@ goog.testing.PropertyReplacer.hasKey_ = function(obj, key) {
   // In all browsers except Opera obj.constructor never equals to Object if
   // obj is an instance of a native class. In Opera we have to fall back on
   // examining obj.toString().
-  if (obj.constructor == Object) {
+  if (obj.constructor == Object &&
+      (!goog.userAgent.OPERA ||
+       Object.prototype.toString.call(obj) == '[object Object]')) {
     return false;
   }
   try {
@@ -128,7 +140,6 @@ goog.testing.PropertyReplacer.hasKey_ = function(obj, key) {
  * @private
  */
 goog.testing.PropertyReplacer.deleteKey_ = function(obj, key) {
-  'use strict';
   try {
     delete obj[key];
     // Delete has no effect for built-in properties of DOM nodes in FF.
@@ -160,7 +171,6 @@ goog.testing.PropertyReplacer.deleteKey_ = function(obj, key) {
  * @private
  */
 goog.testing.PropertyReplacer.restoreOriginal_ = function(original) {
-  'use strict';
   if (original.value == goog.testing.PropertyReplacer.NO_SUCH_KEY_) {
     goog.testing.PropertyReplacer.deleteKey_(original.object, original.key);
   } else {
@@ -178,7 +188,6 @@ goog.testing.PropertyReplacer.restoreOriginal_ = function(original) {
  * @throws {Error} In case of trying to set a read-only property.
  */
 goog.testing.PropertyReplacer.prototype.set = function(obj, key, value) {
-  'use strict';
   goog.asserts.assert(obj);
   var origValue = goog.testing.PropertyReplacer.hasKey_(obj, key) ?
       obj[key] :
@@ -200,31 +209,30 @@ goog.testing.PropertyReplacer.prototype.set = function(obj, key, value) {
 
 /**
  * Changes an existing value in an object to another one of the same type while
- * saving its original state. The advantage of `replace` over {@link #set}
- * is that `replace` protects against typos and erroneously passing tests
+ * saving its original state. The advantage of {@code replace} over {@link #set}
+ * is that {@code replace} protects against typos and erroneously passing tests
  * after some members have been renamed during a refactoring.
  * @param {Object|Function} obj The JavaScript or native object or function to
  *     alter. See the constraints in the class description.
  * @param {string} key The key to change the value for. It has to be present
- *     either in `obj` or in its prototype chain.
+ *     either in {@code obj} or in its prototype chain.
  * @param {*} value The new value to set.
  * @param {boolean=} opt_allowNullOrUndefined By default, this method requires
- *     `value` to match the type of the existing value, as determined by
- *     {@link goog.typeOf}. Setting opt_allowNullOrUndefined to `true`
- *     allows an existing value to be replaced by `null` or
-       `undefined`, or vice versa.
+ *     {@code value} to match the type of the existing value, as determined by
+ *     {@link goog.typeOf}. Setting opt_allowNullOrUndefined to {@code true}
+ *     allows an existing value to be replaced by {@code null} or
+       {@code undefined}, or vice versa.
  * @throws {Error} In case of missing key or type mismatch.
  */
 goog.testing.PropertyReplacer.prototype.replace = function(
     obj, key, value, opt_allowNullOrUndefined) {
-  'use strict';
   if (!(key in obj)) {
     throw new Error('Cannot replace missing property "' + key + '" in ' + obj);
   }
   // If opt_allowNullOrUndefined is true, then we do not check the types if
   // either the original or new value is null or undefined.
-  var shouldCheckTypes =
-      !opt_allowNullOrUndefined || (obj[key] != null && value != null);
+  var shouldCheckTypes = !opt_allowNullOrUndefined ||
+      (goog.isDefAndNotNull(obj[key]) && goog.isDefAndNotNull(value));
   if (shouldCheckTypes) {
     var originalType = goog.typeOf(obj[key]);
     var newType = goog.typeOf(value);
@@ -246,7 +254,6 @@ goog.testing.PropertyReplacer.prototype.replace = function(
  * @param {*} value The value to set.
  */
 goog.testing.PropertyReplacer.prototype.setPath = function(path, value) {
-  'use strict';
   var parts = path.split('.');
   var obj = goog.global;
   for (var i = 0; i < parts.length - 1; i++) {
@@ -255,7 +262,7 @@ goog.testing.PropertyReplacer.prototype.setPath = function(path, value) {
       throw new Error(
           'Cannot set the prototype of ' + parts.slice(0, i).join('.'));
     }
-    if (!goog.isObject(obj[part]) && typeof obj[part] !== 'function') {
+    if (!goog.isObject(obj[part]) && !goog.isFunction(obj[part])) {
       this.set(obj, part, {});
     }
     obj = obj[part];
@@ -271,7 +278,6 @@ goog.testing.PropertyReplacer.prototype.setPath = function(path, value) {
  * @param {string} key The key to delete.
  */
 goog.testing.PropertyReplacer.prototype.remove = function(obj, key) {
-  'use strict';
   if (obj && goog.testing.PropertyReplacer.hasKey_(obj, key)) {
     this.original_.push({object: obj, key: key, value: obj[key]});
     goog.testing.PropertyReplacer.deleteKey_(obj, key);
@@ -287,7 +293,6 @@ goog.testing.PropertyReplacer.prototype.remove = function(obj, key) {
  * @throws {Error} In case the object/key pair hadn't been modified earlier.
  */
 goog.testing.PropertyReplacer.prototype.restore = function(obj, key) {
-  'use strict';
   for (var i = this.original_.length - 1; i >= 0; i--) {
     var original = this.original_[i];
     if (original.object === obj && original.key == key) {
@@ -304,7 +309,6 @@ goog.testing.PropertyReplacer.prototype.restore = function(obj, key) {
  * Resets all changes made by goog.testing.PropertyReplacer.prototype.set.
  */
 goog.testing.PropertyReplacer.prototype.reset = function() {
-  'use strict';
   for (var i = this.original_.length - 1; i >= 0; i--) {
     goog.testing.PropertyReplacer.restoreOriginal_(this.original_[i]);
     delete this.original_[i];

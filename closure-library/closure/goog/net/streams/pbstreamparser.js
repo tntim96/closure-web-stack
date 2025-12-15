@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2015 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview The default Protobuf stream parser.
@@ -51,6 +59,9 @@ goog.provide('goog.net.streams.PbStreamParser');
 goog.require('goog.asserts');
 goog.require('goog.net.streams.StreamParser');
 
+goog.scope(function() {
+
+
 /**
  * The default Protobuf stream parser.
  *
@@ -60,7 +71,6 @@ goog.require('goog.net.streams.StreamParser');
  * @final
  */
 goog.net.streams.PbStreamParser = function() {
-  'use strict';
   /**
    * The current error message, if any.
    * @private {?string}
@@ -83,7 +93,7 @@ goog.net.streams.PbStreamParser = function() {
    * The current parser state.
    * @private {goog.net.streams.PbStreamParser.State_}
    */
-  this.state_ = goog.net.streams.PbStreamParser.State_.INIT;
+  this.state_ = Parser.State_.INIT;
 
   /**
    * The tag of the proto message being parsed.
@@ -118,15 +128,18 @@ goog.net.streams.PbStreamParser = function() {
 };
 
 
+var Parser = goog.net.streams.PbStreamParser;
+
+
 /**
  * The parser state.
  * @private @enum {number}
  */
-goog.net.streams.PbStreamParser.State_ = {
+Parser.State_ = {
   INIT: 0,     // expecting the tag:wire-type byte
   LENGTH: 1,   // expecting more varint bytes of length
   MESSAGE: 2,  // expecting more message bytes
-  INVALID: 3,
+  INVALID: 3
 };
 
 
@@ -134,15 +147,14 @@ goog.net.streams.PbStreamParser.State_ = {
  * Tag of padding messages.
  * @private @const {number}
  */
-goog.net.streams.PbStreamParser.PADDING_TAG_ = 15;
+Parser.PADDING_TAG_ = 15;
 
 
 /**
  * @override
  */
 goog.net.streams.PbStreamParser.prototype.isInputValid = function() {
-  'use strict';
-  return this.state_ != goog.net.streams.PbStreamParser.State_.INVALID;
+  return this.state_ != Parser.State_.INVALID;
 };
 
 
@@ -150,7 +162,6 @@ goog.net.streams.PbStreamParser.prototype.isInputValid = function() {
  * @override
  */
 goog.net.streams.PbStreamParser.prototype.getErrorMessage = function() {
-  'use strict';
   return this.errorMessage_;
 };
 
@@ -162,10 +173,8 @@ goog.net.streams.PbStreamParser.prototype.getErrorMessage = function() {
  * @throws {!Error} Throws an error indicating where the stream is broken
  * @private
  */
-goog.net.streams.PbStreamParser.prototype.error_ = function(
-    inputBytes, pos, errorMsg) {
-  'use strict';
-  this.state_ = goog.net.streams.PbStreamParser.State_.INVALID;
+Parser.prototype.error_ = function(inputBytes, pos, errorMsg) {
+  this.state_ = Parser.State_.INVALID;
   this.errorMessage_ = 'The stream is broken @' + this.streamPos_ + '/' + pos +
       '. ' +
       'Error: ' + errorMsg + '. ' +
@@ -173,54 +182,44 @@ goog.net.streams.PbStreamParser.prototype.error_ = function(
   throw new Error(this.errorMessage_);
 };
 
-/**
- * @override
- * @return {boolean}
- */
-goog.net.streams.PbStreamParser.prototype.acceptsBinaryInput = function() {
-  return true;
-};
 
 /**
  * @throws {!Error} Throws an error message if the input is invalid.
  * @override
  */
 goog.net.streams.PbStreamParser.prototype.parse = function(input) {
-  'use strict';
   goog.asserts.assert(input instanceof Array || input instanceof ArrayBuffer);
 
-  const parser = this;
-  const inputBytes = (input instanceof Array) ? input : new Uint8Array(input);
-  let pos = 0;
+  var parser = this;
+  var inputBytes = (input instanceof Array) ? input : new Uint8Array(input);
+  var pos = 0;
 
   while (pos < inputBytes.length) {
     switch (parser.state_) {
-      case goog.net.streams.PbStreamParser.State_.INVALID: {
+      case Parser.State_.INVALID: {
         parser.error_(inputBytes, pos, 'stream already broken');
         break;
       }
-      case goog.net.streams.PbStreamParser.State_.INIT: {
+      case Parser.State_.INIT: {
         processTagByte(inputBytes[pos]);
         break;
       }
-      case goog.net.streams.PbStreamParser.State_.LENGTH: {
+      case Parser.State_.LENGTH: {
         processLengthByte(inputBytes[pos]);
         break;
       }
-      case goog.net.streams.PbStreamParser.State_.MESSAGE: {
+      case Parser.State_.MESSAGE: {
         processMessageByte(inputBytes[pos]);
         break;
       }
-      default: {
-        throw new Error('unexpected parser state: ' + parser.state_);
-      }
+      default: { throw new Error('unexpected parser state: ' + parser.state_); }
     }
 
     parser.streamPos_++;
     pos++;
   }
 
-  const msgs = parser.result_;
+  var msgs = parser.result_;
   parser.result_ = [];
   return msgs.length > 0 ? msgs : null;
 
@@ -232,7 +231,7 @@ goog.net.streams.PbStreamParser.prototype.parse = function(input) {
       parser.error_(inputBytes, pos, 'invalid tag');
     }
 
-    const wireType = b & 0x07;
+    var wireType = b & 0x07;
     if (wireType != 2) {
       parser.error_(inputBytes, pos, 'invalid wire type');
     }
@@ -242,7 +241,7 @@ goog.net.streams.PbStreamParser.prototype.parse = function(input) {
       parser.error_(inputBytes, pos, 'unexpected tag');
     }
 
-    parser.state_ = goog.net.streams.PbStreamParser.State_.LENGTH;
+    parser.state_ = Parser.State_.LENGTH;
     parser.length_ = 0;
     parser.countLengthBytes_ = 0;
   }
@@ -260,7 +259,7 @@ goog.net.streams.PbStreamParser.prototype.parse = function(input) {
     parser.length_ |= (b & 0x7F) << ((parser.countLengthBytes_ - 1) * 7);
 
     if (!(b & 0x80)) {  // no more length byte
-      parser.state_ = goog.net.streams.PbStreamParser.State_.MESSAGE;
+      parser.state_ = Parser.State_.MESSAGE;
       parser.countMessageBytes_ = 0;
       if (typeof Uint8Array !== 'undefined') {
         parser.messageBuffer_ = new Uint8Array(parser.length_);
@@ -288,11 +287,14 @@ goog.net.streams.PbStreamParser.prototype.parse = function(input) {
    * Finishes up building the current message and resets parser state
    */
   function finishMessage() {
-    if (parser.tag_ < goog.net.streams.PbStreamParser.PADDING_TAG_) {
-      const message = {};
+    if (parser.tag_ < Parser.PADDING_TAG_) {
+      var message = {};
       message[parser.tag_] = parser.messageBuffer_;
       parser.result_.push(message);
     }
-    parser.state_ = goog.net.streams.PbStreamParser.State_.INIT;
+    parser.state_ = Parser.State_.INIT;
   }
 };
+
+
+});  // goog.scope

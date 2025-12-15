@@ -1,32 +1,35 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview A dimension picker control.  A dimension picker allows the
  * user to visually select a row and column count.
  *
+ * @author robbyw@google.com (Robby Walker)
  * @see ../demos/dimensionpicker.html
  * @see ../demos/dimensionpicker_rtl.html
  */
 
 goog.provide('goog.ui.DimensionPicker');
 
-goog.require('goog.events.BrowserEvent.PointerType');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.math.Size');
 goog.require('goog.ui.Component');
-goog.require('goog.ui.ComponentUtil');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.DimensionPickerRenderer');
 goog.require('goog.ui.registry');
-goog.requireType('goog.dom.DomHelper');
-goog.requireType('goog.events.BrowserEvent');
-goog.requireType('goog.events.Event');
-goog.requireType('goog.events.KeyEvent');
 
 
 
@@ -45,9 +48,9 @@ goog.requireType('goog.events.KeyEvent');
  *     document interaction.
  * @constructor
  * @extends {goog.ui.Control}
+ * @final
  */
 goog.ui.DimensionPicker = function(opt_renderer, opt_domHelper) {
-  'use strict';
   goog.ui.Control.call(
       this, null, opt_renderer || goog.ui.DimensionPickerRenderer.getInstance(),
       opt_domHelper);
@@ -109,21 +112,15 @@ goog.ui.DimensionPicker.prototype.highlightedRows_ = 1;
 goog.ui.DimensionPicker.prototype.highlightedColumns_ = 1;
 
 
-/**
- * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
- */
+/** @override */
 goog.ui.DimensionPicker.prototype.enterDocument = function() {
-  'use strict';
   goog.ui.DimensionPicker.superClass_.enterDocument.call(this);
-
-  var MouseEventType = goog.ui.ComponentUtil.getMouseEventType(this);
 
   var handler = this.getHandler();
   handler
       .listen(
           this.getRenderer().getMouseMoveElement(this),
-          MouseEventType.MOUSEMOVE, this.handleMouseMove)
+          goog.events.EventType.MOUSEMOVE, this.handleMouseMove)
       .listen(
           this.getDomHelper().getWindow(), goog.events.EventType.RESIZE,
           this.handleWindowResize);
@@ -135,21 +132,15 @@ goog.ui.DimensionPicker.prototype.enterDocument = function() {
 };
 
 
-/**
- * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
- */
+/** @override */
 goog.ui.DimensionPicker.prototype.exitDocument = function() {
-  'use strict';
   goog.ui.DimensionPicker.superClass_.exitDocument.call(this);
-
-  var MouseEventType = goog.ui.ComponentUtil.getMouseEventType(this);
 
   var handler = this.getHandler();
   handler
       .unlisten(
           this.getRenderer().getMouseMoveElement(this),
-          MouseEventType.MOUSEMOVE, this.handleMouseMove)
+          goog.events.EventType.MOUSEMOVE, this.handleMouseMove)
       .unlisten(
           this.getDomHelper().getWindow(), goog.events.EventType.RESIZE,
           this.handleWindowResize);
@@ -167,7 +158,6 @@ goog.ui.DimensionPicker.prototype.exitDocument = function() {
  * @private
  */
 goog.ui.DimensionPicker.prototype.handleShow_ = function() {
-  'use strict';
   if (this.isVisible()) {
     this.setValue(1, 1);
   }
@@ -176,7 +166,6 @@ goog.ui.DimensionPicker.prototype.handleShow_ = function() {
 
 /** @override */
 goog.ui.DimensionPicker.prototype.disposeInternal = function() {
-  'use strict';
   goog.ui.DimensionPicker.superClass_.disposeInternal.call(this);
   delete this.size_;
 };
@@ -186,62 +175,19 @@ goog.ui.DimensionPicker.prototype.disposeInternal = function() {
 
 
 /**
- * Handles mousemove events. Determines which palette size was moused over and
+ * Handles mousemove events.  Determines which palette size was moused over and
  * highlights it.
  * @param {goog.events.BrowserEvent} e Mouse event to handle.
  * @protected
  */
 goog.ui.DimensionPicker.prototype.handleMouseMove = function(e) {
-  'use strict';
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   var highlightedSizeX = this.getRenderer().getGridOffsetX(
-      this,
-      this.isRightToLeft() ?
+      this, this.isRightToLeft() ?
           /** @type {!HTMLElement} */ (e.target).offsetWidth - e.offsetX :
           e.offsetX);
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   var highlightedSizeY = this.getRenderer().getGridOffsetY(this, e.offsetY);
 
   this.setValue(highlightedSizeX, highlightedSizeY);
-};
-
-
-/**
- * Override `handleMouseDown` for pointer events.
- * @override
- */
-goog.ui.DimensionPicker.prototype.handleMouseDown = function(e) {
-  'use strict';
-  // For touch events, check for intersection with the grid element to prevent
-  // taps on the invisible mouse catcher element from performing an action.
-  if (goog.ui.DimensionPicker.isTouchEvent_(e) && !this.isEventOnGrid_(e)) {
-    return;
-  }
-
-  goog.ui.DimensionPicker.base(this, 'handleMouseDown', e);
-
-  // For touch events, delegate to `handleMouseMove` to update the highlight
-  // state immediately. Not needed for mouse since we assume hover mousemove
-  // events have already taken care of this.
-  if (goog.ui.DimensionPicker.isTouchEvent_(e)) {
-    this.handleMouseMove(/** @type {?goog.events.BrowserEvent} */ (e));
-  }
-};
-
-
-/**
- * Override `handleMouseUp` for pointer events.
- * @override
- */
-goog.ui.DimensionPicker.prototype.handleMouseUp = function(e) {
-  'use strict';
-  // For touch events, check for intersection with the grid element to prevent
-  // taps on the invisible mouse catcher element from performing an action.
-  if (goog.ui.DimensionPicker.isTouchEvent_(e) && !this.isEventOnGrid_(e)) {
-    return;
-  }
-
-  goog.ui.DimensionPicker.base(this, 'handleMouseUp', e);
 };
 
 
@@ -250,10 +196,8 @@ goog.ui.DimensionPicker.prototype.handleMouseUp = function(e) {
  * renderer's mouse catcher.
  * @param {goog.events.Event} e Resize event to handle.
  * @protected
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.ui.DimensionPicker.prototype.handleWindowResize = function(e) {
-  'use strict';
   this.getRenderer().positionMouseCatcher(this);
 };
 
@@ -266,7 +210,6 @@ goog.ui.DimensionPicker.prototype.handleWindowResize = function(e) {
  * @override
  */
 goog.ui.DimensionPicker.prototype.handleKeyEvent = function(e) {
-  'use strict';
   var rows = this.highlightedRows_;
   var columns = this.highlightedColumns_;
   switch (e.keyCode) {
@@ -315,7 +258,6 @@ goog.ui.DimensionPicker.prototype.handleKeyEvent = function(e) {
  * @return {goog.math.Size} Current table size shown (columns x rows).
  */
 goog.ui.DimensionPicker.prototype.getSize = function() {
-  'use strict';
   return this.size_;
 };
 
@@ -324,7 +266,6 @@ goog.ui.DimensionPicker.prototype.getSize = function() {
  * @return {!goog.math.Size} size The currently highlighted dimensions.
  */
 goog.ui.DimensionPicker.prototype.getValue = function() {
-  'use strict';
   return new goog.math.Size(this.highlightedColumns_, this.highlightedRows_);
 };
 
@@ -337,11 +278,9 @@ goog.ui.DimensionPicker.prototype.getValue = function() {
  *     or a goog.math.Size object containing both.
  * @param {number=} opt_rows The number of rows to highlight.  Can be
  *     omitted when columns is a good.math.Size object.
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.ui.DimensionPicker.prototype.setValue = function(columns, opt_rows) {
-  'use strict';
-  if (opt_rows === undefined) {
+  if (!goog.isDef(opt_rows)) {
     columns = /** @type {!goog.math.Size} */ (columns);
     opt_rows = columns.height;
     columns = columns.width;
@@ -375,40 +314,8 @@ goog.ui.DimensionPicker.prototype.setValue = function(columns, opt_rows) {
 
 
 /**
- * Returns whether the given event intersects the grid element.
- * @param {?goog.events.Event} e Mouse event to handle.
- * @return {boolean}
- * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
- */
-goog.ui.DimensionPicker.prototype.isEventOnGrid_ = function(e) {
-  'use strict';
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
-  var gridEl = this.getRenderer().getMouseMoveElement(this);
-  var gridBounds = gridEl.getBoundingClientRect();
-  return e.clientX >= gridBounds.left && e.clientX <= gridBounds.right &&
-      e.clientY >= gridBounds.top && e.clientY <= gridBounds.bottom;
-};
-
-
-/**
- * @param {?goog.events.Event} e Mouse or pointer event to handle.
- * @return {boolean}
- * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
- */
-goog.ui.DimensionPicker.isTouchEvent_ = function(e) {
-  'use strict';
-  return e.pointerType &&
-      e.pointerType != goog.events.BrowserEvent.PointerType.MOUSE;
-};
-
-
-/**
  * Register this control so it can be created from markup
  */
 goog.ui.registry.setDecoratorByClassName(
-    goog.ui.DimensionPickerRenderer.CSS_CLASS, function() {
-      'use strict';
-      return new goog.ui.DimensionPicker();
-    });
+    goog.ui.DimensionPickerRenderer.CSS_CLASS,
+    function() { return new goog.ui.DimensionPicker(); });

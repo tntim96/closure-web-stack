@@ -1,236 +1,143 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/** @fileoverview Tests for PixelDensityMonitor. */
-
-goog.module('goog.labs.style.PixelDensityMonitorTest');
-goog.setTestOnly();
-
-const DomHelper = goog.require('goog.dom.DomHelper');
-const MockControl = goog.require('goog.testing.MockControl');
-const PixelDensityMonitor = goog.require('goog.labs.style.PixelDensityMonitor');
-const dispose = goog.require('goog.dispose');
-const events = goog.require('goog.events');
-const googArray = goog.require('goog.array');
-const testSuite = goog.require('goog.testing.testSuite');
-const testingRecordFunction = goog.require('goog.testing.recordFunction');
-
-let fakeWindow;
-let recordFunction;
-let monitor;
-let mockControl;
-let mediaQueryLists;
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
- * Options for setUpMonitor.
- * @record
+ * @fileoverview Tests for goog.labs.style.PixelDensityMonitor.
+ *
  */
-class MonitorOpts {
-  constructor() {
-    /**
-     * Whether to mock a matchMedia object on fakeWindow.
-     * @type {boolean|undefined}
-     */
-    this.hasMatchMedia;
-    /**
-     * Whether to delete the deprecated addListener method that isn't
-     * implemented in all browsers.  Requires hasMatchMedia to be true.
-     * @type {boolean|undefined}
-     */
-    this.deprecatedAddListener;
-    /**
-     * Whether to test media query list with `addEventListener` method.
-     * @type {boolean|undefined}
-     */
-    this.mockAddEventListener;
-  }
+
+goog.provide('goog.labs.style.PixelDensityMonitorTest');
+goog.setTestOnly('goog.labs.style.PixelDensityMonitorTest');
+
+goog.require('goog.array');
+goog.require('goog.dom.DomHelper');
+goog.require('goog.events');
+goog.require('goog.labs.style.PixelDensityMonitor');
+goog.require('goog.testing.MockControl');
+goog.require('goog.testing.jsunit');
+goog.require('goog.testing.recordFunction');
+
+var fakeWindow;
+var recordFunction;
+var monitor;
+var mockControl;
+var mediaQueryLists;
+
+function setUp() {
+  recordFunction = goog.testing.recordFunction();
+  mediaQueryLists = [];
+  mockControl = new goog.testing.MockControl();
 }
 
-/**
- * Helper to create `matchMedia` mock and assign to `fakeWindow`. Used to mock
- * different browser compatibilities.
- *
- * @param {number|undefined} initialRatio
- * @param {!MonitorOpts=} options
- */
-function setUpMonitor(initialRatio, {
-  hasMatchMedia = false,
-  deprecatedAddListener = false,
-  mockAddEventListener = false
-} = {}) {
+function tearDown() {
+  mockControl.$verifyAll();
+  goog.dispose(monitor);
+  goog.dispose(recordFunction);
+}
+
+function setUpMonitor(initialRatio, hasMatchMedia) {
   fakeWindow = {devicePixelRatio: initialRatio};
 
   if (hasMatchMedia) {
     // Every call to matchMedia should return a new media query list with its
     // own set of listeners.
-    fakeWindow.matchMedia = (query) => {
-      const listeners = [];
-      const newList = {
-        addListener: function(listener) {
-          listeners.push(listener);
-        },
+    fakeWindow.matchMedia = function(query) {
+      var listeners = [];
+      var newList = {
+        addListener: function(listener) { listeners.push(listener); },
         removeListener: function(listener) {
-          googArray.remove(listeners, listener);
+          goog.array.remove(listeners, listener);
         },
         callListeners: function() {
-          for (let i = 0; i < listeners.length; i++) {
+          for (var i = 0; i < listeners.length; i++) {
             listeners[i]();
           }
         },
-        getListenerCount: function() {
-          return listeners.length;
-        },
+        getListenerCount: function() { return listeners.length; }
       };
-      if (mockAddEventListener) {
-        newList.addEventListener = function(target, listener) {
-          if (target === 'change') {
-            listeners.push(listener);
-          }
-        };
-        newList.removeEventListener = function(target, listener) {
-          if (target === 'change') {
-            googArray.remove(listeners, listener);
-          }
-        };
-      }
-      // Regression testing Cobalt browser compatibility (https://cobalt.dev/).
-      // Cobalt browser has `matchMedia` but doesn't implement the deprecated
-      // addListener method.
-      if (deprecatedAddListener) {
-        newList.addListener = undefined;
-      }
       mediaQueryLists.push(newList);
       return newList;
     };
   }
 
-  const domHelper = mockControl.createStrictMock(DomHelper);
+  var domHelper = mockControl.createStrictMock(goog.dom.DomHelper);
   domHelper.getWindow().$returns(fakeWindow);
   mockControl.$replayAll();
 
-  monitor = new PixelDensityMonitor(domHelper);
-  events.listen(monitor, PixelDensityMonitor.EventType.CHANGE, recordFunction);
+  monitor = new goog.labs.style.PixelDensityMonitor(domHelper);
+  goog.events.listen(
+      monitor, goog.labs.style.PixelDensityMonitor.EventType.CHANGE,
+      recordFunction);
 }
 
-/**
- * @param {number} newRatio
- */
 function setNewRatio(newRatio) {
   fakeWindow.devicePixelRatio = newRatio;
-  for (let i = 0; i < mediaQueryLists.length; i++) {
+  for (var i = 0; i < mediaQueryLists.length; i++) {
     mediaQueryLists[i].callListeners();
   }
 }
 
-testSuite({
-  setUp() {
-    recordFunction = testingRecordFunction();
-    mediaQueryLists = [];
-    mockControl = new MockControl();
-  },
+function testNormalDensity() {
+  setUpMonitor(1, false);
+  assertEquals(
+      goog.labs.style.PixelDensityMonitor.Density.NORMAL, monitor.getDensity());
+}
 
-  tearDown() {
-    mockControl.$verifyAll();
-    dispose(monitor);
-    dispose(recordFunction);
-  },
+function testHighDensity() {
+  setUpMonitor(1.5, false);
+  assertEquals(
+      goog.labs.style.PixelDensityMonitor.Density.HIGH, monitor.getDensity());
+}
 
-  testNormalDensity() {
-    setUpMonitor(1);
-    assertEquals(PixelDensityMonitor.Density.NORMAL, monitor.getDensity());
-  },
+function testNormalDensityIfUndefined() {
+  setUpMonitor(undefined, false);
+  assertEquals(
+      goog.labs.style.PixelDensityMonitor.Density.NORMAL, monitor.getDensity());
+}
 
-  testHighDensity() {
-    setUpMonitor(1.5);
-    assertEquals(PixelDensityMonitor.Density.HIGH, monitor.getDensity());
-  },
+function testChangeEvent() {
+  setUpMonitor(1, true);
+  assertEquals(
+      goog.labs.style.PixelDensityMonitor.Density.NORMAL, monitor.getDensity());
+  monitor.start();
 
-  testNormalDensityIfUndefined() {
-    setUpMonitor(undefined);
-    assertEquals(PixelDensityMonitor.Density.NORMAL, monitor.getDensity());
-  },
+  setNewRatio(2);
+  var call = recordFunction.popLastCall();
+  assertEquals(
+      goog.labs.style.PixelDensityMonitor.Density.HIGH,
+      call.getArgument(0).target.getDensity());
+  assertEquals(
+      goog.labs.style.PixelDensityMonitor.Density.HIGH, monitor.getDensity());
 
-  testChangeEvent() {
-    setUpMonitor(1, {hasMatchMedia: true});
-    assertEquals(PixelDensityMonitor.Density.NORMAL, monitor.getDensity());
-    monitor.start();
+  setNewRatio(1);
+  call = recordFunction.popLastCall();
+  assertEquals(
+      goog.labs.style.PixelDensityMonitor.Density.NORMAL,
+      call.getArgument(0).target.getDensity());
+  assertEquals(
+      goog.labs.style.PixelDensityMonitor.Density.NORMAL, monitor.getDensity());
+}
 
-    setNewRatio(2);
-    let call = recordFunction.popLastCall();
-    assertEquals(
-        PixelDensityMonitor.Density.HIGH,
-        call.getArgument(0).target.getDensity());
-    assertEquals(PixelDensityMonitor.Density.HIGH, monitor.getDensity());
+function testListenerIsDisposed() {
+  setUpMonitor(1, true);
+  monitor.start();
 
-    setNewRatio(1);
-    call = recordFunction.popLastCall();
-    assertEquals(
-        PixelDensityMonitor.Density.NORMAL,
-        call.getArgument(0).target.getDensity());
-    assertEquals(PixelDensityMonitor.Density.NORMAL, monitor.getDensity());
-  },
+  assertEquals(1, mediaQueryLists.length);
+  assertEquals(1, mediaQueryLists[0].getListenerCount());
 
-  testEventListenerChangeEvent() {
-    setUpMonitor(1, {
-      hasMatchMedia: true,
-      deprecatedAddListener: true,
-      mockAddEventListener: true
-    });
-    assertEquals(PixelDensityMonitor.Density.NORMAL, monitor.getDensity());
-    monitor.start();
+  goog.dispose(monitor);
 
-    setNewRatio(2);
-    let call = recordFunction.popLastCall();
-    assertEquals(
-        PixelDensityMonitor.Density.HIGH,
-        call.getArgument(0).target.getDensity());
-    assertEquals(PixelDensityMonitor.Density.HIGH, monitor.getDensity());
-
-    setNewRatio(1);
-    call = recordFunction.popLastCall();
-    assertEquals(
-        PixelDensityMonitor.Density.NORMAL,
-        call.getArgument(0).target.getDensity());
-    assertEquals(PixelDensityMonitor.Density.NORMAL, monitor.getDensity());
-  },
-
-  testListenerIsDisposed() {
-    setUpMonitor(1, {hasMatchMedia: true});
-    monitor.start();
-
-    assertEquals(1, mediaQueryLists.length);
-    assertEquals(1, mediaQueryLists[0].getListenerCount());
-
-    dispose(monitor);
-
-    assertEquals(1, mediaQueryLists.length);
-    assertEquals(0, mediaQueryLists[0].getListenerCount());
-  },
-
-  testEventListenerIsDisposed() {
-    setUpMonitor(1, {
-      hasMatchMedia: true,
-      deprecatedAddListener: true,
-      mockAddEventListener: true
-    });
-    monitor.start();
-
-    assertEquals(1, mediaQueryLists.length);
-    assertEquals(1, mediaQueryLists[0].getListenerCount());
-
-    dispose(monitor);
-
-    assertEquals(1, mediaQueryLists.length);
-    assertEquals(0, mediaQueryLists[0].getListenerCount());
-  },
-
-  testAddListenerMethodNotImplemented() {
-    setUpMonitor(1, {hasMatchMedia: true, deprecatedAddListener: true});
-    assertNotThrows(() => monitor.start());
-
-    assertEquals(PixelDensityMonitor.Density.NORMAL, monitor.getDensity());
-  }
-});
+  assertEquals(1, mediaQueryLists.length);
+  assertEquals(0, mediaQueryLists[0].getListenerCount());
+}

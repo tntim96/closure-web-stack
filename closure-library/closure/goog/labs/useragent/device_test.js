@@ -1,91 +1,73 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/** @fileoverview Unit tests for device. */
-
-goog.module('goog.labs.userAgent.deviceTest');
-goog.setTestOnly();
-
-const device = goog.require('goog.labs.userAgent.device');
-const testAgentData = goog.require('goog.labs.userAgent.testAgentData');
-const testAgents = goog.require('goog.labs.userAgent.testAgents');
-const testSuite = goog.require('goog.testing.testSuite');
-const util = goog.require('goog.labs.userAgent.util');
-const {setUseClientHintsForTesting} = goog.require('goog.labs.userAgent');
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
- * @param {?string} uaString
- * @param {?NavigatorUAData=} uaData
+ * @fileoverview Unit tests for goog.labs.userAgent.device.
  */
-function assertIsMobile(uaString, uaData) {
-  util.setUserAgent(uaString);
-  util.setUserAgentData(uaData || null);
-  setUseClientHintsForTesting(!!uaData);
-  assertTrue(device.isMobile());
-  assertFalse(device.isTablet());
-  assertFalse(device.isDesktop());
+
+goog.provide('goog.labs.userAgent.deviceTest');
+
+goog.require('goog.labs.userAgent.device');
+goog.require('goog.labs.userAgent.testAgents');
+goog.require('goog.labs.userAgent.util');
+goog.require('goog.testing.jsunit');
+
+goog.setTestOnly('goog.labs.userAgent.deviceTest');
+
+function setUp() {
+  goog.labs.userAgent.util.setUserAgent(null);
 }
 
-/**
- * @param {?string} uaString
- * @param {?NavigatorUAData=} uaData
- */
-function assertIsTablet(uaString, uaData) {
-  util.setUserAgent(uaString);
-  util.setUserAgentData(uaData || null);
-  setUseClientHintsForTesting(!!uaData);
-  assertTrue(device.isTablet());
-  assertFalse(device.isMobile());
-  assertFalse(device.isDesktop());
+function testMobile() {
+  assertIsMobile(goog.labs.userAgent.testAgents.ANDROID_BROWSER_235);
+  assertIsMobile(goog.labs.userAgent.testAgents.CHROME_ANDROID);
+  assertIsMobile(goog.labs.userAgent.testAgents.SAFARI_IPHONE_6);
+  assertIsMobile(goog.labs.userAgent.testAgents.IE_10_MOBILE);
 }
 
-/**
- * @param {?string} uaString
- * @param {?NavigatorUAData=} uaData
- */
-function assertIsDesktop(uaString, uaData) {
-  util.setUserAgent(uaString);
-  util.setUserAgentData(uaData || null);
-  setUseClientHintsForTesting(!!uaData);
-  assertTrue(device.isDesktop());
-  assertFalse(device.isMobile());
-  assertFalse(device.isTablet());
+function testTablet() {
+  assertIsTablet(goog.labs.userAgent.testAgents.CHROME_ANDROID_TABLET);
+  assertIsTablet(goog.labs.userAgent.testAgents.KINDLE_FIRE);
+  assertIsTablet(goog.labs.userAgent.testAgents.IPAD_6);
 }
-testSuite({
-  setUp() {
-    util.setUserAgent(null);
-  },
 
-  testMobile() {
-    assertIsMobile(testAgents.ANDROID_BROWSER_235);
-    assertIsMobile(testAgents.CHROME_ANDROID);
-    assertIsMobile(testAgents.SAFARI_IPHONE_6);
-    assertIsMobile(testAgents.IE_10_MOBILE);
-    assertIsMobile(null, testAgentData.CHROME_USERAGENT_DATA_MOBILE);
-  },
+function testDesktop() {
+  assertIsDesktop(goog.labs.userAgent.testAgents.CHROME_25);
+  assertIsDesktop(goog.labs.userAgent.testAgents.OPERA_10);
+  assertIsDesktop(goog.labs.userAgent.testAgents.FIREFOX_19);
+  assertIsDesktop(goog.labs.userAgent.testAgents.IE_9);
+  assertIsDesktop(goog.labs.userAgent.testAgents.IE_10);
+  assertIsDesktop(goog.labs.userAgent.testAgents.IE_11);
+}
 
-  testTablet() {
-    assertIsTablet(testAgents.CHROME_ANDROID_TABLET);
-    assertIsTablet(testAgents.KINDLE_FIRE);
-    assertIsTablet(testAgents.IPAD_6);
-    assertIsTablet(
-        testAgents.CHROME_ANDROID_TABLET,
-        testAgentData.CHROME_USERAGENT_DATA_LINUX);
-    assertIsTablet(
-        testAgents.KINDLE_FIRE, testAgentData.CHROME_USERAGENT_DATA_LINUX);
-  },
+function assertIsMobile(uaString) {
+  goog.labs.userAgent.util.setUserAgent(uaString);
+  assertTrue(goog.labs.userAgent.device.isMobile());
+  assertFalse(goog.labs.userAgent.device.isTablet());
+  assertFalse(goog.labs.userAgent.device.isDesktop());
+}
 
-  testDesktop() {
-    assertIsDesktop(testAgents.CHROME_25);
-    assertIsDesktop(testAgents.OPERA_10);
-    assertIsDesktop(testAgents.FIREFOX_19);
-    assertIsDesktop(testAgents.IE_9);
-    assertIsDesktop(testAgents.IE_10);
-    assertIsDesktop(testAgents.IE_11);
-    assertIsDesktop(
-        testAgents.CHROME_25, testAgentData.CHROME_USERAGENT_DATA_LINUX);
-  },
-});
+function assertIsTablet(uaString) {
+  goog.labs.userAgent.util.setUserAgent(uaString);
+  assertTrue(goog.labs.userAgent.device.isTablet());
+  assertFalse(goog.labs.userAgent.device.isMobile());
+  assertFalse(goog.labs.userAgent.device.isDesktop());
+}
+
+function assertIsDesktop(uaString) {
+  goog.labs.userAgent.util.setUserAgent(uaString);
+  assertTrue(goog.labs.userAgent.device.isDesktop());
+  assertFalse(goog.labs.userAgent.device.isMobile());
+  assertFalse(goog.labs.userAgent.device.isTablet());
+}

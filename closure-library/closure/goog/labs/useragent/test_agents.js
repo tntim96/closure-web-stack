@@ -1,19 +1,30 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS-IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Various User-Agent strings.
  * See http://go/useragentexamples and http://www.useragentstring.com/ for
  * examples.
+ *
+ * @author martone@google.com (Andy Martone)
  */
 
-goog.module('goog.labs.userAgent.testAgents');
-goog.setTestOnly();
+goog.provide('goog.labs.userAgent.testAgents');
+goog.setTestOnly('goog.labs.userAgent.testAgents');
 
-const testAgents = {};
+goog.scope(function() {
+var testAgents = goog.labs.userAgent.testAgents;
 
 
 /** @const {string} */
@@ -153,10 +164,6 @@ testAgents.EDGE_12_9600 =
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
     '(KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.9600';
 
-/** @const {string} */
-testAgents.EDGE_CHROMIUM =
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
-    '(KHTML, like Gecko) Chrome/74.0.3729.48 Safari/537.36 Edg/74.1.96.24';
 
 /** @const {string} */
 testAgents.FIREFOX_19 =
@@ -181,11 +188,6 @@ testAgents.FIREFOX_WINDOWS =
     'Mozilla/5.0 (Windows NT 6.1; rv:12.0) Gecko/20120403211507' +
     ' Firefox/14.0.1';
 
-/** @const {string} */
-testAgents.FIREFOX_IPHONE =
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 5_1_1 like Mac OS X; en-us) ' +
-    'AppleWebKit/600.1.4 (KHTML, like Gecko)' +
-    'FxiOS/1.0 Mobile/12F69 Safari/600.1.4';
 
 /** @const {string} */
 testAgents.SAFARI_6 = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_1) ' +
@@ -238,71 +240,6 @@ testAgents.SAFARI_WINDOWS =
     'Mozilla/5.0 (Windows; U; Windows NT 6.1; tr-TR) AppleWebKit/533.20.25' +
     ' (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27';
 
-/**
- * The user-agent for desktop Safari and iPadOS Safari are identical and require
- * runtime examination.
- * @const {string}
- */
-testAgents.SAFARI_13 =
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15' +
-    ' (KHTML, like Gecko) Version/13.0 Safari/605.1.15';
-
-
-/**
- * The user-agent for Safari on iPhone with iOS 14.1.1.
- * @const {string}
- */
-testAgents.SAFARI_IPHONE_IOS_14 =
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X)' +
-    ' AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1' +
-    ' Mobile/15E148 Safari/604.1';
-
-/**
- * The user-agent for Safari on iPhone with iOS 15.0.
- * @const {string}
- */
-testAgents.SAFARI_IPHONE_IOS_15 =
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)' +
-    ' AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148' +
-    ' Safari/604.1';
-
-
-/**
- * The user-agent for Safari Desktop on iOS 15.0 (which is enabled by default on
- * non-mini iPads running at >=2/3 of the screen, unless the user requests for
- * mobile site.
- * @const {string}
- */
-testAgents.SAFARI_DESKTOP_IPAD_IOS_15 =
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15' +
-    ' (KHTML, like Gecko) Version/15.0 Safari/605.1.15';
-
-/**
- * The user-agent for Safari mobile on iOS 15.0 (which is enabled by default on
- * iPad mini and can be enabled on other iPads by requesting a mobile site).
- * @const {string}
- */
-testAgents.SAFARI_MOBILE_IPAD_IOS_15 =
-    'Mozilla/5.0 (iPad; CPU OS 15_0 like Mac OS X) AppleWebKit/605.1.15' +
-    ' (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1';
-
-/**
- * The user-agent for Chrome browser on iPad running on iOS 15.0.
- * @const {string}
- */
-testAgents.CHROME_IPAD_IOS_15 =
-    'Mozilla/5.0 (iPad; CPU OS 15_0 like Mac OS X) AppleWebKit/605.1.15' +
-    ' (KHTML, like Gecko) CriOS/87.0.4280.77 Mobile/15E148 Safari/604.1';
-
-/**
- * The user-agent for Safari on MacOS Big Sur 11.5.2. Safari caps the Mac OS
- * version number in the user-agent string.
- * See: https://bugs.webkit.org/show_bug.cgi?id=216593.
- * @const {string}
- */
-testAgents.SAFARI_MAC_OS_BIG_SUR =
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15' +
-    ' (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15';
 
 /** @const {string} */
 testAgents.COAST =
@@ -401,12 +338,6 @@ testAgents.CHROME_ANDROID_TABLET_4_4 =
 
 
 /** @const {string} */
-testAgents.CHROME_HEADLESS =
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' +
-    'HeadlessChrome/79.0.3945.84 Safari/537.36';
-
-
-/** @const {string} */
 testAgents.CHROME_IPHONE =
     'Mozilla/5.0 (iPhone; CPU iPhone OS 5_1_1 like Mac OS X; en-us) ' +
     'AppleWebKit/534.46.0 (KHTML, like Gecko) CriOS/22.0.1194.0 Mobile/11E53 ' +
@@ -418,19 +349,12 @@ testAgents.CHROME_IPAD = 'Mozilla/5.0 (iPad; CPU OS 7_0_4 like Mac OS X) ' +
     'AppleWebKit/537.51.1 (KHTML, like Gecko) CriOS/32.0.1700.20 ' +
     'Mobile/11B554a Safari/9537.53';
 
-/** @const {string} */
-testAgents.CHROME_IPAD_DESKTOP = 'Mozilla/5.0 (Macintosh; Intel Mac OS X ' +
-    '10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/79 Safari/605.1.15';
 
 /** @const {string} */
 testAgents.CHROME_LINUX =
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.31 (KHTML, like Gecko)' +
     ' Chrome/26.0.1410.33 Safari/537.31';
 
-/** @const {string} */
-testAgents.CHROME_LINUX_91 =
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)' +
-    ' Chrome/91.0.4472.77 Safari/537.36';
 
 /**
  * We traditionally use Appversion to detect X11
@@ -469,18 +393,9 @@ testAgents.KINDLE_FIRE =
     ' AppleWebKit/535.19 (KHTML, like Gecko) Silk/2.1 Mobile Safari/535.19' +
     ' Silk-Accelerated=true';
 
-/** @const {string} */
-testAgents.KINDLE_FIRE_SILK_93 =
-    'Mozilla/5.0 (Linux; Android 5.1.1; KFARWI) AppleWebKit/537.36' +
-    ' (KHTML, like Gecko) Silk/93.2.7 like Chrome/93.0.4577.82 Safari/537.36';
 
 /** @const {string} */
 testAgents.FIREFOX_ANDROID_TABLET =
     'Mozilla/5.0 (Android; Tablet; rv:28.0) Gecko/28.0 Firefox/28.0';
 
-/** @const {string} */
-testAgents.KAIOS =
-    'Mozilla/5.0 (Mobile; LYF/F90M/LYF_F90M_000-03-19-240319; Android; ' +
-    'rv:48.0) Gecko/48.0 Firefox/48.0 KAIOS/2.5';
-
-exports = testAgents;
+});  // goog.scope

@@ -1,58 +1,59 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2014 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.soy.dataTest');
-goog.setTestOnly();
+goog.provide('goog.soy.dataTest');
+goog.setTestOnly('goog.soy.dataTest');
 
-const SafeHtml = goog.require('goog.html.SafeHtml');
-const SafeStyle = goog.require('goog.html.SafeStyle');
-const SafeStyleSheet = goog.require('goog.html.SafeStyleSheet');
-const SafeUrl = goog.require('goog.html.SafeUrl');
-const TrustedResourceUrl = goog.require('goog.html.TrustedResourceUrl');
+goog.require('goog.html.SafeHtml');
+goog.require('goog.html.SafeStyleSheet');
+goog.require('goog.html.SafeUrl');
+goog.require('goog.html.TrustedResourceUrl');
 /** @suppress {extraRequire} */
-const testHelper = goog.require('goog.soy.testHelper');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.soy.testHelper');
+goog.require('goog.testing.jsunit');
 
-testSuite({
-  testToSafeHtml() {
-    let html;
 
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    html = example.sanitizedHtmlTemplate().toSafeHtml();
-    assertEquals('Hello <b>World</b>', SafeHtml.unwrap(html));
-  },
+function testToSafeHtml() {
+  var html;
 
-  testToSafeUrl() {
-    let url;
+  html = example.unsanitizedTextTemplate().toSafeHtml();
+  assertEquals(
+      'I &lt;3 Puppies &amp; Kittens', goog.html.SafeHtml.unwrap(html));
 
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    url = example.sanitizedSmsUrlTemplate().toSafeUrl();
-    assertEquals('sms:123456789', SafeUrl.unwrap(url));
+  html = example.sanitizedHtmlTemplate().toSafeHtml();
+  assertEquals('Hello <b>World</b>', goog.html.SafeHtml.unwrap(html));
+}
 
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    url = example.sanitizedHttpUrlTemplate().toSafeUrl();
-    assertEquals('https://google.com/foo?n=917', SafeUrl.unwrap(url));
-  },
+function testToSafeUrl() {
+  var url;
 
-  testToSafeStyleSheet() {
-    const styleSheet = example.sanitizedCssTemplate({}).toSafeStyleSheet();
-    assertEquals('html{display:none}', SafeStyleSheet.unwrap(styleSheet));
-  },
+  url = example.sanitizedSmsUrlTemplate().toSafeUrl();
+  assertEquals('sms:123456789', goog.html.SafeUrl.unwrap(url));
 
-  testToSafeStyle() {
-    const style = example.sanitizedStyleTemplate({}).toSafeStyle();
-    assertEquals('display:none;', SafeStyle.unwrap(style));
-  },
+  url = example.sanitizedHttpUrlTemplate().toSafeUrl();
+  assertEquals('https://google.com/foo?n=917', goog.html.SafeUrl.unwrap(url));
+}
 
-  testToTrustedResourceUrl() {
-    let url;
+function testToSafeStyleSheet() {
+  var url = example.sanitizedCssTemplate().toSafeStyleSheet();
+  assertEquals('html{display:none}', goog.html.SafeStyleSheet.unwrap(url));
+}
 
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    url =
-        example.sanitizedTrustedResourceUriTemplate({}).toTrustedResourceUrl();
-    assertEquals('https://google.com/a.js', TrustedResourceUrl.unwrap(url));
-  },
-});
+function testToTrustedResourceUrl() {
+  var url;
+
+  url = example.sanitizedTrustedResourceUriTemplate({}).toTrustedResourceUrl();
+  assertEquals(
+      'https://google.com/a.js', goog.html.TrustedResourceUrl.unwrap(url));
+}

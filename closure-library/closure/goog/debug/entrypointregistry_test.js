@@ -1,77 +1,78 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2010 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.debug.entryPointRegistryTest');
-goog.setTestOnly();
+goog.provide('goog.debug.entryPointRegistryTest');
+goog.setTestOnly('goog.debug.entryPointRegistryTest');
 
-const ErrorHandler = goog.require('goog.debug.ErrorHandler');
-const entryPointRegistry = goog.require('goog.debug.entryPointRegistry');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.debug.ErrorHandler');
+goog.require('goog.debug.entryPointRegistry');
+goog.require('goog.testing.jsunit');
 
-let lastError;
-let errorHandler;
-let errorFn;
+var lastError;
+var errorHandler;
+var errorFn;
 
-testSuite({
-  setUp() {
-    lastError = null;
-    errorFn = (message) => {
-      throw {message: message};
-    };
-    errorHandler = new ErrorHandler((ex) => {
-      lastError = ex;
-    });
-    /** @suppress {visibility} suppression added to enable type checking */
-    entryPointRegistry.refList_ = [];
-  },
+function setUp() {
+  lastError = null;
+  errorFn = function(message) { throw {message: message}; };
+  errorHandler = new goog.debug.ErrorHandler(function(ex) { lastError = ex; });
+  goog.debug.entryPointRegistry.refList_ = [];
+}
 
-  testMonitorAndUnmonitor() {
-    entryPointRegistry.register((transformer) => {
-      errorFn = transformer(errorFn);
-    });
-    entryPointRegistry.monitorAll(errorHandler);
+function testMonitorAndUnmonitor() {
+  goog.debug.entryPointRegistry.register(function(transformer) {
+    errorFn = transformer(errorFn);
+  });
+  goog.debug.entryPointRegistry.monitorAll(errorHandler);
 
-    let e = assertThrows('expected error', goog.partial(errorFn, 'Hello!'));
-    assertEquals('Error in protected function: Hello!', e.message);
-    assertEquals('Hello!', lastError.message);
+  var e = assertThrows('expected error', goog.partial(errorFn, 'Hello!'));
+  assertEquals('Error in protected function: Hello!', e.message);
+  assertEquals('Hello!', lastError.message);
 
-    entryPointRegistry.unmonitorAllIfPossible(errorHandler);
+  goog.debug.entryPointRegistry.unmonitorAllIfPossible(errorHandler);
 
-    e = assertThrows('expected error', goog.partial(errorFn, 'Goodbye!'));
-    assertEquals('Goodbye!', e.message);
-    assertEquals('Hello!', lastError.message);
-  },
+  e = assertThrows('expected error', goog.partial(errorFn, 'Goodbye!'));
+  assertEquals('Goodbye!', e.message);
+  assertEquals('Hello!', lastError.message);
+}
 
-  testRegisterAfterMonitor() {
-    entryPointRegistry.monitorAll(errorHandler);
-    entryPointRegistry.register((transformer) => {
-      errorFn = transformer(errorFn);
-    });
+function testRegisterAfterMonitor() {
+  goog.debug.entryPointRegistry.monitorAll(errorHandler);
+  goog.debug.entryPointRegistry.register(function(transformer) {
+    errorFn = transformer(errorFn);
+  });
 
-    let e = assertThrows('expected error', goog.partial(errorFn, 'Hello!'));
-    assertEquals('Error in protected function: Hello!', e.message);
-    assertEquals('Hello!', lastError.message);
+  var e = assertThrows('expected error', goog.partial(errorFn, 'Hello!'));
+  assertEquals('Error in protected function: Hello!', e.message);
+  assertEquals('Hello!', lastError.message);
 
-    entryPointRegistry.unmonitorAllIfPossible(errorHandler);
+  goog.debug.entryPointRegistry.unmonitorAllIfPossible(errorHandler);
 
-    e = assertThrows('expected error', goog.partial(errorFn, 'Goodbye!'));
-    assertEquals('Goodbye!', e.message);
-    assertEquals('Hello!', lastError.message);
-  },
+  e = assertThrows('expected error', goog.partial(errorFn, 'Goodbye!'));
+  assertEquals('Goodbye!', e.message);
+  assertEquals('Hello!', lastError.message);
+}
 
-  testInvalidUnmonitor() {
-    entryPointRegistry.monitorAll(errorHandler);
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const e = assertThrows(
-        'expected error',
-        goog.partial(
-            entryPointRegistry.unmonitorAllIfPossible, new ErrorHandler()));
-    assertEquals(
-        'Assertion failed: Only the most recent monitor can be unwrapped.',
-        e.message);
-    entryPointRegistry.unmonitorAllIfPossible(errorHandler);
-  },
-});
+function testInvalidUnmonitor() {
+  goog.debug.entryPointRegistry.monitorAll(errorHandler);
+  var e = assertThrows(
+      'expected error',
+      goog.partial(
+          goog.debug.entryPointRegistry.unmonitorAllIfPossible,
+          new goog.debug.ErrorHandler()));
+  assertEquals(
+      'Assertion failed: Only the most recent monitor can be unwrapped.',
+      e.message);
+  goog.debug.entryPointRegistry.unmonitorAllIfPossible(errorHandler);
+}

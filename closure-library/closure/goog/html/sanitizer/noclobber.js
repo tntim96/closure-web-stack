@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2017 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Utility DOM functions resistant to DOM clobbering. Clobbering
@@ -40,8 +48,8 @@ var userAgentProduct = goog.require('goog.userAgent.product');
  */
 
 /**
- * Shorthand for `Object.getOwnPropertyDescriptor(...).get` to improve
- * readability during initialization of `Methods`.
+ * Shorthand for {@code Object.getOwnPropertyDescriptor(...).get} to improve
+ * readability during initialization of {@code Methods}.
  * @param {string} className
  * @param {string} property
  * @return {?Function}
@@ -56,8 +64,8 @@ function getterOrNull(className, property) {
 }
 
 /**
- * Shorthand for `DOMInterface.prototype.method` to improve readability
- * during initialization of `Methods`.
+ * Shorthand for {@code DOMInterface.prototype.method} to improve readability
+ * during initialization of {@code Methods}.
  * @param {string} className
  * @param {string} method
  * @return {?Function}
@@ -98,11 +106,7 @@ var Methods = {
   SHEET_GETTER: getterOrNull('HTMLStyleElement', 'sheet'),
   GET_PROPERTY_VALUE:
       prototypeMethodOrNull('CSSStyleDeclaration', 'getPropertyValue'),
-  SET_PROPERTY: prototypeMethodOrNull('CSSStyleDeclaration', 'setProperty'),
-  NAMESPACE_URI_GETTER: getterOrNull('Element', 'namespaceURI') ||
-      // Edge and IE10 define this Element property on Node instead of
-      // Element.
-      getterOrNull('Node', 'namespaceURI'),
+  SET_PROPERTY: prototypeMethodOrNull('CSSStyleDeclaration', 'setProperty')
 };
 
 /**
@@ -156,8 +160,8 @@ function genericMethodCall(fn, object, fallbackMethodName, args) {
 
 /**
  * Returns an element's attributes without falling prey to things like
- * <form><input name="attributes"></form>. Equivalent to
- * `node.attributes`.
+ * <form><input name="attributes"></form>. Equivalent to {@code
+ * node.attributes}.
  * @param {!Element} element
  * @return {!NamedNodeMap}
  */
@@ -233,8 +237,8 @@ function removeElementAttribute(element, attrName) {
 
 /**
  * Returns a node's innerHTML property value without falling prey to things like
- * <form><input name="innerHTML"></form>. Equivalent to
- * `element.innerHTML`.
+ * <form><input name="innerHTML"></form>. Equivalent to {@code
+ * element.innerHTML}.
  * @param {!Element} element
  * @return {string}
  */
@@ -377,8 +381,9 @@ function getParentNode(node) {
         // "parentNode" - this could happen legitimately but on IE we have no
         // better means of avoiding the pitfall.
         return !(
-            parentNode && typeof parentNode.name == 'string' &&
-            parentNode.name && parentNode.name.toLowerCase() == 'parentnode');
+            parentNode && parentNode.name &&
+            typeof parentNode.name == 'string' &&
+            parentNode.name.toLowerCase() == 'parentnode');
       });
 }
 
@@ -437,20 +442,6 @@ function setCssProperty(cssStyle, propName, sanitizedValue) {
       [propName, sanitizedValue]);
 }
 
-/**
- * Returns an element's namespace URI without falling prey to things like
- * <form><input name="namespaceURI"></form>.
- * @param {!Element} element
- * @return {string}
- */
-function getElementNamespaceURI(element) {
-  return genericPropertyGet(
-      Methods.NAMESPACE_URI_GETTER, element, 'namespaceURI',
-      function(namespaceURI) {
-        return typeof namespaceURI == 'string';
-      });
-}
-
 exports = {
   getElementAttributes: getElementAttributes,
   hasElementAttribute: hasElementAttribute,
@@ -471,7 +462,6 @@ exports = {
   appendNodeChild: appendNodeChild,
   getCssPropertyValue: getCssPropertyValue,
   setCssProperty: setCssProperty,
-  getElementNamespaceURI: getElementNamespaceURI,
   /** @package */
   Methods: Methods,
 };

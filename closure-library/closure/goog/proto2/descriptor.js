@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Protocol Buffer (Message) Descriptor class.
@@ -11,11 +19,10 @@
 goog.provide('goog.proto2.Descriptor');
 goog.provide('goog.proto2.Metadata');
 
+goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.object');
 goog.require('goog.string');
-goog.requireType('goog.proto2.FieldDescriptor');
-goog.requireType('goog.proto2.Message');
 
 
 /**
@@ -41,7 +48,7 @@ goog.proto2.Metadata;
  * @final
  */
 goog.proto2.Descriptor = function(messageType, metadata, fields) {
-  'use strict';
+
   /**
    * @type {function(new:goog.proto2.Message)}
    * @private
@@ -86,7 +93,6 @@ goog.proto2.Descriptor = function(messageType, metadata, fields) {
  * @return {?string} The name.
  */
 goog.proto2.Descriptor.prototype.getName = function() {
-  'use strict';
   return this.name_;
 };
 
@@ -97,7 +103,6 @@ goog.proto2.Descriptor.prototype.getName = function() {
  * @return {?string} The name.
  */
 goog.proto2.Descriptor.prototype.getFullName = function() {
-  'use strict';
   return this.fullName_;
 };
 
@@ -108,7 +113,6 @@ goog.proto2.Descriptor.prototype.getFullName = function() {
  * @return {goog.proto2.Descriptor} The descriptor.
  */
 goog.proto2.Descriptor.prototype.getContainingType = function() {
-  'use strict';
   if (!this.containingType_) {
     return null;
   }
@@ -125,7 +129,6 @@ goog.proto2.Descriptor.prototype.getContainingType = function() {
  *     descriptors.
  */
 goog.proto2.Descriptor.prototype.getFields = function() {
-  'use strict';
   /**
    * @param {!goog.proto2.FieldDescriptor} fieldA First field.
    * @param {!goog.proto2.FieldDescriptor} fieldB Second field.
@@ -137,7 +140,7 @@ goog.proto2.Descriptor.prototype.getFields = function() {
   }
 
   var fields = goog.object.getValues(this.fields_);
-  fields.sort(tagComparator);
+  goog.array.sort(fields, tagComparator);
 
   return fields;
 };
@@ -152,7 +155,6 @@ goog.proto2.Descriptor.prototype.getFields = function() {
  * @return {!Object<number, !goog.proto2.FieldDescriptor>} The field map.
  */
 goog.proto2.Descriptor.prototype.getFieldsMap = function() {
-  'use strict';
   return this.fields_;
 };
 
@@ -167,12 +169,9 @@ goog.proto2.Descriptor.prototype.getFieldsMap = function() {
  * @return {goog.proto2.FieldDescriptor} The field found, if any.
  */
 goog.proto2.Descriptor.prototype.findFieldByName = function(name) {
-  'use strict';
-  var valueFound =
-      goog.object.findValue(this.fields_, function(field, key, obj) {
-        'use strict';
-        return field.getName() == name;
-      });
+  var valueFound = goog.object.findValue(
+      this.fields_,
+      function(field, key, obj) { return field.getName() == name; });
 
   return /** @type {goog.proto2.FieldDescriptor} */ (valueFound) || null;
 };
@@ -186,7 +185,6 @@ goog.proto2.Descriptor.prototype.findFieldByName = function(name) {
  * @return {goog.proto2.FieldDescriptor} The field found, if any.
  */
 goog.proto2.Descriptor.prototype.findFieldByTag = function(tag) {
-  'use strict';
   goog.asserts.assert(goog.string.isNumeric(tag));
   return this.fields_[parseInt(tag, 10)] || null;
 };
@@ -199,6 +197,5 @@ goog.proto2.Descriptor.prototype.findFieldByTag = function(tag) {
  * @return {!goog.proto2.Message} The instance of the message.
  */
 goog.proto2.Descriptor.prototype.createMessageInstance = function() {
-  'use strict';
   return new this.messageType_;
 };

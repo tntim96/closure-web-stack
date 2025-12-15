@@ -1,21 +1,29 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2017 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /** @fileoverview Tests for {@link goog.html.sanitizer.noclobber} */
 
 goog.module('goog.html.sanitizer.noclobberTest');
 goog.setTestOnly();
 
-const NodeType = goog.require('goog.dom.NodeType');
-const PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
-const noclobber = goog.require('goog.html.sanitizer.noclobber');
-const testSuite = goog.require('goog.testing.testSuite');
-const testingDom = goog.require('goog.testing.dom');
+var NodeType = goog.require('goog.dom.NodeType');
+var PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
+var noclobber = goog.require('goog.html.sanitizer.noclobber');
+var testSuite = goog.require('goog.testing.testSuite');
+var testingDom = goog.require('goog.testing.dom');
 
-const userAgentProduct = goog.require('goog.userAgent.product');
+var userAgentProduct = goog.require('goog.userAgent.product');
 
 /** Whether we support functions that operate on Node and Element. */
 const elementAndNodeSupported =
@@ -26,7 +34,7 @@ const elementAndNodeSupported =
  * @return {!Element}
  */
 function htmlToElement(html) {
-  const div = document.createElement('div');
+  var div = document.createElement('div');
   div.innerHTML = html;
   return div.children[0];
 }
@@ -40,17 +48,13 @@ function createElement(name) {
 }
 
 testSuite({
-  /**
-     @suppress {strictMissingProperties} suppression added to enable type
-     checking
-   */
   testElement() {
     if (!elementAndNodeSupported) {
       return;
     }
 
-    let element = createElement('attributes');
-    const attributes = noclobber.getElementAttributes(element);
+    var element = createElement('attributes');
+    var attributes = noclobber.getElementAttributes(element);
     assertEquals('id', attributes[0].name);
 
     element = createElement('hasAttribute');
@@ -70,11 +74,11 @@ testSuite({
     assertFalse(element.hasAttribute('id'));
 
     element = createElement('innerHTML');
-    const innerHTML = noclobber.getElementInnerHTML(element);
+    var innerHTML = noclobber.getElementInnerHTML(element);
     testingDom.assertHtmlMatches('<input name="innerHTML">', innerHTML);
 
     element = createElement('style');
-    const style = noclobber.getElementStyle(element);
+    var style = noclobber.getElementStyle(element);
     assertTrue(style instanceof CSSStyleDeclaration);
 
     element = createElement('getElementsByTagName');
@@ -92,17 +96,8 @@ testSuite({
     element = createElement('matches');
     assertTrue(noclobber.elementMatches(element, '#foo'));
     assertFalse(noclobber.elementMatches(element, '#bar'));
-
-    element = createElement('namespaceURI');
-    assertEquals(
-        'http://www.w3.org/1999/xhtml',
-        noclobber.getElementNamespaceURI(element));
   },
 
-  /**
-     @suppress {strictMissingProperties} suppression added to enable type
-     checking
-   */
   testElementClobbered() {
     if (!elementAndNodeSupported) {
       return;
@@ -110,9 +105,9 @@ testSuite({
 
     // There's currently no browser in our test suite that throws on clobbering,
     // so we delete the saved prototypes to simulate such case.
-    const replacer = new PropertyReplacer();
+    var replacer = new PropertyReplacer();
 
-    let element = createElement('attributes');
+    var element = createElement('attributes');
     replacer.set(noclobber.Methods, 'ATTRIBUTES_GETTER', null);
     assertThrows(function() {
       noclobber.getElementAttributes(element);
@@ -184,7 +179,7 @@ testSuite({
       return;
     }
 
-    let element = createElement('nodeName');
+    var element = createElement('nodeName');
     assertEquals('FORM', noclobber.getNodeName(element));
 
     element = createElement('nodeType');
@@ -208,9 +203,9 @@ testSuite({
       return;
     }
 
-    const replacer = new PropertyReplacer();
+    var replacer = new PropertyReplacer();
 
-    let element = createElement('nodeName');
+    var element = createElement('nodeName');
     replacer.set(noclobber.Methods, 'NODE_NAME_GETTER', null);
     assertThrows(function() {
       noclobber.getNodeName(element);
@@ -245,7 +240,7 @@ testSuite({
 
   testCSSStyleDeclaration() {
     // Properties on the CSSStyleDeclaration object can't be clobbered.
-    const element =
+    var element =
         htmlToElement('<form style="color:red"><input name="test"></form>');
     assertEquals('red', noclobber.getCssPropertyValue(element.style, 'color'));
     noclobber.setCssProperty(element.style, 'color', 'black');
@@ -255,10 +250,10 @@ testSuite({
   testCSSStyleDeclarationOldBrowser() {
     // Properties on the CSSStyleDeclaration object can't be clobbered, we only
     // test that they work on browsers without prototypes.
-    const replacer = new PropertyReplacer();
+    var replacer = new PropertyReplacer();
 
     replacer.set(noclobber.Methods, 'GET_PROPERTY_VALUE', null);
-    const element = htmlToElement(
+    var element = htmlToElement(
         '<form style="color:red"><input name="' +
         (userAgentProduct.IE ? 'getAttribute' : 'getPropertyValue') +
         '" style="color: green"></form>');

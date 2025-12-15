@@ -1,37 +1,43 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.ui.MenuSeparatorRendererTest');
-goog.setTestOnly();
+goog.provide('goog.ui.MenuSeparatorRendererTest');
+goog.setTestOnly('goog.ui.MenuSeparatorRendererTest');
 
-const MenuSeparator = goog.require('goog.ui.MenuSeparator');
-const MenuSeparatorRenderer = goog.require('goog.ui.MenuSeparatorRenderer');
-const dom = goog.require('goog.dom');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.dom');
+goog.require('goog.testing.jsunit');
+goog.require('goog.ui.MenuSeparator');
+goog.require('goog.ui.MenuSeparatorRenderer');
 
-let sandbox;
-let originalSandbox;
+var sandbox;
+var originalSandbox;
 
-testSuite({
-  setUp() {
-    sandbox = dom.getElement('sandbox');
-    originalSandbox = sandbox.cloneNode(true);
-  },
+function setUp() {
+  sandbox = goog.dom.getElement('sandbox');
+  originalSandbox = sandbox.cloneNode(true);
+}
 
-  tearDown() {
-    sandbox.parentNode.replaceChild(originalSandbox, sandbox);
-  },
+function tearDown() {
+  sandbox.parentNode.replaceChild(originalSandbox, sandbox);
+}
 
-  testDecorate() {
-    const separator = new MenuSeparator();
-    const dummyId = 'foo';
-    separator.setId(dummyId);
-    assertEquals(dummyId, separator.getId());
-    const renderer = new MenuSeparatorRenderer();
-    renderer.decorate(separator, dom.getElement('separator'));
-    assertEquals('separator', separator.getId());
-  },
-});
+function testDecorate() {
+  var separator = new goog.ui.MenuSeparator();
+  var dummyId = 'foo';
+  separator.setId(dummyId);
+  assertEquals(dummyId, separator.getId());
+  var renderer = new goog.ui.MenuSeparatorRenderer();
+  renderer.decorate(separator, goog.dom.getElement('separator'));
+  assertEquals('separator', separator.getId());
+}

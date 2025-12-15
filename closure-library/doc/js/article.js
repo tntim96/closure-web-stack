@@ -1,13 +1,13 @@
 // Documentation licensed under CC BY 4.0
 // License available at https://creativecommons.org/licenses/by/4.0/
 
-// TODO(sdh): Bring in Closure library and compiler.
+// TODO(user): Bring in Closure library and compiler.
 
-const closure = window.closure || {};
+var closure = window.closure || {};
 closure.docs = closure.docs || {};
 
 
-/** @const {string} */
+/** @define {string} */
 closure.docs.LOCATION = String(window.location);
 
 
@@ -20,7 +20,7 @@ closure.docs.LOCATION = String(window.location);
  * @return {*} Result, or undefined.
  */
 closure.docs.get = function(param) {
-  const data = window['_JEKYLL_DATA'];
+  var data = window['_JEKYLL_DATA'];
   return data && data[param];
 };
 
@@ -31,9 +31,8 @@ closure.docs.get = function(param) {
  * @param {function(!Element)} func
  */
 closure.docs.forEachElement = function(selector, func) {
-  const elements = document.querySelectorAll(selector);
-  const length = elements.length;
-  for (let i = 0; i < length; i++) {
+  var elements = document.querySelectorAll(selector);
+  for (var i = 0, length = elements.length; i < length; i++) {
     func(elements[i]);
   }
 };
@@ -48,7 +47,7 @@ closure.docs.forEachHeading = function(func) {
       'article > h1, article > h2, article > h3, ' +
           'article > h4, article > h5, article > h6',
       function(heading) {
-        const match = /^h(\d)$/i.exec(heading.tagName);
+        var match = /^h(\d)$/i.exec(heading.tagName);
         func(heading, Number(match[1]));
       });
 };
@@ -62,11 +61,11 @@ closure.docs.forEachHeading = function(func) {
  */
 closure.docs.addScrollListener = function() {
   // Add a scroll listener to handle body.scrolled and body.down
-  let last = void 0;
+  var last = void 0;
   // Height difference between the scrolled and unscrolled header bars
-  const threshold = 140;
+  var threshold = 140;
   document.addEventListener('scroll', function() {
-    const top = document.body.scrollTop;
+    var top = document.body.scrollTop;
     document.body.classList.toggle('scrolled', top > threshold);
     document.body.classList.toggle('down', top > last);
     last = top;
@@ -87,16 +86,16 @@ closure.docs.interceptLinkClicks = function() {
    * below the banner.
    */
   function scrollToHash() {
-    const hash = window.location.hash.substring(1);
+    var hash = window.location.hash.substring(1);
     if (hash) {
-      const el = document.getElementById(hash);
-      const delta = document.body.classList.contains('scrolled') ? 72 : 128;
+      var el = document.getElementById(hash);
+      var delta = document.body.classList.contains('scrolled') ? 72 : 128;
       document.body.scrollTop = el.offsetTop - delta;
     }
   }
   document.addEventListener('click', function(e) {
     if (!e.target || e.target.tagName != 'A') return;
-    const href = e.target.getAttribute('href');
+    var href = e.target.getAttribute('href');
     if (href && href[0] == '#') {
       window.location.hash = href;
       requestAnimationFrame(scrollToHash);
@@ -115,13 +114,13 @@ closure.docs.interceptLinkClicks = function() {
  */
 closure.docs.findTitle = function() {
   // Note: we need to skip the first (#top_of_page) element.
-  const h1 = document.querySelectorAll('article > h1')[1];
+  var h1 = document.querySelectorAll('article > h1')[1];
   if (h1) {
-    const pageTitle = h1.textContent;
+    var pageTitle = h1.textContent;
     h1.remove();
-    const title = document.querySelector('title');
+    var title = document.querySelector('title');
     if (!title.textContent) title.textContent = pageTitle;
-    const heading = document.querySelector('h1#top_of_page');
+    var heading = document.querySelector('h1#top_of_page');
     if (heading && !heading.textContent) heading.textContent = pageTitle;
   }
 };
@@ -135,9 +134,9 @@ closure.docs.findTitle = function() {
  * number.  Also assigns IDs if one isn't already given.
  */
 closure.docs.autoNumber = function() {
-  const min = Number(closure.docs.get('page.toc.min') || 2);
-  const nums = [];
-  const ids = {};
+  var min = Number(closure.docs.get('page.toc.min') || 2);
+  var nums = [];
+  var ids = {};
   closure.docs.forEachHeading(function(heading, level) {
     if (level < min) return;
     // Don't do any numbering unless the heading starts with a digit,
@@ -152,11 +151,11 @@ closure.docs.autoNumber = function() {
     nums[nums.length - 1]++;
     // Auto-generate an ID if necessary.
     if (!heading.id) {
-      const base = '_' +
+      var base = '_' +
           heading.textContent.toLowerCase()
               .replace(/[^a-z]+/g, '-')
               .replace(/^-|-$/g, '');
-      let suffix = '';
+      var suffix = '';
       while (base + suffix in ids) {
         suffix++;
       }
@@ -178,11 +177,11 @@ closure.docs.autoNumber = function() {
  */
 closure.docs.fixLinkText = function() {
   closure.docs.forEachElement('a', function(link) {
-    const href = link.getAttribute('href');
+    var href = link.getAttribute('href');
     if (!/^#/.test(href) || !/^\?\?+$/.test(link.textContent)) return;
-    const heading = document.getElementById(href.substring(1));
+    var heading = document.getElementById(href.substring(1));
     if (heading) link.textContent = heading.textContent;
-    // TODO(sdh): allow including/excluding the number?
+    // TODO(user): allow including/excluding the number?
   });
 };
 
@@ -193,36 +192,36 @@ closure.docs.fixLinkText = function() {
  */
 closure.docs.buildToc = function() {
   // Read a few page-level parameters to customize.
-  const min = Number(closure.docs.get('page.toc.min') || 2);
-  const max = Number(closure.docs.get('page.toc.max') || 3);
-  // TODO(sdh): allow further customization of numbering?
-  const stack = [];
+  var min = Number(closure.docs.get('page.toc.min') || 2);
+  var max = Number(closure.docs.get('page.toc.max') || 3);
+  // TODO(user): allow further customization of numbering?
+  var stack = [];
   closure.docs.forEachHeading(function(heading, level) {
     if (level < min || level > max) return;
-    const depth = level - min + 1;
+    var depth = level - min + 1;
     while (stack.length > depth) {
       stack.pop();
     }
     while (stack.length < depth) {
-      const list = document.createElement('ul');
+      var list = document.createElement('ul');
       // Add to the most recent 'li' item (unless this is the first entry).
-      const prev = stack[stack.length - 1];
+      var prev = stack[stack.length - 1];
       if (prev) {
         if (!prev.lastChild) prev.appendChild(document.createElement('li'));
         prev.lastChild.appendChild(list);
       }
       stack.push(list);
     }
-    const item = document.createElement('li');
+    var item = document.createElement('li');
     stack[stack.length - 1].appendChild(item);
-    const link = document.createElement('a');
+    var link = document.createElement('a');
     item.appendChild(link);
     link.href = '#' + heading.id;
     link.textContent = heading.textContent;
   });
 
   // Finally add the toc to our toc elements.
-  const toc = stack[0];
+  var toc = stack[0];
   closure.docs.forEachElement('nav.toc ul', function(ul) {
     if (toc && toc.innerHTML) {
       ul.innerHTML += toc.innerHTML;
@@ -255,7 +254,7 @@ closure.docs.fixSyntaxHighlighting = function() {
  */
 closure.docs.highlightCallouts = function() {
   closure.docs.forEachElement('p', function(p) {
-    const match = /^([A-Za-z]+):/.exec(p.textContent);
+    var match = /^([A-Za-z]+):/.exec(p.textContent);
     if (match) p.classList.add('callout-' + match[1].toLowerCase());
   });
 };
@@ -265,8 +264,8 @@ closure.docs.highlightCallouts = function() {
  * Sets the URL on the edit link.
  */
 closure.docs.setEditLink = function() {
-  const link = document.querySelector('a.edit');
-  const match =
+  var link = document.querySelector('a.edit');
+  var match =
       /\/\/([^.]+).github.io\/([^/]+)\/(.*)$/.exec(closure.docs.LOCATION);
   if (!match || !link) return;
   link.href = [
@@ -281,8 +280,8 @@ closure.docs.setEditLink = function() {
  */
 closure.docs.markActiveNav = function() {
   // Absolutize link
-  const abs = (function() {
-    const link = document.createElement('a');
+  var abs = (function() {
+    var link = document.createElement('a');
     return function(rel) {
       link.href = rel;
       return link.href;
@@ -290,21 +289,21 @@ closure.docs.markActiveNav = function() {
   })();
 
   // Checks for a prefix, returns everything after it if it exists
-  const suffix = function(prefix, string) {
+  var suffix = function(prefix, string) {
     return string.substring(0, prefix.length) == prefix ?
         string.substring(prefix.length) :
         '';
   };
 
   // Figure out the current page/section.
-  const location = closure.docs.LOCATION;
-  const page = location.replace(/\.(?:md|html)?/, '');
-  let section = location.substring(0, location.lastIndexOf('/'));
+  var location = closure.docs.LOCATION;
+  var page = location.replace(/\.(?:md|html)?/, '');
+  var section = location.substring(0, location.lastIndexOf('/'));
 
   // If section was overridden in the page frontmatter, use that instead.
-  const sectionParameter = closure.docs.get('page.section');
+  var sectionParameter = closure.docs.get('page.section');
   if (sectionParameter != null) {
-    let root = closure.docs.get('site.baseurl;') || '/';
+    var root = closure.docs.get('site.baseurl;') || '/';
     if (root.length > 1 && root[root.length - 1] == '/') {
       root = root.substring(0, root.length - 1);
     }
@@ -331,7 +330,7 @@ closure.docs.markActiveNav = function() {
  * @suppress {checkTypes}
  */
 closure.docs.startAnalytics = function() {
-  const productKey = closure.docs.get('page.ga');
+  var productKey = closure.docs.get('page.ga');
   if (!productKey) return;
   (function(i, s, o, g, r, a, m) {
     i['GoogleAnalyticsObject'] = r;

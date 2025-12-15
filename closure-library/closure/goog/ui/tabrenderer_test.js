@@ -1,145 +1,149 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.ui.TabRendererTest');
-goog.setTestOnly();
+goog.provide('goog.ui.TabRendererTest');
+goog.setTestOnly('goog.ui.TabRendererTest');
 
-const Role = goog.require('goog.a11y.aria.Role');
-const TabRenderer = goog.require('goog.ui.TabRenderer');
-const UiTab = goog.require('goog.ui.Tab');
-const classlist = goog.require('goog.dom.classlist');
-const dom = goog.require('goog.dom');
-const rendererasserts = goog.require('goog.testing.ui.rendererasserts');
-const testSuite = goog.require('goog.testing.testSuite');
-const testingDom = goog.require('goog.testing.dom');
+goog.require('goog.a11y.aria.Role');
+goog.require('goog.dom');
+goog.require('goog.dom.classlist');
+goog.require('goog.testing.dom');
+goog.require('goog.testing.jsunit');
+goog.require('goog.testing.ui.rendererasserts');
+goog.require('goog.ui.Tab');
+goog.require('goog.ui.TabRenderer');
 
-let sandbox;
-let renderer;
-let tab;
+var sandbox;
+var renderer;
+var tab;
 
-testSuite({
-  setUp() {
-    sandbox = dom.getElement('sandbox');
-    renderer = TabRenderer.getInstance();
-    tab = new UiTab('Hello');
-  },
+function setUp() {
+  sandbox = goog.dom.getElement('sandbox');
+  renderer = goog.ui.TabRenderer.getInstance();
+  tab = new goog.ui.Tab('Hello');
+}
 
-  tearDown() {
-    tab.dispose();
-    dom.removeChildren(sandbox);
-  },
+function tearDown() {
+  tab.dispose();
+  goog.dom.removeChildren(sandbox);
+}
 
-  testConstructor() {
-    assertNotNull('Renderer must not be null', renderer);
-  },
+function testConstructor() {
+  assertNotNull('Renderer must not be null', renderer);
+}
 
-  testGetCssClass() {
-    assertEquals(
-        'CSS class must have expected value', TabRenderer.CSS_CLASS,
-        renderer.getCssClass());
-  },
+function testGetCssClass() {
+  assertEquals(
+      'CSS class must have expected value', goog.ui.TabRenderer.CSS_CLASS,
+      renderer.getCssClass());
+}
 
-  testGetAriaRole() {
-    assertEquals(
-        'ARIA role must have expected value', Role.TAB, renderer.getAriaRole());
-  },
+function testGetAriaRole() {
+  assertEquals(
+      'ARIA role must have expected value', goog.a11y.aria.Role.TAB,
+      renderer.getAriaRole());
+}
 
-  testCreateDom() {
-    const element = renderer.createDom(tab);
-    assertNotNull('Element must not be null', element);
-    testingDom.assertHtmlMatches(
-        '<div class="goog-tab">Hello</div>', dom.getOuterHtml(element));
-  },
+function testCreateDom() {
+  var element = renderer.createDom(tab);
+  assertNotNull('Element must not be null', element);
+  goog.testing.dom.assertHtmlMatches(
+      '<div class="goog-tab">Hello</div>', goog.dom.getOuterHtml(element));
+}
 
-  testCreateDomWithTooltip() {
-    tab.setTooltip('Hello, world!');
-    const element = renderer.createDom(tab);
-    assertNotNull('Element must not be null', element);
-    assertEquals(
-        'Element must have expected tooltip', 'Hello, world!',
-        renderer.getTooltip(element));
-  },
+function testCreateDomWithTooltip() {
+  tab.setTooltip('Hello, world!');
+  var element = renderer.createDom(tab);
+  assertNotNull('Element must not be null', element);
+  assertEquals(
+      'Element must have expected tooltip', 'Hello, world!',
+      renderer.getTooltip(element));
+}
 
-  testRender() {
-    tab.setRenderer(renderer);
-    tab.render();
-    const element = tab.getElementStrict();
-    assertNotNull('Element must not be null', element);
-    assertEquals(
-        'aria-selected should be false', 'false',
-        element.getAttribute('aria-selected'));
-  },
+function testRender() {
+  tab.setRenderer(renderer);
+  tab.render();
+  var element = tab.getElementStrict();
+  assertNotNull('Element must not be null', element);
+  assertEquals(
+      'aria-selected should be false', 'false',
+      element.getAttribute('aria-selected'));
+}
 
-  testDecorate() {
-    sandbox.innerHTML = '<div id="foo">Foo</div>\n' +
-        '<div id="bar" title="Yes">Bar</div>';
+function testDecorate() {
+  sandbox.innerHTML = '<div id="foo">Foo</div>\n' +
+      '<div id="bar" title="Yes">Bar</div>';
 
-    const foo = renderer.decorate(tab, dom.getElement('foo'));
-    assertNotNull('Decorated element must not be null', foo);
-    assertSameElements(
-        'Decorated element must have expected class', ['goog-tab'],
-        classlist.get(foo));
-    assertEquals(
-        'Decorated tab must have expected content', 'Foo',
-        tab.getContent().nodeValue);
-    assertUndefined('Decorated tab must not have tooltip', tab.getTooltip());
-    assertEquals(
-        'Decorated element must not have title', '', renderer.getTooltip(foo));
+  var foo = renderer.decorate(tab, goog.dom.getElement('foo'));
+  assertNotNull('Decorated element must not be null', foo);
+  assertSameElements(
+      'Decorated element must have expected class', ['goog-tab'],
+      goog.dom.classlist.get(foo));
+  assertEquals(
+      'Decorated tab must have expected content', 'Foo',
+      tab.getContent().nodeValue);
+  assertUndefined('Decorated tab must not have tooltip', tab.getTooltip());
+  assertEquals(
+      'Decorated element must not have title', '', renderer.getTooltip(foo));
 
-    const bar = renderer.decorate(tab, dom.getElement('bar'));
-    assertNotNull('Decorated element must not be null', bar);
-    assertSameElements(
-        'Decorated element must have expected class', ['goog-tab'],
-        classlist.get(bar));
-    assertEquals(
-        'Decorated tab must have expected content', 'Bar',
-        tab.getContent().nodeValue);
-    assertEquals(
-        'Decorated tab must have expected tooltip', 'Yes', tab.getTooltip());
-    assertEquals(
-        'Decorated element must have expected title', 'Yes',
-        renderer.getTooltip(bar));
-  },
+  var bar = renderer.decorate(tab, goog.dom.getElement('bar'));
+  assertNotNull('Decorated element must not be null', bar);
+  assertSameElements(
+      'Decorated element must have expected class', ['goog-tab'],
+      goog.dom.classlist.get(bar));
+  assertEquals(
+      'Decorated tab must have expected content', 'Bar',
+      tab.getContent().nodeValue);
+  assertEquals(
+      'Decorated tab must have expected tooltip', 'Yes', tab.getTooltip());
+  assertEquals(
+      'Decorated element must have expected title', 'Yes',
+      renderer.getTooltip(bar));
+}
 
-  testGetTooltip() {
-    sandbox.innerHTML = '<div id="foo">Foo</div>\n' +
-        '<div id="bar" title="">Bar</div>\n' +
-        '<div id="baz" title="BazTitle">Baz</div>';
-    assertEquals(
-        'getTooltip() must return empty string for no title', '',
-        renderer.getTooltip(dom.getElement('foo')));
-    assertEquals(
-        'getTooltip() must return empty string for empty title', '',
-        renderer.getTooltip(dom.getElement('bar')));
-    assertEquals(
-        'Tooltip must have expected value', 'BazTitle',
-        renderer.getTooltip(dom.getElement('baz')));
-  },
+function testGetTooltip() {
+  sandbox.innerHTML = '<div id="foo">Foo</div>\n' +
+      '<div id="bar" title="">Bar</div>\n' +
+      '<div id="baz" title="BazTitle">Baz</div>';
+  assertEquals(
+      'getTooltip() must return empty string for no title', '',
+      renderer.getTooltip(goog.dom.getElement('foo')));
+  assertEquals(
+      'getTooltip() must return empty string for empty title', '',
+      renderer.getTooltip(goog.dom.getElement('bar')));
+  assertEquals(
+      'Tooltip must have expected value', 'BazTitle',
+      renderer.getTooltip(goog.dom.getElement('baz')));
+}
 
-  /**
-     @suppress {strictMissingProperties} suppression added to enable type
-     checking
-   */
-  testSetTooltip() {
-    sandbox.innerHTML = '<div id="foo">Foo</div>';
-    const element = dom.getElement('foo');
+function testSetTooltip() {
+  sandbox.innerHTML = '<div id="foo">Foo</div>';
+  var element = goog.dom.getElement('foo');
 
-    renderer.setTooltip(null, null);  // Must not error.
+  renderer.setTooltip(null, null);  // Must not error.
 
-    renderer.setTooltip(element, null);
-    assertEquals('Tooltip must be the empty string', '', element.title);
+  renderer.setTooltip(element, null);
+  assertEquals('Tooltip must be the empty string', '', element.title);
 
-    renderer.setTooltip(element, '');
-    assertEquals('Tooltip must be the empty string', '', element.title);
+  renderer.setTooltip(element, '');
+  assertEquals('Tooltip must be the empty string', '', element.title);
 
-    renderer.setTooltip(element, 'Foo');
-    assertEquals('Tooltip must have expected value', 'Foo', element.title);
-  },
+  renderer.setTooltip(element, 'Foo');
+  assertEquals('Tooltip must have expected value', 'Foo', element.title);
+}
 
-  testDoesntCallGetCssClassInConstructor() {
-    rendererasserts.assertNoGetCssClassCallsInConstructor(TabRenderer);
-  },
-});
+function testDoesntCallGetCssClassInConstructor() {
+  goog.testing.ui.rendererasserts.assertNoGetCssClassCallsInConstructor(
+      goog.ui.TabRenderer);
+}

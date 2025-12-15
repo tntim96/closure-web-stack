@@ -1,146 +1,147 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-/**
- * @fileoverview
- * @suppress {missingRequire} Stubbing goog.dom
- */
+goog.provide('goog.ui.HsvaPaletteTest');
+goog.setTestOnly('goog.ui.HsvaPaletteTest');
 
-goog.module('goog.ui.HsvaPaletteTest');
-goog.setTestOnly();
+goog.require('goog.color.alpha');
+goog.require('goog.dom.TagName');
+goog.require('goog.dom.classlist');
+goog.require('goog.events.Event');
+goog.require('goog.math.Coordinate');
+goog.require('goog.style');
+goog.require('goog.testing.PropertyReplacer');
+goog.require('goog.testing.jsunit');
+goog.require('goog.ui.HsvaPalette');
+goog.require('goog.userAgent');
 
-const Coordinate = goog.require('goog.math.Coordinate');
-const GoogEvent = goog.require('goog.events.Event');
-const HsvaPalette = goog.require('goog.ui.HsvaPalette');
-const PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
-const TagName = goog.require('goog.dom.TagName');
-const classlist = goog.require('goog.dom.classlist');
-const colorAlpha = goog.require('goog.color.alpha');
-const style = goog.require('goog.style');
-const testSuite = goog.require('goog.testing.testSuite');
+var samplePalette;
+var eventWasFired = false;
+var stubs = new goog.testing.PropertyReplacer();
 
-let samplePalette;
-const stubs = new PropertyReplacer();
+function setUp() {
+  samplePalette = new goog.ui.HsvaPalette();
+}
 
-testSuite({
-  setUp() {
-    samplePalette = new HsvaPalette();
-  },
+function tearDown() {
+  samplePalette.dispose();
+  stubs.reset();
+}
 
-  tearDown() {
-    samplePalette.dispose();
-    stubs.reset();
-  },
+function testZeroAlpha() {
+  var palette = new goog.ui.HsvaPalette(null, undefined, 0);
+  assertEquals(0, palette.getAlpha());
+}
 
-  testZeroAlpha() {
-    const palette = new HsvaPalette(null, undefined, 0);
-    assertEquals(0, palette.getAlpha());
-  },
+function testOptionalInitialColor() {
+  var alpha = 0.5;
+  var color = '#0000ff';
+  var palette = new goog.ui.HsvaPalette(null, color, alpha);
+  assertEquals(color, palette.getColor());
+  assertEquals(alpha, palette.getAlpha());
+}
 
-  testOptionalInitialColor() {
-    const alpha = 0.5;
-    const color = '#0000ff';
-    const palette = new HsvaPalette(null, color, alpha);
-    assertEquals(color, palette.getColor());
-    assertEquals(alpha, palette.getAlpha());
-  },
+function testCustomClassName() {
+  var customClassName = 'custom-plouf';
+  var customClassPalette =
+      new goog.ui.HsvaPalette(null, null, null, customClassName);
+  customClassPalette.createDom();
+  assertTrue(
+      goog.dom.classlist.contains(
+          customClassPalette.getElement(), customClassName));
+}
 
-  testCustomClassName() {
-    const customClassName = 'custom-plouf';
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const customClassPalette =
-        new HsvaPalette(null, null, null, customClassName);
-    customClassPalette.createDom();
-    assertTrue(
-        classlist.contains(customClassPalette.getElement(), customClassName));
-  },
+function testSetColor() {
+  var color = '#abcdef01';
+  samplePalette.setColorRgbaHex(color);
+  assertEquals(
+      color, goog.color.alpha.parse(samplePalette.getColorRgbaHex()).hex);
+  color = 'abcdef01';
+  samplePalette.setColorRgbaHex(color);
+  assertEquals(
+      '#' + color, goog.color.alpha.parse(samplePalette.getColorRgbaHex()).hex);
+}
 
-  testSetColor() {
-    let color = '#abcdef01';
-    samplePalette.setColorRgbaHex(color);
-    assertEquals(color, colorAlpha.parse(samplePalette.getColorRgbaHex()).hex);
-    color = 'abcdef01';
-    samplePalette.setColorRgbaHex(color);
-    assertEquals(
-        `#${color}`, colorAlpha.parse(samplePalette.getColorRgbaHex()).hex);
-  },
+function testRender() {
+  samplePalette.render(document.getElementById('sandbox'));
 
-  testRender() {
-    samplePalette.render(document.getElementById('sandbox'));
+  assertTrue(samplePalette.isInDocument());
 
-    assertTrue(samplePalette.isInDocument());
+  var elem = samplePalette.getElement();
+  assertNotNull(elem);
+  assertEquals(String(goog.dom.TagName.DIV), elem.tagName);
 
-    const elem = samplePalette.getElement();
-    assertNotNull(elem);
-    assertEquals(String(TagName.DIV), elem.tagName);
-
+  if (goog.userAgent.IE && !goog.userAgent.isVersionOrHigher('7')) {
+    assertSameElements(
+        'On IE6, the noalpha class must be present',
+        ['goog-hsva-palette', 'goog-hsva-palette-noalpha'],
+        goog.dom.classlist.get(elem));
+  } else {
     assertEquals(
         'The noalpha class must not be present', 'goog-hsva-palette',
         elem.className);
-  },
+  }
+}
 
-  /** @suppress {visibility} suppression added to enable type checking */
-  testInputColor() {
-    samplePalette.render(document.getElementById('sandbox'));
-    const color = '#00112233';
-    /** @suppress {visibility} suppression added to enable type checking */
-    samplePalette.inputElement.value = color;
-    samplePalette.handleInput(null);
-    assertEquals(color, colorAlpha.parse(samplePalette.getColorRgbaHex()).hex);
-  },
+function testInputColor() {
+  samplePalette.render(document.getElementById('sandbox'));
+  var color = '#00112233';
+  samplePalette.inputElement.value = color;
+  samplePalette.handleInput(null);
+  assertEquals(
+      color, goog.color.alpha.parse(samplePalette.getColorRgbaHex()).hex);
+}
 
-  /** @suppress {visibility} suppression added to enable type checking */
-  testHandleMouseMoveAlpha() {
-    samplePalette.render(document.getElementById('sandbox'));
-    stubs.set(goog.dom, 'getPageScroll', () => new Coordinate(0, 0));
+function testHandleMouseMoveAlpha() {
+  samplePalette.render(document.getElementById('sandbox'));
+  stubs.set(goog.dom, 'getPageScroll', function() {
+    return new goog.math.Coordinate(0, 0);
+  });
 
-    // Lowering the opacity of a dark, opaque red should yield a
-    // more transparent red.
-    samplePalette.setColorRgbaHex('#630c0000');
-    style.setPageOffset(samplePalette.aImageEl_, 0, 0);
-    style.setSize(samplePalette.aImageEl_, 10, 100);
-    /** @suppress {visibility} suppression added to enable type checking */
-    const boundaries = style.getBounds(samplePalette.aImageEl_);
+  // Lowering the opacity of a dark, opaque red should yield a
+  // more transparent red.
+  samplePalette.setColorRgbaHex('#630c0000');
+  goog.style.setPageOffset(samplePalette.aImageEl_, 0, 0);
+  goog.style.setSize(samplePalette.aImageEl_, 10, 100);
+  var boundaries = goog.style.getBounds(samplePalette.aImageEl_);
 
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const event = new GoogEvent();
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    event.clientY = boundaries.top;
-    samplePalette.handleMouseMoveA_(boundaries, event);
+  var event = new goog.events.Event();
+  event.clientY = boundaries.top;
+  samplePalette.handleMouseMoveA_(boundaries, event);
 
-    assertEquals('#630c00ff', samplePalette.getColorRgbaHex());
-  },
+  assertEquals('#630c00ff', samplePalette.getColorRgbaHex());
+}
 
-  /** @suppress {visibility} suppression added to enable type checking */
-  testSwatchOpacity() {
-    samplePalette.render(document.getElementById('sandbox'));
+function testSwatchOpacity() {
+  samplePalette.render(document.getElementById('sandbox'));
 
-    samplePalette.setAlpha(1);
-    assertEquals(1, style.getOpacity(samplePalette.swatchElement));
+  samplePalette.setAlpha(1);
+  assertEquals(1, goog.style.getOpacity(samplePalette.swatchElement));
 
-    samplePalette.setAlpha(0x99 / 0xff);
-    assertEquals(0.6, style.getOpacity(samplePalette.swatchElement));
+  samplePalette.setAlpha(0x99 / 0xff);
+  assertEquals(0.6, goog.style.getOpacity(samplePalette.swatchElement));
 
-    samplePalette.setAlpha(0);
-    assertEquals(0, style.getOpacity(samplePalette.swatchElement));
-  },
+  samplePalette.setAlpha(0);
+  assertEquals(0, goog.style.getOpacity(samplePalette.swatchElement));
+}
 
-  /** @suppress {visibility} suppression added to enable type checking */
-  testNoTransparencyBehavior() {
-    samplePalette.render(document.getElementById('sandbox'));
+function testNoTransparencyBehavior() {
+  samplePalette.render(document.getElementById('sandbox'));
 
-    /** @suppress {visibility} suppression added to enable type checking */
-    samplePalette.inputElement.value = '#abcdef22';
-    samplePalette.handleInput(null);
-    /** @suppress {visibility} suppression added to enable type checking */
-    samplePalette.inputElement.value = '#abcdef';
-    samplePalette.handleInput(null);
-    assertEquals(1, style.getOpacity(samplePalette.swatchElement));
-  },
-});
+  samplePalette.inputElement.value = '#abcdef22';
+  samplePalette.handleInput(null);
+  samplePalette.inputElement.value = '#abcdef';
+  samplePalette.handleInput(null);
+  assertEquals(1, goog.style.getOpacity(samplePalette.swatchElement));
+}

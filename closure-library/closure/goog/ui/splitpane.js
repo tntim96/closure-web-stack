@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview  Class for splitting two areas with draggable control for
@@ -26,7 +34,6 @@ goog.provide('goog.ui.SplitPane');
 goog.provide('goog.ui.SplitPane.Orientation');
 
 goog.require('goog.asserts');
-goog.require('goog.dispose');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
@@ -36,8 +43,7 @@ goog.require('goog.math.Rect');
 goog.require('goog.math.Size');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
-goog.requireType('goog.events.Event');
-goog.requireType('goog.fx.DragEvent');
+goog.require('goog.userAgent');
 
 
 
@@ -58,7 +64,6 @@ goog.requireType('goog.fx.DragEvent');
  */
 goog.ui.SplitPane = function(
     firstComponent, secondComponent, orientation, opt_domHelper) {
-  'use strict';
   goog.ui.SplitPane.base(this, 'constructor', opt_domHelper);
 
   /**
@@ -84,10 +89,11 @@ goog.ui.SplitPane = function(
   this.secondComponent_ = secondComponent;
   this.addChild(secondComponent);
 
-  /** @private {?Element} */
+  /** @private {Element} */
   this.splitpaneHandle_ = null;
 };
 goog.inherits(goog.ui.SplitPane, goog.ui.Component);
+goog.tagUnsealableClass(goog.ui.SplitPane);
 
 
 /**
@@ -175,7 +181,7 @@ goog.ui.SplitPane.prototype.splitDragger_ = null;
 
 /**
  * The left/top component dom container.
- * @type {?Element}
+ * @type {Element}
  * @private
  */
 goog.ui.SplitPane.prototype.firstComponentContainer_ = null;
@@ -183,7 +189,7 @@ goog.ui.SplitPane.prototype.firstComponentContainer_ = null;
 
 /**
  * The right/bottom component dom container.
- * @type {?Element}
+ * @type {Element}
  * @private
  */
 goog.ui.SplitPane.prototype.secondComponentContainer_ = null;
@@ -233,7 +239,7 @@ goog.ui.SplitPane.prototype.continuousResize_ = true;
 
 /**
  * Iframe overlay to prevent iframes from grabbing events.
- * @type {?Element}
+ * @type {Element}
  * @private
  */
 goog.ui.SplitPane.prototype.iframeOverlay_ = null;
@@ -274,7 +280,6 @@ goog.ui.SplitPane.Orientation = {
  * @override
  */
 goog.ui.SplitPane.prototype.createDom = function() {
-  'use strict';
   var dom = this.getDomHelper();
 
   // Create the components.
@@ -307,7 +312,6 @@ goog.ui.SplitPane.prototype.createDom = function() {
  * @override
  */
 goog.ui.SplitPane.prototype.canDecorate = function(element) {
-  'use strict';
   var className = goog.ui.SplitPane.FIRST_CONTAINER_CLASS_NAME_;
   var firstContainer = this.getElementToDecorate_(element, className);
   if (!firstContainer) {
@@ -344,12 +348,12 @@ goog.ui.SplitPane.prototype.canDecorate = function(element) {
  * @param {Element} rootElement The root element from which to retrieve the
  *     element to be decorated.
  * @param {string} className The target class name.
- * @return {!Element} The element to decorate.
+ * @return {Element} The element to decorate.
  * @private
  */
 goog.ui.SplitPane.prototype.getElementToDecorate_ = function(
     rootElement, className) {
-  'use strict';
+
   // Decorate the root element's children, if available.
   var childElements = goog.dom.getChildren(rootElement);
   for (var i = 0; i < childElements.length; i++) {
@@ -359,7 +363,7 @@ goog.ui.SplitPane.prototype.getElementToDecorate_ = function(
     }
   }
 
-  // Default to the first descendant element with the correct class.
+  // Default to the first descendent element with the correct class.
   return goog.dom.getElementsByTagNameAndClass(null, className, rootElement)[0];
 };
 
@@ -372,7 +376,6 @@ goog.ui.SplitPane.prototype.getElementToDecorate_ = function(
  * @override
  */
 goog.ui.SplitPane.prototype.decorateInternal = function(element) {
-  'use strict';
   goog.ui.SplitPane.base(this, 'decorateInternal', element);
 
   this.setUpHandle_();
@@ -390,7 +393,6 @@ goog.ui.SplitPane.prototype.decorateInternal = function(element) {
  * @private
  */
 goog.ui.SplitPane.prototype.finishSetup_ = function() {
-  'use strict';
   var dom = this.getDomHelper();
 
   if (!this.firstComponent_.getElement()) {
@@ -424,7 +426,6 @@ goog.ui.SplitPane.prototype.finishSetup_ = function() {
  * @override
  */
 goog.ui.SplitPane.prototype.enterDocument = function() {
-  'use strict';
   goog.ui.SplitPane.base(this, 'enterDocument');
 
   // If position is not set in the inline style of the element, it is not
@@ -462,7 +463,6 @@ goog.ui.SplitPane.prototype.enterDocument = function() {
  * @param {number} size The size in Pixels of the container.
  */
 goog.ui.SplitPane.prototype.setInitialSize = function(size) {
-  'use strict';
   this.initialSize_ = size;
 };
 
@@ -473,7 +473,6 @@ goog.ui.SplitPane.prototype.setInitialSize = function(size) {
  * @param {number} size The size of the handle in pixels.
  */
 goog.ui.SplitPane.prototype.setHandleSize = function(size) {
-  'use strict';
   this.handleSize_ = size;
 };
 
@@ -483,7 +482,6 @@ goog.ui.SplitPane.prototype.setHandleSize = function(size) {
  * @param {boolean} continuous The continuous resize value.
  */
 goog.ui.SplitPane.prototype.setContinuousResize = function(continuous) {
-  'use strict';
   this.continuousResize_ = continuous;
 };
 
@@ -494,7 +492,6 @@ goog.ui.SplitPane.prototype.setContinuousResize = function(continuous) {
  * @return {boolean} True if the orientation is vertical, false otherwise.
  */
 goog.ui.SplitPane.prototype.isVertical = function() {
-  'use strict';
   return this.orientation_ == goog.ui.SplitPane.Orientation.VERTICAL;
 };
 
@@ -505,7 +502,6 @@ goog.ui.SplitPane.prototype.isVertical = function() {
  * @private
  */
 goog.ui.SplitPane.prototype.setUpHandle_ = function() {
-  'use strict';
   if (this.isVertical()) {
     this.splitpaneHandle_.style.height = this.handleSize_ + 'px';
     goog.dom.classlist.add(
@@ -523,7 +519,6 @@ goog.ui.SplitPane.prototype.setUpHandle_ = function() {
  * @protected
  */
 goog.ui.SplitPane.prototype.setOrientationClassForHandle = function() {
-  'use strict';
   goog.asserts.assert(this.splitpaneHandle_);
   if (this.isVertical()) {
     goog.dom.classlist.swap(
@@ -542,7 +537,6 @@ goog.ui.SplitPane.prototype.setOrientationClassForHandle = function() {
  * @param {goog.ui.SplitPane.Orientation} orientation SplitPane orientation.
  */
 goog.ui.SplitPane.prototype.setOrientation = function(orientation) {
-  'use strict';
   if (this.orientation_ != orientation) {
     this.orientation_ = orientation;
     var isVertical = this.isVertical();
@@ -552,7 +546,7 @@ goog.ui.SplitPane.prototype.setOrientation = function(orientation) {
     if (this.isInDocument()) {
       this.setOrientationClassForHandle();
       // TODO(user): Should handleSize_ and initialSize_ also be adjusted ?
-      if (typeof this.firstComponentSize_ === 'number') {
+      if (goog.isNumber(this.firstComponentSize_)) {
         var splitpaneSize = goog.style.getBorderBoxSize(this.getElement());
         var ratio = isVertical ? splitpaneSize.height / splitpaneSize.width :
                                  splitpaneSize.width / splitpaneSize.height;
@@ -574,7 +568,6 @@ goog.ui.SplitPane.prototype.setOrientation = function(orientation) {
  * @return {goog.ui.SplitPane.Orientation} The orientation.
  */
 goog.ui.SplitPane.prototype.getOrientation = function() {
-  'use strict';
   return this.orientation_;
 };
 
@@ -586,7 +579,6 @@ goog.ui.SplitPane.prototype.getOrientation = function() {
  * @private
  */
 goog.ui.SplitPane.prototype.moveAndSize_ = function(element, rect) {
-  'use strict';
   goog.style.setPosition(element, rect.left, rect.top);
   // TODO(user): Add a goog.math.Size.max call for below.
   goog.style.setBorderBoxSize(
@@ -599,7 +591,6 @@ goog.ui.SplitPane.prototype.moveAndSize_ = function(element, rect) {
  * @return {?number} The size of the left/top component.
  */
 goog.ui.SplitPane.prototype.getFirstComponentSize = function() {
-  'use strict';
   return this.firstComponentSize_;
 };
 
@@ -612,7 +603,6 @@ goog.ui.SplitPane.prototype.getFirstComponentSize = function() {
  *     the size of the second component to fit the split pane size.
  */
 goog.ui.SplitPane.prototype.setFirstComponentSize = function(opt_size) {
-  'use strict';
   this.setFirstComponentSize_(
       goog.style.getBorderBoxSize(this.getElement()), opt_size);
 };
@@ -630,15 +620,14 @@ goog.ui.SplitPane.prototype.setFirstComponentSize = function(opt_size) {
  */
 goog.ui.SplitPane.prototype.setFirstComponentSize_ = function(
     splitpaneSize, opt_size) {
-  'use strict';
   var top = 0, left = 0;
 
   var isVertical = this.isVertical();
   // Figure out first component size; it's either passed in, taken from the
   // saved size, or is half of the total size.
-  var firstComponentSize = (typeof opt_size === 'number') ?
+  var firstComponentSize = goog.isNumber(opt_size) ?
       opt_size :
-      typeof this.firstComponentSize_ === 'number' ?
+      goog.isNumber(this.firstComponentSize_) ?
       this.firstComponentSize_ :
       Math.floor((isVertical ? splitpaneSize.height : splitpaneSize.width) / 2);
   this.firstComponentSize_ = firstComponentSize;
@@ -727,7 +716,6 @@ goog.ui.SplitPane.prototype.setFirstComponentSize_ = function(
  *     component, in pixels.
  */
 goog.ui.SplitPane.prototype.setSize = function(size, opt_firstComponentSize) {
-  'use strict';
   goog.style.setBorderBoxSize(this.getElement(), size);
   if (this.iframeOverlay_) {
     goog.style.setBorderBoxSize(this.iframeOverlay_, size);
@@ -741,7 +729,6 @@ goog.ui.SplitPane.prototype.setSize = function(size, opt_firstComponentSize) {
  * @private
  */
 goog.ui.SplitPane.prototype.snapIt_ = function() {
-  'use strict';
   var handlePos = goog.style.getRelativePosition(
       this.splitpaneHandle_, this.firstComponentContainer_);
   var firstBorderBoxSize =
@@ -790,11 +777,17 @@ goog.ui.SplitPane.prototype.snapIt_ = function() {
  * @private
  */
 goog.ui.SplitPane.prototype.handleDragStart_ = function(e) {
-  'use strict';
+
   // Setup iframe overlay to prevent iframes from grabbing events.
   if (!this.iframeOverlay_) {
     // Create the overlay.
     var cssStyles = 'position: relative';
+
+    if (goog.userAgent.IE && !goog.userAgent.isVersionOrHigher('10')) {
+      // IE doesn't look at this div unless it has a background, so we'll
+      // put one on, but make it opaque.
+      cssStyles += ';background-color: #000;filter: Alpha(Opacity=0)';
+    }
     this.iframeOverlay_ = this.getDomHelper().createDom(
         goog.dom.TagName.DIV, {'style': cssStyles});
 
@@ -843,7 +836,6 @@ goog.ui.SplitPane.prototype.handleDragStart_ = function(e) {
  * @private
  */
 goog.ui.SplitPane.prototype.getRelativeLeft_ = function(left) {
-  'use strict';
   return left - goog.style.getPosition(this.firstComponentContainer_).x;
 };
 
@@ -855,7 +847,6 @@ goog.ui.SplitPane.prototype.getRelativeLeft_ = function(left) {
  * @private
  */
 goog.ui.SplitPane.prototype.getRelativeTop_ = function(top) {
-  'use strict';
   return top - goog.style.getPosition(this.firstComponentContainer_).y;
 };
 
@@ -866,7 +857,6 @@ goog.ui.SplitPane.prototype.getRelativeTop_ = function(top) {
  * @private
  */
 goog.ui.SplitPane.prototype.handleDrag_ = function(e) {
-  'use strict';
   if (this.continuousResize_) {
     if (this.isVertical()) {
       var top = this.getRelativeTop_(e.top);
@@ -888,7 +878,6 @@ goog.ui.SplitPane.prototype.handleDrag_ = function(e) {
  * @private
  */
 goog.ui.SplitPane.prototype.handleDragEnd_ = function(e) {
-  'use strict';
   // Push iframe overlay down.
   this.iframeOverlay_.style.zIndex =
       goog.ui.SplitPane.IframeOverlayIndex_.HIDDEN;
@@ -913,14 +902,12 @@ goog.ui.SplitPane.prototype.handleDragEnd_ = function(e) {
  * @private
  */
 goog.ui.SplitPane.prototype.handleDoubleClick_ = function(e) {
-  'use strict';
   this.snapIt_();
 };
 
 
 /** @override */
 goog.ui.SplitPane.prototype.disposeInternal = function() {
-  'use strict';
   goog.dispose(this.splitDragger_);
   this.splitDragger_ = null;
 

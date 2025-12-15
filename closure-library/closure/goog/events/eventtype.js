@@ -1,13 +1,44 @@
+// Copyright 2010 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 /**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
+ * @fileoverview Event Types.
+ *
+ * @author arv@google.com (Erik Arvidsson)
  */
 
-goog.provide('goog.events.EventType');
 
-goog.require('goog.events.eventTypeHelpers');
+goog.provide('goog.events.EventType');
+goog.provide('goog.events.PointerFallbackEventType');
+
+goog.require('goog.events.BrowserFeature');
 goog.require('goog.userAgent');
+
+
+/**
+ * Returns a prefixed event name for the current browser.
+ * @param {string} eventName The name of the event.
+ * @return {string} The prefixed event name.
+ * @suppress {missingRequire|missingProvide}
+ * @private
+ */
+goog.events.getVendorPrefixedName_ = function(eventName) {
+  return goog.userAgent.WEBKIT ?
+      'webkit' + eventName :
+      (goog.userAgent.OPERA ? 'o' + eventName.toLowerCase() :
+                              eventName.toLowerCase());
+};
 
 
 /**
@@ -19,7 +50,6 @@ goog.events.EventType = {
   CLICK: 'click',
   RIGHTCLICK: 'rightclick',
   DBLCLICK: 'dblclick',
-  AUXCLICK: 'auxclick',
   MOUSEDOWN: 'mousedown',
   MOUSEUP: 'mouseup',
   MOUSEOVER: 'mouseover',
@@ -27,10 +57,6 @@ goog.events.EventType = {
   MOUSEMOVE: 'mousemove',
   MOUSEENTER: 'mouseenter',
   MOUSELEAVE: 'mouseleave',
-
-  // Non-existent event; will never fire. This exists as a mouse counterpart to
-  // POINTERCANCEL.
-  MOUSECANCEL: 'mousecancel',
 
   // Selection events.
   // https://www.w3.org/TR/selection-api/
@@ -82,7 +108,6 @@ goog.events.EventType = {
   BEFOREUNLOAD: 'beforeunload',
   CONSOLEMESSAGE: 'consolemessage',
   CONTEXTMENU: 'contextmenu',
-  DEVICECHANGE: 'devicechange',
   DEVICEMOTION: 'devicemotion',
   DEVICEORIENTATION: 'deviceorientation',
   DOMCONTENTLOADED: 'DOMContentLoaded',
@@ -107,7 +132,6 @@ goog.events.EventType = {
   PAUSE: 'pause',
   PLAY: 'play',
   PLAYING: 'playing',
-  PROGRESS: 'progress',
   RATECHANGE: 'ratechange',
   SEEKED: 'seeked',
   SEEKING: 'seeking',
@@ -171,17 +195,17 @@ goog.events.EventType = {
   CONTROLLERCHANGE: 'controllerchange',
 
   // CSS animation events.
-  ANIMATIONSTART:
-      goog.events.eventTypeHelpers.getVendorPrefixedName('AnimationStart'),
-  ANIMATIONEND:
-      goog.events.eventTypeHelpers.getVendorPrefixedName('AnimationEnd'),
-  ANIMATIONITERATION:
-      goog.events.eventTypeHelpers.getVendorPrefixedName('AnimationIteration'),
+  /** @suppress {missingRequire} */
+  ANIMATIONSTART: goog.events.getVendorPrefixedName_('AnimationStart'),
+  /** @suppress {missingRequire} */
+  ANIMATIONEND: goog.events.getVendorPrefixedName_('AnimationEnd'),
+  /** @suppress {missingRequire} */
+  ANIMATIONITERATION: goog.events.getVendorPrefixedName_('AnimationIteration'),
 
   // CSS transition events. Based on the browser support described at:
   // https://developer.mozilla.org/en/css/css_transitions#Browser_compatibility
-  TRANSITIONEND:
-      goog.events.eventTypeHelpers.getVendorPrefixedName('TransitionEnd'),
+  /** @suppress {missingRequire} */
+  TRANSITIONEND: goog.events.getVendorPrefixedName_('TransitionEnd'),
 
   // W3C Pointer Events
   // http://www.w3.org/TR/pointerevents/
@@ -231,15 +255,8 @@ goog.events.EventType = {
   // implementation tracking.
   BEFOREINPUT: 'beforeinput',
 
-  // Fullscreen API events. See https://fullscreen.spec.whatwg.org/.
-  FULLSCREENCHANGE: 'fullscreenchange',
-  // iOS-only fullscreen events. See
-  // https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/Using_HTML5_Audio_Video/ControllingMediaWithJavaScript/ControllingMediaWithJavaScript.html
-  WEBKITBEGINFULLSCREEN: 'webkitbeginfullscreen',
-  WEBKITENDFULLSCREEN: 'webkitendfullscreen',
-
   // Webview tag events
-  // See https://developer.chrome.com/apps/tags/webview
+  // See http://developer.chrome.com/dev/apps/webview_tag.html
   EXIT: 'exit',
   LOADABORT: 'loadabort',
   LOADCOMMIT: 'loadcommit',
@@ -251,7 +268,7 @@ goog.events.EventType = {
   UNRESPONSIVE: 'unresponsive',
 
   // HTML5 Page Visibility API.  See details at
-  // `goog.labs.dom.PageVisibilityMonitor`.
+  // {@code goog.labs.dom.PageVisibilityMonitor}.
   VISIBILITYCHANGE: 'visibilitychange',
 
   // LocalStorage event.
@@ -272,11 +289,67 @@ goog.events.EventType = {
 
   // Web app manifest events.
   BEFOREINSTALLPROMPT: 'beforeinstallprompt',
-  APPINSTALLED: 'appinstalled',
+  APPINSTALLED: 'appinstalled'
+};
 
-  // Web Animation API (WAAPI) playback events
-  // https://www.w3.org/TR/web-animations-1/#animation-playback-event-types
-  CANCEL: 'cancel',
-  FINISH: 'finish',
-  REMOVE: 'remove'
+
+/**
+ * Returns one of the given pointer fallback event names in order of preference:
+ *   1. pointerEventName
+ *   2. msPointerEventName
+ *   3. mouseEventName
+ * @param {string} pointerEventName
+ * @param {string} msPointerEventName
+ * @param {string} mouseEventName
+ * @return {string} The supported pointer or mouse event name.
+ * @private
+ */
+goog.events.getPointerFallbackEventName_ = function(
+    pointerEventName, msPointerEventName, mouseEventName) {
+  if (goog.events.BrowserFeature.POINTER_EVENTS) {
+    return pointerEventName;
+  }
+  if (goog.events.BrowserFeature.MSPOINTER_EVENTS) {
+    return msPointerEventName;
+  }
+  return mouseEventName;
+};
+
+
+/**
+ * Constants for pointer event names that fall back to corresponding mouse event
+ * names on unsupported platforms. These are intended to be drop-in replacements
+ * for corresponding values in {@code goog.events.EventType}.
+ * @enum {string}
+ */
+goog.events.PointerFallbackEventType = {
+  POINTERDOWN: goog.events.getPointerFallbackEventName_(
+      goog.events.EventType.POINTERDOWN, goog.events.EventType.MSPOINTERDOWN,
+      goog.events.EventType.MOUSEDOWN),
+  POINTERUP: goog.events.getPointerFallbackEventName_(
+      goog.events.EventType.POINTERUP, goog.events.EventType.MSPOINTERUP,
+      goog.events.EventType.MOUSEUP),
+  POINTERCANCEL: goog.events.getPointerFallbackEventName_(
+      goog.events.EventType.POINTERCANCEL,
+      goog.events.EventType.MSPOINTERCANCEL,
+      // When falling back to mouse events, there is no MOUSECANCEL equivalent
+      // of POINTERCANCEL. In this case POINTERUP already falls back to MOUSEUP
+      // which represents both UP and CANCEL. POINTERCANCEL does not fall back
+      // to MOUSEUP to prevent listening twice on the same event.
+      'mousecancel'),  // non-existent event; will never fire
+  POINTERMOVE: goog.events.getPointerFallbackEventName_(
+      goog.events.EventType.POINTERMOVE, goog.events.EventType.MSPOINTERMOVE,
+      goog.events.EventType.MOUSEMOVE),
+  POINTEROVER: goog.events.getPointerFallbackEventName_(
+      goog.events.EventType.POINTEROVER, goog.events.EventType.MSPOINTEROVER,
+      goog.events.EventType.MOUSEOVER),
+  POINTEROUT: goog.events.getPointerFallbackEventName_(
+      goog.events.EventType.POINTEROUT, goog.events.EventType.MSPOINTEROUT,
+      goog.events.EventType.MOUSEOUT),
+  POINTERENTER: goog.events.getPointerFallbackEventName_(
+      goog.events.EventType.POINTERENTER, goog.events.EventType.MSPOINTERENTER,
+      goog.events.EventType.MOUSEENTER),
+  POINTERLEAVE: goog.events.getPointerFallbackEventName_(
+      goog.events.EventType.POINTERLEAVE, goog.events.EventType.MSPOINTERLEAVE,
+      goog.events.EventType.MOUSELEAVE)
 };

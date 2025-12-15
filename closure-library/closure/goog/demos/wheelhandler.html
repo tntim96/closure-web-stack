@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <!--
-Copyright The Closure Library Authors. All Rights Reserved.
+Copyright 2014 The Closure Library Authors. All Rights Reserved.
 
 Use of this source code is governed by the Apache License, Version 2.0.
 See the COPYING file for details.
@@ -73,8 +73,7 @@ goog.require('goog.events.WheelHandler');
 <script>
 
 var WheelHandler = goog.events.WheelHandler;
-var WheelEvent = goog.events.WheelEvent;
-var WHEEL = WheelEvent.EventType.WHEEL;
+var WHEEL = WheelHandler.EventType.WHEEL;
 
 function $(id) {
   return document.getElementById(id)
@@ -98,7 +97,7 @@ function handleWheel(e) {
   updateLines();
   e.preventDefault();
   var deltaModeString = 'unknown';
-  var DeltaMode = WheelEvent.DeltaMode;
+  var DeltaMode = goog.events.WheelHandler.DeltaMode;
   switch (e.deltaMode) {
     case DeltaMode.PIXEL:
       deltaModeString = 'DeltaMode.PIXEL';

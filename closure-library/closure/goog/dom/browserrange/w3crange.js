@@ -1,18 +1,29 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Definition of the W3C spec following range wrapper.
  *
  * DO NOT USE THIS FILE DIRECTLY.  Use goog.dom.Range instead.
+ *
+ * @author robbyw@google.com (Robby Walker)
  */
 
 
 goog.provide('goog.dom.browserrange.W3cRange');
 
+goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.NodeType');
 goog.require('goog.dom.RangeEndpoint');
@@ -30,7 +41,6 @@ goog.require('goog.userAgent');
  * @extends {goog.dom.browserrange.AbstractRange}
  */
 goog.dom.browserrange.W3cRange = function(range) {
-  'use strict';
   this.range_ = range;
 };
 goog.inherits(
@@ -42,10 +52,8 @@ goog.inherits(
  * @param {Node} node The node to select.
  * @return {!Range} A browser range spanning the node's contents.
  * @protected
- * @suppress {missingProperties} circular definitions
  */
 goog.dom.browserrange.W3cRange.getBrowserRangeForNode = function(node) {
-  'use strict';
   var nodeRange = goog.dom.getOwnerDocument(node).createRange();
 
   if (node.nodeType == goog.dom.NodeType.TEXT) {
@@ -55,8 +63,7 @@ goog.dom.browserrange.W3cRange.getBrowserRangeForNode = function(node) {
     /** @suppress {missingRequire} */
     if (!goog.dom.browserrange.canContainRangeEndpoint(node)) {
       var rangeParent = node.parentNode;
-      var rangeStartOffset =
-          Array.prototype.indexOf.call(rangeParent.childNodes, node);
+      var rangeStartOffset = goog.array.indexOf(rangeParent.childNodes, node);
       nodeRange.setStart(rangeParent, rangeStartOffset);
       nodeRange.setEnd(rangeParent, rangeStartOffset + 1);
     } else {
@@ -96,7 +103,6 @@ goog.dom.browserrange.W3cRange.getBrowserRangeForNode = function(node) {
  */
 goog.dom.browserrange.W3cRange.getBrowserRangeForNodes = function(
     startNode, startOffset, endNode, endOffset) {
-  'use strict';
   // Create and return the range.
   var nodeRange = goog.dom.getOwnerDocument(startNode).createRange();
   nodeRange.setStart(startNode, startOffset);
@@ -111,7 +117,6 @@ goog.dom.browserrange.W3cRange.getBrowserRangeForNodes = function(
  * @return {!goog.dom.browserrange.W3cRange} A Gecko range wrapper object.
  */
 goog.dom.browserrange.W3cRange.createFromNodeContents = function(node) {
-  'use strict';
   return new goog.dom.browserrange.W3cRange(
       goog.dom.browserrange.W3cRange.getBrowserRangeForNode(node));
 };
@@ -127,7 +132,6 @@ goog.dom.browserrange.W3cRange.createFromNodeContents = function(node) {
  */
 goog.dom.browserrange.W3cRange.createFromNodes = function(
     startNode, startOffset, endNode, endOffset) {
-  'use strict';
   return new goog.dom.browserrange.W3cRange(
       goog.dom.browserrange.W3cRange.getBrowserRangeForNodes(
           startNode, startOffset, endNode, endOffset));
@@ -139,49 +143,42 @@ goog.dom.browserrange.W3cRange.createFromNodes = function(
  * @override
  */
 goog.dom.browserrange.W3cRange.prototype.clone = function() {
-  'use strict';
   return new this.constructor(this.range_.cloneRange());
 };
 
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.getBrowserRange = function() {
-  'use strict';
   return this.range_;
 };
 
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.getContainer = function() {
-  'use strict';
   return this.range_.commonAncestorContainer;
 };
 
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.getStartNode = function() {
-  'use strict';
   return this.range_.startContainer;
 };
 
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.getStartOffset = function() {
-  'use strict';
   return this.range_.startOffset;
 };
 
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.getEndNode = function() {
-  'use strict';
   return this.range_.endContainer;
 };
 
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.getEndOffset = function() {
-  'use strict';
   return this.range_.endOffset;
 };
 
@@ -189,7 +186,6 @@ goog.dom.browserrange.W3cRange.prototype.getEndOffset = function() {
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.compareBrowserRangeEndpoints =
     function(range, thisEndpoint, otherEndpoint) {
-  'use strict';
   return this.range_.compareBoundaryPoints(
       otherEndpoint == goog.dom.RangeEndpoint.START ?
           (thisEndpoint == goog.dom.RangeEndpoint.START ?
@@ -204,24 +200,21 @@ goog.dom.browserrange.W3cRange.prototype.compareBrowserRangeEndpoints =
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.isCollapsed = function() {
-  'use strict';
   return this.range_.collapsed;
 };
 
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.getText = function() {
-  'use strict';
   return this.range_.toString();
 };
 
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.getValidHtml = function() {
-  'use strict';
   var div = goog.dom.getDomHelper(this.range_.startContainer)
                 .createDom(goog.dom.TagName.DIV);
-  div.appendChild(/** @type {!Node} */ (this.range_.cloneContents()));
+  div.appendChild(this.range_.cloneContents());
   var result = div.innerHTML;
 
   if (goog.string.startsWith(result, '<') ||
@@ -249,7 +242,6 @@ goog.dom.browserrange.W3cRange.prototype.getValidHtml = function() {
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.select = function(reverse) {
-  'use strict';
   var win = goog.dom.getWindow(goog.dom.getOwnerDocument(this.getStartNode()));
   this.selectInternal(win.getSelection(), reverse);
 };
@@ -263,7 +255,6 @@ goog.dom.browserrange.W3cRange.prototype.select = function(reverse) {
  */
 goog.dom.browserrange.W3cRange.prototype.selectInternal = function(
     selection, reverse) {
-  'use strict';
   // Browser-specific tricks are needed to create reversed selections
   // programatically. For this generic W3C codepath, ignore the reverse
   // parameter.
@@ -274,7 +265,6 @@ goog.dom.browserrange.W3cRange.prototype.selectInternal = function(
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.removeContents = function() {
-  'use strict';
   var range = this.range_;
   range.extractContents();
 
@@ -323,7 +313,6 @@ goog.dom.browserrange.W3cRange.prototype.removeContents = function() {
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.surroundContents = function(element) {
-  'use strict';
   this.range_.surroundContents(element);
   return element;
 };
@@ -331,7 +320,6 @@ goog.dom.browserrange.W3cRange.prototype.surroundContents = function(element) {
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.insertNode = function(node, before) {
-  'use strict';
   var range = this.range_.cloneRange();
   range.collapse(before);
   range.insertNode(node);
@@ -341,15 +329,11 @@ goog.dom.browserrange.W3cRange.prototype.insertNode = function(node, before) {
 };
 
 
-/**
- * @override
- * @suppress {missingProperties} circular definitions
- */
+/** @override */
 goog.dom.browserrange.W3cRange.prototype.surroundWithNodes = function(
     startNode, endNode) {
-  'use strict';
   var win = goog.dom.getWindow(goog.dom.getOwnerDocument(this.getStartNode()));
-  /** @suppress {missingRequire,missingProperties} */
+  /** @suppress {missingRequire} */
   var selectionRange = goog.dom.Range.createFromWindow(win);
   if (selectionRange) {
     var sNode = selectionRange.getStartNode();
@@ -379,10 +363,7 @@ goog.dom.browserrange.W3cRange.prototype.surroundWithNodes = function(
     // Clients of this library should use saveUsingCarets to avoid this
     // problem. Unfortunately, saveUsingCarets uses this method, so that's
     // not really an option for us. :( We just recompute the offsets.
-    var isInsertedNode = function(n) {
-      'use strict';
-      return n == startNode || n == endNode;
-    };
+    var isInsertedNode = function(n) { return n == startNode || n == endNode; };
     if (sNode.nodeType == goog.dom.NodeType.TEXT) {
       while (sOffset > sNode.length) {
         sOffset -= sNode.length;
@@ -413,6 +394,5 @@ goog.dom.browserrange.W3cRange.prototype.surroundWithNodes = function(
 
 /** @override */
 goog.dom.browserrange.W3cRange.prototype.collapse = function(toStart) {
-  'use strict';
   this.range_.collapse(toStart);
 };

@@ -1,90 +1,89 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.labs.dom.PageVisibilityMonitorTest');
-goog.setTestOnly();
+goog.provide('goog.labs.dom.PageVisibilityMonitorTest');
+goog.setTestOnly('goog.labs.dom.PageVisibilityMonitorTest');
 
-const GoogTestingEvent = goog.require('goog.testing.events.Event');
-const PageVisibilityMonitor = goog.require('goog.labs.dom.PageVisibilityMonitor');
-const PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
-const dispose = goog.require('goog.dispose');
-const events = goog.require('goog.events');
-const functions = goog.require('goog.functions');
-const recordFunction = goog.require('goog.testing.recordFunction');
-const testSuite = goog.require('goog.testing.testSuite');
-const testingEvents = goog.require('goog.testing.events');
+goog.require('goog.events');
+goog.require('goog.functions');
+goog.require('goog.labs.dom.PageVisibilityMonitor');
+goog.require('goog.testing.PropertyReplacer');
+goog.require('goog.testing.events');
+goog.require('goog.testing.events.Event');
+goog.require('goog.testing.jsunit');
+goog.require('goog.testing.recordFunction');
 
-const stubs = new PropertyReplacer();
-let vh;
+var stubs = new goog.testing.PropertyReplacer();
+var vh;
 
-testSuite({
-  tearDown() {
-    dispose(vh);
-    vh = null;
-    stubs.reset();
-  },
 
-  testConstructor() {
-    vh = new PageVisibilityMonitor();
-  },
+function tearDown() {
+  goog.dispose(vh);
+  vh = null;
+  stubs.reset();
+}
 
-  /** @suppress {const} See go/const-js-library-faq */
-  testNoVisibilitySupport() {
-    stubs.set(
-        PageVisibilityMonitor.prototype, 'getBrowserEventType_',
-        functions.NULL);
+function testConstructor() {
+  vh = new goog.labs.dom.PageVisibilityMonitor();
+}
 
-    const listener = recordFunction();
-    vh = new PageVisibilityMonitor();
+function testNoVisibilitySupport() {
+  stubs.set(
+      goog.labs.dom.PageVisibilityMonitor.prototype, 'getBrowserEventType_',
+      goog.functions.NULL);
 
-    events.listen(vh, 'visibilitychange', listener);
+  var listener = goog.testing.recordFunction();
+  vh = new goog.labs.dom.PageVisibilityMonitor();
 
-    const e = new GoogTestingEvent('visibilitychange');
-    e.target = window.document;
-    testingEvents.fireBrowserEvent(e);
-    assertEquals(0, listener.getCallCount());
-  },
+  goog.events.listen(vh, 'visibilitychange', listener);
 
-  testListener() {
-    stubs.set(
-        PageVisibilityMonitor.prototype, 'getBrowserEventType_',
-        functions.constant('visibilitychange'));
+  var e = new goog.testing.events.Event('visibilitychange');
+  e.target = window.document;
+  goog.testing.events.fireBrowserEvent(e);
+  assertEquals(0, listener.getCallCount());
+}
 
-    const listener = recordFunction();
-    vh = new PageVisibilityMonitor();
+function testListener() {
+  stubs.set(
+      goog.labs.dom.PageVisibilityMonitor.prototype, 'getBrowserEventType_',
+      goog.functions.constant('visibilitychange'));
 
-    events.listen(vh, 'visibilitychange', listener);
+  var listener = goog.testing.recordFunction();
+  vh = new goog.labs.dom.PageVisibilityMonitor();
 
-    const e = new GoogTestingEvent('visibilitychange');
-    /**
-     * @suppress {constantProperty} suppression added to enable type checking
-     */
-    e.target = window.document;
-    testingEvents.fireBrowserEvent(e);
+  goog.events.listen(vh, 'visibilitychange', listener);
 
-    assertEquals(1, listener.getCallCount());
-  },
+  var e = new goog.testing.events.Event('visibilitychange');
+  e.target = window.document;
+  goog.testing.events.fireBrowserEvent(e);
 
-  testListenerForWebKit() {
-    stubs.set(
-        PageVisibilityMonitor.prototype, 'getBrowserEventType_',
-        functions.constant('webkitvisibilitychange'));
+  assertEquals(1, listener.getCallCount());
+}
 
-    const listener = recordFunction();
-    vh = new PageVisibilityMonitor();
+function testListenerForWebKit() {
+  stubs.set(
+      goog.labs.dom.PageVisibilityMonitor.prototype, 'getBrowserEventType_',
+      goog.functions.constant('webkitvisibilitychange'));
 
-    events.listen(vh, 'visibilitychange', listener);
+  var listener = goog.testing.recordFunction();
+  vh = new goog.labs.dom.PageVisibilityMonitor();
 
-    const e = new GoogTestingEvent('webkitvisibilitychange');
-    /**
-     * @suppress {constantProperty} suppression added to enable type checking
-     */
-    e.target = window.document;
-    testingEvents.fireBrowserEvent(e);
+  goog.events.listen(vh, 'visibilitychange', listener);
 
-    assertEquals(1, listener.getCallCount());
-  },
-});
+  var e = new goog.testing.events.Event('webkitvisibilitychange');
+  e.target = window.document;
+  goog.testing.events.fireBrowserEvent(e);
+
+  assertEquals(1, listener.getCallCount());
+}

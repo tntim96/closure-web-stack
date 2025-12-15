@@ -1,28 +1,42 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.ui.emoji.EmojiPickerTest');
-goog.setTestOnly();
+goog.provide('goog.ui.emoji.EmojiPickerTest');
+goog.setTestOnly('goog.ui.emoji.EmojiPickerTest');
 
-const Component = goog.require('goog.ui.Component');
-const Emoji = goog.require('goog.ui.emoji.Emoji');
-const EmojiPalette = goog.requireType('goog.ui.emoji.EmojiPalette');
-const EmojiPicker = goog.require('goog.ui.emoji.EmojiPicker');
-const EventHandler = goog.require('goog.events.EventHandler');
-const SpriteInfo = goog.require('goog.ui.emoji.SpriteInfo');
-const TagName = goog.require('goog.dom.TagName');
-const classlist = goog.require('goog.dom.classlist');
-const events = goog.require('goog.testing.events');
-const style = goog.require('goog.style');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.dom.TagName');
+goog.require('goog.dom.classlist');
+goog.require('goog.events.EventHandler');
+goog.require('goog.style');
+goog.require('goog.testing.events');
+goog.require('goog.testing.jsunit');
+goog.require('goog.ui.Component');
+goog.require('goog.ui.emoji.Emoji');
+goog.require('goog.ui.emoji.EmojiPicker');
+goog.require('goog.ui.emoji.SpriteInfo');
+var handler;
 
-let handler;
+function setUp() {
+  handler = new goog.events.EventHandler();
+}
+
+function tearDown() {
+  handler.removeAll();
+}
 
 // 26 emoji
-const emojiGroup1 = [
+var emojiGroup1 = [
   'Emoji 1',
   [
     ['../../demos/emoji/200.gif', 'std.200'],
@@ -50,12 +64,12 @@ const emojiGroup1 = [
     ['../../demos/emoji/202.gif', 'std.202'],
     ['../../demos/emoji/203.gif', 'std.203'],
     ['../../demos/emoji/204.gif', 'std.204'],
-    ['../../demos/emoji/200.gif', 'std.200'],
-  ],
+    ['../../demos/emoji/200.gif', 'std.200']
+  ]
 ];
 
 // 20 emoji
-const emojiGroup2 = [
+var emojiGroup2 = [
   'Emoji 2',
   [
     ['../../demos/emoji/200.gif', 'std.200'],
@@ -77,12 +91,12 @@ const emojiGroup2 = [
     ['../../demos/emoji/201.gif', 'std.201'],
     ['../../demos/emoji/202.gif', 'std.202'],
     ['../../demos/emoji/203.gif', 'std.203'],
-    ['../../demos/emoji/204.gif', 'std.204'],
-  ],
+    ['../../demos/emoji/204.gif', 'std.204']
+  ]
 ];
 
 // 20 emoji
-const emojiGroup3 = [
+var emojiGroup3 = [
   'Emoji 3',
   [
     ['../../demos/emoji/200.gif', 'std.200'],
@@ -104,37 +118,41 @@ const emojiGroup3 = [
     ['../../demos/emoji/201.gif', 'std.201'],
     ['../../demos/emoji/202.gif', 'std.202'],
     ['../../demos/emoji/203.gif', 'std.203'],
-    ['../../demos/emoji/204.gif', 'std.204'],
-  ],
+    ['../../demos/emoji/204.gif', 'std.204']
+  ]
 ];
 
-const sprite = '../../demos/emoji/sprite.png';
-const sprite2 = '../../demos/emoji/sprite2.png';
+var sprite = '../../demos/emoji/sprite.png';
+var sprite2 = '../../demos/emoji/sprite2.png';
+
 
 /**
  * Creates a SpriteInfo object with the specified properties. If the image is
  * sprited via CSS, then only the first parameter needs a value. If the image
  * is sprited via metadata, then the first parameter should be left null.
+ *
  * @param {?string} cssClass CSS class to properly display the sprited image.
- * @param {string=} url Url of the sprite image.
- * @param {number=} width Width of the image being sprited.
- * @param {number=} height Height of the image being sprited.
- * @param {number=} xOffset Positive x offset of the image being sprited within
- *     the sprite.
- * @param {number=} yOffset Positive y offset of the image being sprited within
- *     the sprite.
- * @param {boolean=} animated Whether the sprite info is for an animated emoji.
+ * @param {string=} opt_url Url of the sprite image.
+ * @param {number=} opt_width Width of the image being sprited.
+ * @param {number=} opt_height Height of the image being sprited.
+ * @param {number=} opt_xOffset Positive x offset of the image being sprited
+ *     within the sprite.
+ * @param {number=} opt_yOffset Positive y offset of the image being sprited
+ *     within the sprite.
+ * @param {boolean=} opt_animated Whether the sprite info is for an animated
+ *     emoji.
  */
 function si(
-    cssClass, url = undefined, width = undefined, height = undefined,
-    xOffset = undefined, yOffset = undefined, animated = undefined) {
-  return new SpriteInfo(
-      cssClass, url, width, height, xOffset, yOffset, animated);
+    cssClass, opt_url, opt_width, opt_height, opt_xOffset, opt_yOffset,
+    opt_animated) {
+  return new goog.ui.emoji.SpriteInfo(
+      cssClass, opt_url, opt_width, opt_height, opt_xOffset, opt_yOffset,
+      opt_animated);
 }
 
 // Contains a mix of sprited emoji via css, sprited emoji via metadata, and
 // non-sprited emoji
-const spritedEmoji1 = [
+var spritedEmoji1 = [
   'Emoji 1',
   [
     ['../../demos/emoji/200.gif', 'std.200', si('SPRITE_200')],
@@ -162,14 +180,13 @@ const spritedEmoji1 = [
     ['../../demos/emoji/200.gif', 'std.200'],
     ['../../demos/emoji/201.gif', 'std.201'],
     ['../../demos/emoji/202.gif', 'std.202'],
-    ['../../demos/emoji/203.gif', 'std.203'],
-  ],
+    ['../../demos/emoji/203.gif', 'std.203']
+  ]
 ];
 
 // This group contains a mix of sprited emoji via css, sprited emoji via
 // metadata, and non-sprited emoji.
-/** @suppress {checkTypes} suppression added to enable type checking */
-const spritedEmoji2 = [
+var spritedEmoji2 = [
   'Emoji 1',
   [
     ['../../demos/emoji/200.gif', 'std.200', si('SPRITE_200')],
@@ -194,127 +211,350 @@ const spritedEmoji2 = [
     ['../../demos/emoji/2C8.gif', 'std.2C8'],
     ['../../demos/emoji/2C9.gif', 'std.2C9'],
     [
-      '../../demos/emoji/2CA.gif',
-      'std.2CA',
-      si(null, sprite2, 18, 20, 36, 72, 1),
+      '../../demos/emoji/2CA.gif', 'std.2CA',
+      si(null, sprite2, 18, 20, 36, 72, 1)
     ],
     [
-      '../../demos/emoji/2E3.gif',
-      'std.2E3',
-      si(null, sprite2, 18, 18, 0, 0, 1),
+      '../../demos/emoji/2E3.gif', 'std.2E3', si(null, sprite2, 18, 18, 0, 0, 1)
     ],
     [
-      '../../demos/emoji/2EF.gif',
-      'std.2EF',
-      si(null, sprite2, 18, 20, 0, 300, 1),
+      '../../demos/emoji/2EF.gif', 'std.2EF',
+      si(null, sprite2, 18, 20, 0, 300, 1)
     ],
     [
-      '../../demos/emoji/2F1.gif',
-      'std.2F1',
-      si(null, sprite2, 18, 18, 0, 320, 1),
-    ],
-  ],
+      '../../demos/emoji/2F1.gif', 'std.2F1',
+      si(null, sprite2, 18, 18, 0, 320, 1)
+    ]
+  ]
 ];
 
-const emojiGroups = [emojiGroup1, emojiGroup2, emojiGroup3];
+var emojiGroups = [emojiGroup1, emojiGroup2, emojiGroup3];
+
+function testConstructAndRenderOnePageEmojiPicker() {
+  var picker = new goog.ui.emoji.EmojiPicker('../../demos/emoji/none.gif');
+  picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
+  picker.render();
+  picker.dispose();
+}
+
+function testConstructAndRenderMultiPageEmojiPicker() {
+  var picker = new goog.ui.emoji.EmojiPicker('../../demos/emoji/none.gif');
+  picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
+  picker.addEmojiGroup(emojiGroup2[0], emojiGroup2[1]);
+  picker.addEmojiGroup(emojiGroup3[0], emojiGroup3[1]);
+  picker.render();
+  picker.dispose();
+}
+
+function testExitDocumentCleansUpProperlyForSinglePageEmojiPicker() {
+  var picker = new goog.ui.emoji.EmojiPicker('../../demos/emoji/none.gif');
+  picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
+  picker.render();
+  picker.enterDocument();
+  picker.exitDocument();
+  picker.dispose();
+}
+
+function testExitDocumentCleansUpProperlyForMultiPageEmojiPicker() {
+  var picker = new goog.ui.emoji.EmojiPicker('../../demos/emoji/none.gif');
+  picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
+  picker.addEmojiGroup(emojiGroup2[0], emojiGroup2[1]);
+  picker.render();
+  picker.enterDocument();
+  picker.exitDocument();
+  picker.dispose();
+}
+
+function testNumGroups() {
+  var picker = new goog.ui.emoji.EmojiPicker('../../demos/emoji/none.gif');
+
+  for (var i = 0; i < emojiGroups.length; i++) {
+    picker.addEmojiGroup(emojiGroups[i][0], emojiGroups[i][1]);
+  }
+
+  assertTrue(picker.getNumEmojiGroups() == emojiGroups.length);
+}
+
+function testAdjustNumRowsIfNecessaryIsCorrect() {
+  var picker = new goog.ui.emoji.EmojiPicker('../../demos/emoji/none.gif');
+  picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
+  picker.setAutoSizeByColumnCount(true);
+  picker.setNumColumns(5);
+  assertEquals(5, picker.getNumColumns());
+  assertEquals(goog.ui.emoji.EmojiPicker.DEFAULT_NUM_ROWS, picker.getNumRows());
+
+  picker.adjustNumRowsIfNecessary_();
+
+  // The emojiGroup has 26 emoji. ceil(26/5) should give 6 rows.
+  assertEquals(6, picker.getNumRows());
+
+  // Change col count to 10, should give 3 rows.
+  picker.setNumColumns(10);
+  picker.adjustNumRowsIfNecessary_();
+  assertEquals(3, picker.getNumRows());
+
+  // Add another gruop, with 20 emoji. Deliberately set the number of rows too
+  // low. It should adjust it to three to accommodate the emoji in the first
+  // group.
+  picker.addEmojiGroup(emojiGroup2[0], emojiGroup2[1]);
+  picker.setNumColumns(10);
+  picker.setNumRows(2);
+  picker.adjustNumRowsIfNecessary_();
+  assertEquals(3, picker.getNumRows());
+}
+
 
 /**
  * Helper for testDelayedLoad. Returns true if the two paths end with the same
  * file.
+ *
  * E.g., ('../../cool.gif', 'file:///home/usr/somewhere/cool.gif') --> true
+ *
  * @param {string} path1 First url
  * @param {string} path2 Second url
  */
 function checkPathsEndWithSameFile(path1, path2) {
-  const pieces1 = path1.split('/');
-  const file1 = pieces1[pieces1.length - 1];
-  const pieces2 = path2.split('/');
-  const file2 = pieces2[pieces2.length - 1];
+  var pieces1 = path1.split('/');
+  var file1 = pieces1[pieces1.length - 1];
+  var pieces2 = path2.split('/');
+  var file2 = pieces2[pieces2.length - 1];
 
   return file1 == file2;
 }
+
 
 /**
  * Gets the emoji URL from a palette element. Palette elements are divs or
  * imgs wrapped in an outer div. The returns the background-image if it's a div,
  * or the src attribute if it's an image.
+ *
  * @param {Element} element Element to get the image url for
  * @return {string}
- * @suppress {strictMissingProperties} suppression added to enable type checking
  */
 function getImageUrl(element) {
-  /** @suppress {checkTypes} suppression added to enable type checking */
   element = element.firstChild;  // get the wrapped element
-  if (element.tagName == TagName.IMG) {
+  if (element.tagName == goog.dom.TagName.IMG) {
     return element.src;
   } else {
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    let url = style.getStyle(element, 'background-image');
+    var url = goog.style.getStyle(element, 'background-image');
     url = url.replace(/url\(/, '');
     url = url.replace(/\)/, '');
     return url;
   }
 }
 
+
 /**
  * Checks that the content of an emojipicker page is all images pointing to
  * the default img.
- * @param {!EmojiPalette} page The page of the picker to check
+ *
+ * @param {goog.ui.emoji.EmojiPalette} page The page of the picker to check
  * @param {string} defaultImgUrl The url of the default img
- * @suppress {missingProperties} "length" on vague type
  */
 function checkContentIsDefaultImg(page, defaultImgUrl) {
-  const content = page.getContent();
+  var content = page.getContent();
 
-  for (let i = 0; i < content.length; i++) {
-    const url = getImageUrl(content[i]);
+  for (var i = 0; i < content.length; i++) {
+    var url = getImageUrl(content[i]);
     assertTrue(
-        `img src should be ${defaultImgUrl} but is ${url}`,
+        'img src should be ' + defaultImgUrl + ' but is ' + url,
         checkPathsEndWithSameFile(url, defaultImgUrl));
   }
 }
 
+
 /**
  * Checks that the content of an emojipicker page is the specified emoji and
  * the default img after the emoji are all used.
- * @param {!EmojiPalette} page The page of the picker to check
+ *
+ * @param {goog.ui.emoji.EmojiPalette} page The page of the picker to check
  * @param {Array<Array<string>>} emojiList List of emoji that should be in the
  *     palette
  * @param {string} defaultImgUrl The url of the default img
- * @suppress {checkTypes} suppression added to enable type checking
  */
 function checkContentIsEmojiImages(page, emojiList, defaultImg) {
-  const content = page.getContent();
+  var content = page.getContent();
 
-  for (let i = 0; i < content.length; i++) {
-    const url = getImageUrl(content[i]);
+  for (var i = 0; i < content.length; i++) {
+    var url = getImageUrl(content[i]);
     if (i < emojiList.length) {
       assertTrue(
-          `Paths should end with the same file: ${url}, ` + emojiList[i][0],
+          'Paths should end with the same file: ' + url + ', ' +
+              emojiList[i][0],
           checkPathsEndWithSameFile(url, emojiList[i][0]));
     } else {
       assertTrue(
-          `Paths should end with the same file: ${url}, ${defaultImg}`,
+          'Paths should end with the same file: ' + url + ', ' + defaultImg,
           checkPathsEndWithSameFile(url, defaultImg));
     }
   }
 }
 
+
+function testNonDelayedLoadPaletteCreationForSinglePagePicker() {
+  var defaultImg = '../../demos/emoji/none.gif';
+  var picker = new goog.ui.emoji.EmojiPicker(defaultImg);
+  picker.setDelayedLoad(false);
+  picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
+  picker.render();
+
+  var page = picker.getPage(0);
+  assertTrue('Page should be in the document but is not', page.isInDocument());
+
+  // The content should be the actual emoji images now, with the remainder set
+  // to the default img
+  checkContentIsEmojiImages(page, emojiGroup1[1], defaultImg);
+
+  picker.dispose();
+}
+
+
+function testNonDelayedLoadPaletteCreationForMultiPagePicker() {
+  var defaultImg = '../../demos/emoji/none.gif';
+  var picker = new goog.ui.emoji.EmojiPicker(defaultImg);
+  picker.setDelayedLoad(false);
+
+  for (var i = 0; i < emojiGroups.length; i++) {
+    picker.addEmojiGroup(emojiGroups[i][0], emojiGroups[i][1]);
+  }
+
+  picker.render();
+
+  for (var i = 0; i < emojiGroups.length; i++) {
+    var page = picker.getPage(i);
+    assertTrue(
+        'Page ' + i + ' should be in the document but is not',
+        page.isInDocument());
+    checkContentIsEmojiImages(page, emojiGroups[i][1], defaultImg);
+  }
+
+  picker.dispose();
+}
+
+
+function testDelayedLoadPaletteCreationForSinglePagePicker() {
+  var defaultImg = '../../demos/emoji/none.gif';
+  var picker = new goog.ui.emoji.EmojiPicker(defaultImg);
+  picker.setDelayedLoad(true);
+  picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
+  picker.render();
+
+  // At this point the picker should have pages filled with the default img
+  checkContentIsDefaultImg(picker.getPage(0), defaultImg);
+
+  // Now load the images
+  picker.loadImages();
+
+  var page = picker.getPage(0);
+  assertTrue('Page should be in the document but is not', page.isInDocument());
+
+  // The content should be the actual emoji images now, with the remainder set
+  // to the default img
+  checkContentIsEmojiImages(page, emojiGroup1[1], defaultImg);
+
+  picker.dispose();
+}
+
+
+function testGetSelectedEmoji() {
+  var defaultImg = '../../demos/emoji/none.gif';
+  var picker = new goog.ui.emoji.EmojiPicker(defaultImg);
+  picker.setDelayedLoad(false);
+  picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
+  picker.render();
+
+  var palette = picker.getPage(0);
+
+  // No emoji should be selected yet
+  assertUndefined(palette.getSelectedEmoji());
+
+  // Artificially select the first emoji
+  palette.setSelectedIndex(0);
+
+  // Now we should get the first emoji back. See emojiGroup1 above.
+  var emoji = palette.getSelectedEmoji();
+  assertEquals(emoji.getId(), 'std.200');
+  assertEquals(emoji.getUrl(), '../../demos/emoji/200.gif');
+
+  picker.dispose();
+}
+
+
+function testGetSelectedEmoji_click() {
+  var defaultImg = '../../demos/emoji/none.gif';
+  var picker = new goog.ui.emoji.EmojiPicker(defaultImg);
+  picker.setDelayedLoad(false);
+  picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
+  picker.render();
+
+  var palette = picker.getPage(0);
+  // Artificially select the an emoji
+  palette.setSelectedIndex(2);
+  var element = palette.getSelectedItem();
+  palette.setSelectedIndex(0);  // Select a different emoji.
+
+  var eventSent;
+  handler.listen(picker, goog.ui.Component.EventType.ACTION, function(e) {
+    eventSent = e;
+  });
+  goog.testing.events.fireClickSequence(
+      element, undefined, undefined, {shiftKey: false});
+
+  // Now we should get the first emoji back. See emojiGroup1 above.
+  var emoji = picker.getSelectedEmoji();
+  assertEquals(emoji.getId(), 'std.202');
+  assertEquals(emoji.getUrl(), '../../demos/emoji/202.gif');
+  assertFalse(eventSent.shiftKey);
+
+  picker.dispose();
+}
+
+
+function testGetSelectedEmoji_shiftClick() {
+  var defaultImg = '../../demos/emoji/none.gif';
+  var picker = new goog.ui.emoji.EmojiPicker(defaultImg);
+  picker.setDelayedLoad(false);
+  picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
+  picker.render();
+
+  var palette = picker.getPage(0);
+  // Artificially select the an emoji
+  palette.setSelectedIndex(3);
+  var element = palette.getSelectedItem();
+  palette.setSelectedIndex(0);  // Select a different emoji.
+
+  var eventSent;
+  handler.listen(picker, goog.ui.Component.EventType.ACTION, function(e) {
+    eventSent = e;
+  });
+  goog.testing.events.fireClickSequence(
+      element, undefined, undefined, {shiftKey: true});
+
+  // Now we should get the first emoji back. See emojiGroup1 above.
+  var emoji = picker.getSelectedEmoji();
+  assertEquals(emoji.getId(), 'std.203');
+  assertEquals(emoji.getUrl(), '../../demos/emoji/203.gif');
+  assertTrue(eventSent.shiftKey);
+
+  picker.dispose();
+}
+
+
 /**
  * Checks and verifies the structure of a non-progressively-rendered
  * emojipicker.
- * @param {!EmojiPalette} palette Emoji palette to check.
+ *
+ * @param {goog.ui.emoji.EmojiPalette} palette Emoji palette to check.
  * @param {Array<Array<string>>} emoji Emoji that should be in the palette.
- * @suppress {strictMissingProperties} suppression added to enable type checking
  */
 function checkStructureForNonProgressivePicker(palette, emoji) {
   // We can hackily check the items by selecting an item and then getting the
   // selected item.
-  for (let i = 0; i < emoji[1].length; i++) {
+  for (var i = 0; i < emoji[1].length; i++) {
     palette.setSelectedIndex(i);
-    const emojiInfo = emoji[1][i];
-    const cell = palette.getSelectedItem();
-    const inner = /** @type {Element} */ (cell.firstChild);
+    var emojiInfo = emoji[1][i];
+    var cell = palette.getSelectedItem();
+    var inner = /** @type {Element} */ (cell.firstChild);
 
     // Check that the cell is a div wrapped around something else, and that the
     // outer div contains the goomoji attribute
@@ -324,33 +564,35 @@ function checkStructureForNonProgressivePicker(palette, emoji) {
     assertNotNull('The outer div is not wrapped around another element', inner);
     assertEquals(
         'The palette item should have the goomoji attribute',
-        cell.getAttribute(Emoji.ATTRIBUTE), emojiInfo[1]);
+        cell.getAttribute(goog.ui.emoji.Emoji.ATTRIBUTE), emojiInfo[1]);
     assertEquals(
         'The palette item should have the data-goomoji attribute',
-        cell.getAttribute(Emoji.DATA_ATTRIBUTE), emojiInfo[1]);
+        cell.getAttribute(goog.ui.emoji.Emoji.DATA_ATTRIBUTE), emojiInfo[1]);
 
     // Now check the contents of the cells
-    const spriteInfo = emojiInfo[2];
+    var spriteInfo = emojiInfo[2];
     if (spriteInfo) {
       assertEquals(inner.tagName, 'DIV');
-      const cssClass = spriteInfo.getCssClass();
+      var cssClass = spriteInfo.getCssClass();
       if (cssClass) {
         assertTrue(
             'Sprite should have its CSS class set',
-            classlist.contains(inner, cssClass));
+            goog.dom.classlist.contains(inner, cssClass));
       } else {
         checkPathsEndWithSameFile(
-            style.getStyle(inner, 'background-image'), spriteInfo.getUrl());
+            goog.style.getStyle(inner, 'background-image'),
+            spriteInfo.getUrl());
         assertEquals(
-            spriteInfo.getWidthCssValue(), style.getStyle(inner, 'width'));
+            spriteInfo.getWidthCssValue(), goog.style.getStyle(inner, 'width'));
         assertEquals(
-            spriteInfo.getHeightCssValue(), style.getStyle(inner, 'height'));
+            spriteInfo.getHeightCssValue(),
+            goog.style.getStyle(inner, 'height'));
         assertEquals(
             (spriteInfo.getXOffsetCssValue() + ' ' +
              spriteInfo.getYOffsetCssValue())
                 .replace(/px/g, '')
                 .replace(/pt/g, ''),
-            style.getStyle(inner, 'background-position')
+            goog.style.getStyle(inner, 'background-position')
                 .replace(/px/g, '')
                 .replace(/pt/g, ''));
       }
@@ -362,21 +604,21 @@ function checkStructureForNonProgressivePicker(palette, emoji) {
   }
 }
 
+
 /**
  * Checks and verifies the structure of a progressively-rendered emojipicker.
- * @param {!EmojiPalette} palette Emoji palette to check.
+ *
+ * @param {goog.ui.emoji.EmojiPalette} palette Emoji palette to check.
  * @param {Array<Array<string>>} emoji Emoji that should be in the palette.
- * @suppress {strictMissingProperties,checkTypes} suppression added to enable
- * type checking
  */
 function checkStructureForProgressivePicker(palette, emoji) {
   // We can hackily check the items by selecting an item and then getting the
   // selected item.
-  for (let i = 0; i < emoji[1].length; i++) {
+  for (var i = 0; i < emoji[1].length; i++) {
     palette.setSelectedIndex(i);
-    const emojiInfo = emoji[1][i];
-    const cell = palette.getSelectedItem();
-    const inner = /** @type {Element} */ (cell.firstChild);
+    var emojiInfo = emoji[1][i];
+    var cell = palette.getSelectedItem();
+    var inner = /** @type {Element} */ (cell.firstChild);
 
     // Check that the cell is a div wrapped around something else, and that the
     // outer div contains the goomoji attribute
@@ -386,37 +628,42 @@ function checkStructureForProgressivePicker(palette, emoji) {
     assertNotNull('The outer div is not wrapped around another element', inner);
     assertEquals(
         'The palette item should have the goomoji attribute',
-        cell.getAttribute(Emoji.ATTRIBUTE), emojiInfo[1]);
+        cell.getAttribute(goog.ui.emoji.Emoji.ATTRIBUTE), emojiInfo[1]);
     assertEquals(
         'The palette item should have the data-goomoji attribute',
-        cell.getAttribute(Emoji.DATA_ATTRIBUTE), emojiInfo[1]);
+        cell.getAttribute(goog.ui.emoji.Emoji.DATA_ATTRIBUTE), emojiInfo[1]);
 
     // Now check the contents of the cells
-    const spriteInfo = emojiInfo[2];
+    var spriteInfo = emojiInfo[2];
     if (spriteInfo) {
-      const cssClass = spriteInfo.getCssClass();
+      var cssClass = spriteInfo.getCssClass();
       if (cssClass) {
         assertEquals('DIV', inner.tagName);
         assertTrue(
             'Sprite should have its CSS class set',
-            classlist.contains(inner, cssClass));
+            goog.dom.classlist.contains(inner, cssClass));
       } else {
         // There's an inner div wrapping an img tag
         assertEquals('DIV', inner.tagName);
-        const img = inner.firstChild;
+        var img = inner.firstChild;
         assertNotNull('Div should be wrapping something', img);
         assertEquals('IMG', img.tagName);
         checkPathsEndWithSameFile(img.src, spriteInfo.getUrl());
         assertEquals(
-            spriteInfo.getWidthCssValue(), style.getStyle(inner, 'width'));
+            spriteInfo.getWidthCssValue(), goog.style.getStyle(inner, 'width'));
         assertEquals(
-            spriteInfo.getHeightCssValue(), style.getStyle(inner, 'height'));
+            spriteInfo.getHeightCssValue(),
+            goog.style.getStyle(inner, 'height'));
         assertEquals(
             spriteInfo.getXOffsetCssValue().replace(/px/, '').replace(/pt/, ''),
-            style.getStyle(img, 'left').replace(/px/, '').replace(/pt/, ''));
+            goog.style.getStyle(img, 'left')
+                .replace(/px/, '')
+                .replace(/pt/, ''));
         assertEquals(
             spriteInfo.getYOffsetCssValue().replace(/px/, '').replace(/pt/, ''),
-            style.getStyle(img, 'top').replace(/px/, '').replace(/pt/, ''));
+            goog.style.getStyle(img, 'top')
+                .replace(/px/, '')
+                .replace(/pt/, ''));
       }
     } else {
       // A non-sprited emoji is just an img
@@ -426,19 +673,20 @@ function checkStructureForProgressivePicker(palette, emoji) {
   }
 }
 
+
 /**
  * Checks and verifies the structure of a non-progressive fast-loading picker
  * after the animated emoji have loaded.
- * @param {!EmojiPalette} palette Emoji palette to check.
+ *
+ * @param {goog.ui.emoji.EmojiPalette} palette Emoji palette to check.
  * @param {Array<Array<string>>} emoji Emoji that should be in the palette.
- * @suppress {strictMissingProperties} suppression added to enable type checking
  */
 function checkPostLoadStructureForFastLoadNonProgressivePicker(palette, emoji) {
-  for (let i = 0; i < emoji[1].length; i++) {
+  for (var i = 0; i < emoji[1].length; i++) {
     palette.setSelectedIndex(i);
-    const emojiInfo = emoji[1][i];
-    const cell = palette.getSelectedItem();
-    const inner = /** @type {Element} */ (cell.firstChild);
+    var emojiInfo = emoji[1][i];
+    var cell = palette.getSelectedItem();
+    var inner = /** @type {Element} */ (cell.firstChild);
 
     // Check that the cell is a div wrapped around something else, and that the
     // outer div contains the goomoji attribute
@@ -448,55 +696,55 @@ function checkPostLoadStructureForFastLoadNonProgressivePicker(palette, emoji) {
     assertNotNull('The outer div is not wrapped around another element', inner);
     assertEquals(
         'The palette item should have the goomoji attribute',
-        cell.getAttribute(Emoji.ATTRIBUTE), emojiInfo[1]);
+        cell.getAttribute(goog.ui.emoji.Emoji.ATTRIBUTE), emojiInfo[1]);
     assertEquals(
         'The palette item should have the data-goomoji attribute',
-        cell.getAttribute(Emoji.DATA_ATTRIBUTE), emojiInfo[1]);
+        cell.getAttribute(goog.ui.emoji.Emoji.DATA_ATTRIBUTE), emojiInfo[1]);
 
     // Now check the contents of the cells
-    const url = emojiInfo[0];  // url of the animated emoji
-    const spriteInfo = emojiInfo[2];
+    var url = emojiInfo[0];  // url of the animated emoji
+    var spriteInfo = emojiInfo[2];
     if (spriteInfo) {
       assertEquals(inner.tagName, 'DIV');
       if (spriteInfo.isAnimated()) {
-        const img = new Image();
+        var img = new Image();
         img.src = url;
         checkPathsEndWithSameFile(
-            style.getStyle(inner, 'background-image'), url);
+            goog.style.getStyle(inner, 'background-image'), url);
         assertEquals(
-            String(img.width),
-            style.getStyle(inner, 'width')
-                .replace(/px/g, '')
-                .replace(/pt/g, ''));
+            String(img.width), goog.style.getStyle(inner, 'width')
+                                   .replace(/px/g, '')
+                                   .replace(/pt/g, ''));
         assertEquals(
-            String(img.height),
-            style.getStyle(inner, 'height')
-                .replace(/px/g, '')
-                .replace(/pt/g, ''));
+            String(img.height), goog.style.getStyle(inner, 'height')
+                                    .replace(/px/g, '')
+                                    .replace(/pt/g, ''));
         assertEquals(
-            '0 0',
-            style.getStyle(inner, 'background-position')
-                .replace(/px/g, '')
-                .replace(/pt/g, ''));
+            '0 0', goog.style.getStyle(inner, 'background-position')
+                       .replace(/px/g, '')
+                       .replace(/pt/g, ''));
       } else {
-        const cssClass = spriteInfo.getCssClass();
+        var cssClass = spriteInfo.getCssClass();
         if (cssClass) {
           assertTrue(
               'Sprite should have its CSS class set',
-              classlist.contains(inner, cssClass));
+              goog.dom.classlist.contains(inner, cssClass));
         } else {
           checkPathsEndWithSameFile(
-              style.getStyle(inner, 'background-image'), spriteInfo.getUrl());
+              goog.style.getStyle(inner, 'background-image'),
+              spriteInfo.getUrl());
           assertEquals(
-              spriteInfo.getWidthCssValue(), style.getStyle(inner, 'width'));
+              spriteInfo.getWidthCssValue(),
+              goog.style.getStyle(inner, 'width'));
           assertEquals(
-              spriteInfo.getHeightCssValue(), style.getStyle(inner, 'height'));
+              spriteInfo.getHeightCssValue(),
+              goog.style.getStyle(inner, 'height'));
           assertEquals(
               (spriteInfo.getXOffsetCssValue() + ' ' +
                spriteInfo.getYOffsetCssValue())
                   .replace(/px/g, '')
                   .replace(/pt/g, ''),
-              style.getStyle(inner, 'background-position')
+              goog.style.getStyle(inner, 'background-position')
                   .replace(/px/g, '')
                   .replace(/pt/g, ''));
         }
@@ -509,20 +757,20 @@ function checkPostLoadStructureForFastLoadNonProgressivePicker(palette, emoji) {
   }
 }
 
+
 /**
  * Checks and verifies the structure of a progressive fast-loading picker
  * after the animated emoji have loaded.
- * @param {!EmojiPalette} palette Emoji palette to check.
+ *
+ * @param {goog.ui.emoji.EmojiPalette} palette Emoji palette to check.
  * @param {Array<Array<string>>} emoji Emoji that should be in the palette.
- * @suppress {strictMissingProperties,checkTypes} suppression added to enable
- * type checking
  */
 function checkPostLoadStructureForFastLoadProgressivePicker(palette, emoji) {
-  for (let i = 0; i < emoji[1].length; i++) {
+  for (var i = 0; i < emoji[1].length; i++) {
     palette.setSelectedIndex(i);
-    const emojiInfo = emoji[1][i];
-    const cell = palette.getSelectedItem();
-    const inner = /** @type {Element} */ (cell.firstChild);
+    var emojiInfo = emoji[1][i];
+    var cell = palette.getSelectedItem();
+    var inner = /** @type {Element} */ (cell.firstChild);
 
     // Check that the cell is a div wrapped around something else, and that the
     // outer div contains the goomoji attribute
@@ -532,54 +780,62 @@ function checkPostLoadStructureForFastLoadProgressivePicker(palette, emoji) {
     assertNotNull('The outer div is not wrapped around another element', inner);
     assertEquals(
         'The palette item should have the goomoji attribute',
-        cell.getAttribute(Emoji.ATTRIBUTE), emojiInfo[1]);
+        cell.getAttribute(goog.ui.emoji.Emoji.ATTRIBUTE), emojiInfo[1]);
     assertEquals(
         'The palette item should have the data-goomoji attribute',
-        cell.getAttribute(Emoji.DATA_ATTRIBUTE), emojiInfo[1]);
+        cell.getAttribute(goog.ui.emoji.Emoji.DATA_ATTRIBUTE), emojiInfo[1]);
 
     // Now check the contents of the cells
-    const url = emojiInfo[0];  // url of the animated emoji
-    const spriteInfo = emojiInfo[2];
+    var url = emojiInfo[0];  // url of the animated emoji
+    var spriteInfo = emojiInfo[2];
     if (spriteInfo) {
       if (spriteInfo.isAnimated()) {
-        const testImg = new Image();
+        var testImg = new Image();
         testImg.src = url;
-        const img = inner.firstChild;
+        var img = inner.firstChild;
         checkPathsEndWithSameFile(img.src, url);
         assertEquals(testImg.width, img.width);
         assertEquals(testImg.height, img.height);
         assertEquals(
-            '0',
-            style.getStyle(img, 'left').replace(/px/g, '').replace(/pt/g, ''));
+            '0', goog.style.getStyle(img, 'left')
+                     .replace(/px/g, '')
+                     .replace(/pt/g, ''));
         assertEquals(
-            '0',
-            style.getStyle(img, 'top').replace(/px/g, '').replace(/pt/g, ''));
+            '0', goog.style.getStyle(img, 'top')
+                     .replace(/px/g, '')
+                     .replace(/pt/g, ''));
       } else {
-        const cssClass = spriteInfo.getCssClass();
+        var cssClass = spriteInfo.getCssClass();
         if (cssClass) {
           assertEquals('DIV', inner.tagName);
           assertTrue(
               'Sprite should have its CSS class set',
-              classlist.contains(inner, cssClass));
+              goog.dom.classlist.contains(inner, cssClass));
         } else {
           // There's an inner div wrapping an img tag
           assertEquals('DIV', inner.tagName);
-          const img = inner.firstChild;
+          var img = inner.firstChild;
           assertNotNull('Div should be wrapping something', img);
           assertEquals('IMG', img.tagName);
           checkPathsEndWithSameFile(img.src, spriteInfo.getUrl());
           assertEquals(
-              spriteInfo.getWidthCssValue(), style.getStyle(inner, 'width'));
+              spriteInfo.getWidthCssValue(),
+              goog.style.getStyle(inner, 'width'));
           assertEquals(
-              spriteInfo.getHeightCssValue(), style.getStyle(inner, 'height'));
+              spriteInfo.getHeightCssValue(),
+              goog.style.getStyle(inner, 'height'));
           assertEquals(
               spriteInfo.getXOffsetCssValue().replace(/px/, '').replace(
                   /pt/, ''),
-              style.getStyle(img, 'left').replace(/px/, '').replace(/pt/, ''));
+              goog.style.getStyle(img, 'left')
+                  .replace(/px/, '')
+                  .replace(/pt/, ''));
           assertEquals(
               spriteInfo.getYOffsetCssValue().replace(/px/, '').replace(
                   /pt/, ''),
-              style.getStyle(img, 'top').replace(/px/, '').replace(/pt/, ''));
+              goog.style.getStyle(img, 'top')
+                  .replace(/px/, '')
+                  .replace(/pt/, ''));
         }
       }
     } else {
@@ -590,361 +846,113 @@ function checkPostLoadStructureForFastLoadProgressivePicker(palette, emoji) {
   }
 }
 
-testSuite({
-  setUp() {
-    handler = new EventHandler();
-  },
-
-  tearDown() {
-    handler.removeAll();
-  },
-
-  testConstructAndRenderOnePageEmojiPicker() {
-    const picker = new EmojiPicker('../../demos/emoji/none.gif');
-    picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
-    picker.render();
-    picker.dispose();
-  },
-
-  testConstructAndRenderMultiPageEmojiPicker() {
-    const picker = new EmojiPicker('../../demos/emoji/none.gif');
-    picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
-    picker.addEmojiGroup(emojiGroup2[0], emojiGroup2[1]);
-    picker.addEmojiGroup(emojiGroup3[0], emojiGroup3[1]);
-    picker.render();
-    picker.dispose();
-  },
-
-  testExitDocumentCleansUpProperlyForSinglePageEmojiPicker() {
-    const picker = new EmojiPicker('../../demos/emoji/none.gif');
-    picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
-    picker.render();
-    picker.enterDocument();
-    picker.exitDocument();
-    picker.dispose();
-  },
-
-  testExitDocumentCleansUpProperlyForMultiPageEmojiPicker() {
-    const picker = new EmojiPicker('../../demos/emoji/none.gif');
-    picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
-    picker.addEmojiGroup(emojiGroup2[0], emojiGroup2[1]);
-    picker.render();
-    picker.enterDocument();
-    picker.exitDocument();
-    picker.dispose();
-  },
-
-  testNumGroups() {
-    const picker = new EmojiPicker('../../demos/emoji/none.gif');
-
-    for (let i = 0; i < emojiGroups.length; i++) {
-      picker.addEmojiGroup(emojiGroups[i][0], emojiGroups[i][1]);
-    }
-
-    assertTrue(picker.getNumEmojiGroups() == emojiGroups.length);
-  },
-
-  /** @suppress {visibility} suppression added to enable type checking */
-  testAdjustNumRowsIfNecessaryIsCorrect() {
-    const picker = new EmojiPicker('../../demos/emoji/none.gif');
-    picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
-    picker.setAutoSizeByColumnCount(true);
-    picker.setNumColumns(5);
-    assertEquals(5, picker.getNumColumns());
-    assertEquals(EmojiPicker.DEFAULT_NUM_ROWS, picker.getNumRows());
-
-    picker.adjustNumRowsIfNecessary_();
-
-    // The emojiGroup has 26 emoji. ceil(26/5) should give 6 rows.
-    assertEquals(6, picker.getNumRows());
-
-    // Change col count to 10, should give 3 rows.
-    picker.setNumColumns(10);
-    picker.adjustNumRowsIfNecessary_();
-    assertEquals(3, picker.getNumRows());
-
-    // Add another gruop, with 20 emoji. Deliberately set the number of rows too
-    // low. It should adjust it to three to accommodate the emoji in the first
-    // group.
-    picker.addEmojiGroup(emojiGroup2[0], emojiGroup2[1]);
-    picker.setNumColumns(10);
-    picker.setNumRows(2);
-    picker.adjustNumRowsIfNecessary_();
-    assertEquals(3, picker.getNumRows());
-  },
-
-  testNonDelayedLoadPaletteCreationForSinglePagePicker() {
-    const defaultImg = '../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(false);
-    picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
-    picker.render();
-
-    const page = picker.getPage(0);
-    assertTrue(
-        'Page should be in the document but is not', page.isInDocument());
-
-    // The content should be the actual emoji images now, with the remainder set
-    // to the default img
-    checkContentIsEmojiImages(page, emojiGroup1[1], defaultImg);
-
-    picker.dispose();
-  },
-
-  testNonDelayedLoadPaletteCreationForMultiPagePicker() {
-    const defaultImg = '../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(false);
-
-    for (let i = 0; i < emojiGroups.length; i++) {
-      picker.addEmojiGroup(emojiGroups[i][0], emojiGroups[i][1]);
-    }
-
-    picker.render();
-
-    for (let i = 0; i < emojiGroups.length; i++) {
-      const page = picker.getPage(i);
-      assertTrue(
-          `Page ${i} should be in the document but is not`,
-          page.isInDocument());
-      checkContentIsEmojiImages(page, emojiGroups[i][1], defaultImg);
-    }
-
-    picker.dispose();
-  },
-
-  /** @suppress {checkTypes} suppression added to enable type checking */
-  testDelayedLoadPaletteCreationForSinglePagePicker() {
-    const defaultImg = '../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(true);
-    picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
-    picker.render();
-
-    // At this point the picker should have pages filled with the default img
-    checkContentIsDefaultImg(picker.getPage(0), defaultImg);
-
-    // Now load the images
-    picker.loadImages();
-
-    const page = picker.getPage(0);
-    assertTrue(
-        'Page should be in the document but is not', page.isInDocument());
-
-    // The content should be the actual emoji images now, with the remainder set
-    // to the default img
-    checkContentIsEmojiImages(page, emojiGroup1[1], defaultImg);
-
-    picker.dispose();
-  },
-
-  testGetSelectedEmoji() {
-    const defaultImg = '../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(false);
-    picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
-    picker.render();
-
-    const palette = picker.getPage(0);
-
-    // No emoji should be selected yet
-    assertUndefined(palette.getSelectedEmoji());
-
-    // Artificially select the first emoji
-    palette.setSelectedIndex(0);
-
-    // Now we should get the first emoji back. See emojiGroup1 above.
-    const emoji = palette.getSelectedEmoji();
-    assertEquals(emoji.getId(), 'std.200');
-    assertEquals(emoji.getUrl(), '../../demos/emoji/200.gif');
-
-    picker.dispose();
-  },
-
-  testGetSelectedEmoji_click() {
-    const defaultImg = '../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(false);
-    picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
-    picker.render();
-
-    const palette = picker.getPage(0);
-    // Artificially select the an emoji
-    palette.setSelectedIndex(2);
-    const element = palette.getSelectedItem();
-    palette.setSelectedIndex(0);  // Select a different emoji.
-
-    let eventSent;
-    handler.listen(picker, Component.EventType.ACTION, (e) => {
-      eventSent = e;
-    });
-    events.fireClickSequence(element, undefined, undefined, {shiftKey: false});
-
-    // Now we should get the first emoji back. See emojiGroup1 above.
-    const emoji = picker.getSelectedEmoji();
-    assertEquals(emoji.getId(), 'std.202');
-    assertEquals(emoji.getUrl(), '../../demos/emoji/202.gif');
-    assertFalse(eventSent.shiftKey);
-
-    picker.dispose();
-  },
-
-  testGetSelectedEmoji_shiftClick() {
-    const defaultImg = '../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(false);
-    picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
-    picker.render();
-
-    const palette = picker.getPage(0);
-    // Artificially select the an emoji
-    palette.setSelectedIndex(3);
-    const element = palette.getSelectedItem();
-    palette.setSelectedIndex(0);  // Select a different emoji.
-
-    let eventSent;
-    handler.listen(picker, Component.EventType.ACTION, (e) => {
-      eventSent = e;
-    });
-    events.fireClickSequence(element, undefined, undefined, {shiftKey: true});
-
-    // Now we should get the first emoji back. See emojiGroup1 above.
-    const emoji = picker.getSelectedEmoji();
-    assertEquals(emoji.getId(), 'std.203');
-    assertEquals(emoji.getUrl(), '../../demos/emoji/203.gif');
-    assertTrue(eventSent.shiftKey);
-
-    picker.dispose();
-  },
-
-  testGetSelectedEmoji_urlPrefix() {
-    const defaultImg = 'a/b/../../../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(false);
-    picker.addEmojiGroup(emojiGroup1[0], emojiGroup1[1]);
-    picker.setUrlPrefix('a/b/../../');
-    picker.render();
-
-    const palette = picker.getPage(0);
-    // Artificially select the an emoji
-    palette.setSelectedIndex(0);
-    palette.dispatchEvent(Component.EventType.ACTION);
-
-    // Now we should get the first emoji back. See emojiGroup1 above.
-    const emoji = picker.getSelectedEmoji();
-    assertEquals('std.200', emoji.getId());
-    assertEquals('a/b/../../../../demos/emoji/200.gif', emoji.getUrl());
-
-    picker.dispose();
-  },
-
-  /** @suppress {checkTypes} suppression added to enable type checking */
-  testPreLoadCellConstructionForFastLoadingNonProgressive() {
-    const defaultImg = '../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(false);
-    picker.setManualLoadOfAnimatedEmoji(true);
-    picker.setProgressiveRender(false);
-    picker.addEmojiGroup(spritedEmoji2[0], spritedEmoji2[1]);
-    picker.render();
-
-    const palette = picker.getPage(0);
-
-    checkStructureForNonProgressivePicker(palette, spritedEmoji2);
-
-    picker.dispose();
-  },
-
-  /** @suppress {checkTypes} suppression added to enable type checking */
-  testPreLoadCellConstructionForFastLoadingProgressive() {
-    const defaultImg = '../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(false);
-    picker.setManualLoadOfAnimatedEmoji(true);
-    picker.setProgressiveRender(true);
-    picker.addEmojiGroup(spritedEmoji2[0], spritedEmoji2[1]);
-    picker.render();
-
-    const palette = picker.getPage(0);
-
-    checkStructureForProgressivePicker(palette, spritedEmoji2);
-
-    picker.dispose();
-  },
-
-  /** @suppress {checkTypes} suppression added to enable type checking */
-  testCellConstructionForNonProgressiveRenderingSpriting() {
-    const defaultImg = '../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(false);
-    picker.addEmojiGroup(spritedEmoji1[0], spritedEmoji1[1]);
-    picker.render();
-
-    const palette = picker.getPage(0);
-
-    checkStructureForNonProgressivePicker(palette, spritedEmoji1);
-    picker.dispose();
-  },
-
-  /** @suppress {checkTypes} suppression added to enable type checking */
-  testCellConstructionForProgressiveRenderingSpriting() {
-    const defaultImg = '../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(false);
-    picker.setProgressiveRender(true);
-    picker.addEmojiGroup(spritedEmoji1[0], spritedEmoji1[1]);
-    picker.render();
-
-    const palette = picker.getPage(0);
-
-    checkStructureForProgressivePicker(palette, spritedEmoji1);
-
-    picker.dispose();
-  },
-
-  /** @suppress {checkTypes} suppression added to enable type checking */
-  testDelayedLoadPaletteCreationForMultiPagePicker() {
-    const defaultImg = '../../demos/emoji/none.gif';
-    const picker = new EmojiPicker(defaultImg);
-    picker.setDelayedLoad(true);
-
-    for (let i = 0; i < emojiGroups.length; i++) {
-      picker.addEmojiGroup(emojiGroups[i][0], emojiGroups[i][1]);
-    }
-
-    picker.render();
-
-    // At this point the picker should have pages filled with the default img
-    for (let i = 0; i < emojiGroups.length; i++) {
-      checkContentIsDefaultImg(picker.getPage(i), defaultImg);
-    }
-
-    // Now load the images
-    picker.loadImages();
-
-    // The first page should be loaded
-    let page = picker.getPage(0);
-    assertTrue(
-        'Page should be in the document but is not', page.isInDocument());
-    checkContentIsEmojiImages(page, emojiGroups[0][1], defaultImg);
-
-    // The other pages should all be filled with the default img since they are
-    // lazily loaded
-    for (let i = 1; i < 3; i++) {
-      checkContentIsDefaultImg(picker.getPage(i), defaultImg);
-    }
-
-    // Activate the other two pages so that their images get loaded, and check
-    // that they're now loaded correctly
-    const tabPane = picker.getTabPane();
-
-    for (let i = 1; i < 3; i++) {
-      tabPane.setSelectedIndex(i);
-      page = picker.getPage(i);
-      assertTrue(page.isInDocument());
-      checkContentIsEmojiImages(page, emojiGroups[i][1], defaultImg);
-    }
-
-    picker.dispose();
-  },
-});
+
+function testPreLoadCellConstructionForFastLoadingNonProgressive() {
+  var defaultImg = '../../demos/emoji/none.gif';
+  var picker = new goog.ui.emoji.EmojiPicker(defaultImg);
+  picker.setDelayedLoad(false);
+  picker.setManualLoadOfAnimatedEmoji(true);
+  picker.setProgressiveRender(false);
+  picker.addEmojiGroup(spritedEmoji2[0], spritedEmoji2[1]);
+  picker.render();
+
+  var palette = picker.getPage(0);
+
+  checkStructureForNonProgressivePicker(palette, spritedEmoji2);
+
+  picker.dispose();
+}
+
+
+function testPreLoadCellConstructionForFastLoadingProgressive() {
+  var defaultImg = '../../demos/emoji/none.gif';
+  var picker = new goog.ui.emoji.EmojiPicker(defaultImg);
+  picker.setDelayedLoad(false);
+  picker.setManualLoadOfAnimatedEmoji(true);
+  picker.setProgressiveRender(true);
+  picker.addEmojiGroup(spritedEmoji2[0], spritedEmoji2[1]);
+  picker.render();
+
+  var palette = picker.getPage(0);
+
+  checkStructureForProgressivePicker(palette, spritedEmoji2);
+
+  picker.dispose();
+}
+
+
+function testCellConstructionForNonProgressiveRenderingSpriting() {
+  var defaultImg = '../../demos/emoji/none.gif';
+  var picker = new goog.ui.emoji.EmojiPicker(defaultImg);
+  picker.setDelayedLoad(false);
+  picker.addEmojiGroup(spritedEmoji1[0], spritedEmoji1[1]);
+  picker.render();
+
+  var palette = picker.getPage(0);
+
+  checkStructureForNonProgressivePicker(palette, spritedEmoji1);
+  picker.dispose();
+}
+
+
+function testCellConstructionForProgressiveRenderingSpriting() {
+  var defaultImg = '../../demos/emoji/none.gif';
+  var picker = new goog.ui.emoji.EmojiPicker(defaultImg);
+  picker.setDelayedLoad(false);
+  picker.setProgressiveRender(true);
+  picker.addEmojiGroup(spritedEmoji1[0], spritedEmoji1[1]);
+  picker.render();
+
+  var palette = picker.getPage(0);
+
+  checkStructureForProgressivePicker(palette, spritedEmoji1);
+
+  picker.dispose();
+}
+
+
+function testDelayedLoadPaletteCreationForMultiPagePicker() {
+  var defaultImg = '../../demos/emoji/none.gif';
+  var picker = new goog.ui.emoji.EmojiPicker(defaultImg);
+  picker.setDelayedLoad(true);
+
+  for (var i = 0; i < emojiGroups.length; i++) {
+    picker.addEmojiGroup(emojiGroups[i][0], emojiGroups[i][1]);
+  }
+
+  picker.render();
+
+  // At this point the picker should have pages filled with the default img
+  for (var i = 0; i < emojiGroups.length; i++) {
+    checkContentIsDefaultImg(picker.getPage(i), defaultImg);
+  }
+
+  // Now load the images
+  picker.loadImages();
+
+  // The first page should be loaded
+  var page = picker.getPage(0);
+  assertTrue(
+      'Page ' + i + ' should be in the document but is not',
+      page.isInDocument());
+  checkContentIsEmojiImages(page, emojiGroups[0][1], defaultImg);
+
+  // The other pages should all be filled with the default img since they are
+  // lazily loaded
+  for (var i = 1; i < 3; i++) {
+    checkContentIsDefaultImg(picker.getPage(i), defaultImg);
+  }
+
+  // Activate the other two pages so that their images get loaded, and check
+  // that they're now loaded correctly
+  var tabPane = picker.getTabPane();
+
+  for (var i = 1; i < 3; i++) {
+    tabPane.setSelectedIndex(i);
+    page = picker.getPage(i);
+    assertTrue(page.isInDocument());
+    checkContentIsEmojiImages(page, emojiGroups[i][1], defaultImg);
+  }
+
+  picker.dispose();
+}

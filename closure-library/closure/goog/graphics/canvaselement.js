@@ -1,12 +1,21 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 
 /**
  * @fileoverview Objects representing shapes drawn on a canvas.
+ * @author robbyw@google.com (Robby Walker)
  */
 
 goog.provide('goog.graphics.CanvasEllipseElement');
@@ -34,10 +43,6 @@ goog.require('goog.html.uncheckedconversions');
 goog.require('goog.math');
 goog.require('goog.string');
 goog.require('goog.string.Const');
-goog.requireType('goog.graphics.CanvasGraphics');
-goog.requireType('goog.graphics.Element');
-goog.requireType('goog.graphics.Fill');
-goog.requireType('goog.graphics.Stroke');
 
 
 
@@ -56,7 +61,6 @@ goog.requireType('goog.graphics.Stroke');
  * @final
  */
 goog.graphics.CanvasGroupElement = function(graphics) {
-  'use strict';
   goog.graphics.GroupElement.call(this, null, graphics);
 
 
@@ -73,10 +77,8 @@ goog.inherits(goog.graphics.CanvasGroupElement, goog.graphics.GroupElement);
 /**
  * Remove all drawing elements from the group.
  * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.graphics.CanvasGroupElement.prototype.clear = function() {
-  'use strict';
   if (this.children_.length) {
     this.children_.length = 0;
     this.getGraphics().redraw();
@@ -100,7 +102,6 @@ goog.graphics.CanvasGroupElement.prototype.setSize = function(width, height) {
  * @param {goog.graphics.Element} element The child to append.
  */
 goog.graphics.CanvasGroupElement.prototype.appendChild = function(element) {
-  'use strict';
   this.children_.push(element);
 };
 
@@ -108,10 +109,8 @@ goog.graphics.CanvasGroupElement.prototype.appendChild = function(element) {
 /**
  * Draw the group.
  * @param {CanvasRenderingContext2D} ctx The context to draw the element in.
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.graphics.CanvasGroupElement.prototype.draw = function(ctx) {
-  'use strict';
   for (var i = 0, len = this.children_.length; i < len; i++) {
     this.getGraphics().drawElement(this.children_[i]);
   }
@@ -121,12 +120,9 @@ goog.graphics.CanvasGroupElement.prototype.draw = function(ctx) {
 /**
  * Removes an element from the group.
  * @param {!goog.graphics.Element} elem the element to remove.
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.graphics.CanvasGroupElement.prototype.removeElement = function(elem) {
-  'use strict';
   goog.array.removeIf(this.children_, function(child) {
-    'use strict';
     // If the child has children (and thus is a group element)
     // call removeElement on that group
     if (child.children_) {
@@ -160,7 +156,6 @@ goog.graphics.CanvasGroupElement.prototype.removeElement = function(elem) {
  */
 goog.graphics.CanvasEllipseElement = function(
     element, graphics, cx, cy, rx, ry, stroke, fill) {
-  'use strict';
   goog.graphics.EllipseElement.call(this, element, graphics, stroke, fill);
 
   /**
@@ -219,7 +214,6 @@ goog.inherits(goog.graphics.CanvasEllipseElement, goog.graphics.EllipseElement);
  * @private
  */
 goog.graphics.CanvasEllipseElement.prototype.setUpPath_ = function() {
-  'use strict';
   this.path_.clear();
   this.path_.moveTo(
       this.cx_ + goog.math.angleDx(0, this.rx_),
@@ -236,7 +230,6 @@ goog.graphics.CanvasEllipseElement.prototype.setUpPath_ = function() {
  * @override
  */
 goog.graphics.CanvasEllipseElement.prototype.setCenter = function(cx, cy) {
-  'use strict';
   this.cx_ = cx;
   this.cy_ = cy;
   this.setUpPath_();
@@ -251,7 +244,6 @@ goog.graphics.CanvasEllipseElement.prototype.setCenter = function(cx, cy) {
  * @override
  */
 goog.graphics.CanvasEllipseElement.prototype.setRadius = function(rx, ry) {
-  'use strict';
   this.rx_ = rx;
   this.ry_ = ry;
   this.setUpPath_();
@@ -264,7 +256,6 @@ goog.graphics.CanvasEllipseElement.prototype.setRadius = function(rx, ry) {
  * @param {CanvasRenderingContext2D} ctx The context to draw the element in.
  */
 goog.graphics.CanvasEllipseElement.prototype.draw = function(ctx) {
-  'use strict';
   this.pathElement_.draw(ctx);
 };
 
@@ -290,7 +281,6 @@ goog.graphics.CanvasEllipseElement.prototype.draw = function(ctx) {
  */
 goog.graphics.CanvasRectElement = function(
     element, graphics, x, y, w, h, stroke, fill) {
-  'use strict';
   goog.graphics.RectElement.call(this, element, graphics, stroke, fill);
 
   /**
@@ -332,10 +322,8 @@ goog.inherits(goog.graphics.CanvasRectElement, goog.graphics.RectElement);
  * @param {number} x X coordinate (left).
  * @param {number} y Y coordinate (top).
  * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.graphics.CanvasRectElement.prototype.setPosition = function(x, y) {
-  'use strict';
   this.x_ = x;
   this.y_ = y;
   if (this.drawn_) {
@@ -357,10 +345,8 @@ goog.graphics.CanvasRectElement.prototype.drawn_ = false;
  * @param {number} width Width of rectangle.
  * @param {number} height Height of rectangle.
  * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.graphics.CanvasRectElement.prototype.setSize = function(width, height) {
-  'use strict';
   this.w_ = width;
   this.h_ = height;
   if (this.drawn_) {
@@ -374,7 +360,6 @@ goog.graphics.CanvasRectElement.prototype.setSize = function(width, height) {
  * @param {CanvasRenderingContext2D} ctx The context to draw the element in.
  */
 goog.graphics.CanvasRectElement.prototype.draw = function(ctx) {
-  'use strict';
   this.drawn_ = true;
   ctx.beginPath();
   ctx.moveTo(this.x_, this.y_);
@@ -403,7 +388,6 @@ goog.graphics.CanvasRectElement.prototype.draw = function(ctx) {
  */
 goog.graphics.CanvasPathElement = function(
     element, graphics, path, stroke, fill) {
-  'use strict';
   goog.graphics.PathElement.call(this, element, graphics, stroke, fill);
 
   this.setPath(path);
@@ -431,10 +415,8 @@ goog.graphics.CanvasPathElement.prototype.path_;
  * Update the underlying path.
  * @param {!goog.graphics.Path} path The path object to draw.
  * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.graphics.CanvasPathElement.prototype.setPath = function(path) {
-  'use strict';
   this.path_ =
       path.isSimple() ? path : goog.graphics.Path.createSimplifiedPath(path);
   if (this.drawn_) {
@@ -449,12 +431,10 @@ goog.graphics.CanvasPathElement.prototype.setPath = function(path) {
  * @suppress {deprecated} goog.graphics is deprecated.
  */
 goog.graphics.CanvasPathElement.prototype.draw = function(ctx) {
-  'use strict';
   this.drawn_ = true;
 
   ctx.beginPath();
   this.path_.forEachSegment(function(segment, args) {
-    'use strict';
     switch (segment) {
       case goog.graphics.Path.Segment.MOVETO:
         ctx.moveTo(args[0], args[1]);
@@ -504,7 +484,6 @@ goog.graphics.CanvasPathElement.prototype.draw = function(ctx) {
  */
 goog.graphics.CanvasTextElement = function(
     graphics, text, x1, y1, x2, y2, align, font, stroke, fill) {
-  'use strict';
   var element = goog.dom.createDom(
       goog.dom.TagName.DIV,
       {'style': 'display:table;position:absolute;padding:0;margin:0;border:0'});
@@ -584,7 +563,6 @@ goog.inherits(goog.graphics.CanvasTextElement, goog.graphics.TextElement);
  * @override
  */
 goog.graphics.CanvasTextElement.prototype.setText = function(text) {
-  'use strict';
   this.text_ = text;
   this.updateText_();
 };
@@ -596,11 +574,9 @@ goog.graphics.CanvasTextElement.prototype.setText = function(text) {
  * @override
  */
 goog.graphics.CanvasTextElement.prototype.setFill = function(fill) {
-  'use strict';
   this.fill = fill;
   var element = this.getElement();
   if (element) {
-    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     element.style.color = fill.getColor() || fill.getColor1();
   }
 };
@@ -630,7 +606,6 @@ goog.graphics.CanvasTextElement.prototype.draw = function(ctx) {
  * @private
  */
 goog.graphics.CanvasTextElement.prototype.updateStyle_ = function() {
-  'use strict';
   var x1 = this.x1_;
   var x2 = this.x2_;
   var y1 = this.y1_;
@@ -676,7 +651,6 @@ goog.graphics.CanvasTextElement.prototype.updateStyle_ = function() {
   style.fontFamily = font.family;
 
   var fill = this.getFill();
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   style.color = fill.getColor() || fill.getColor1();
 };
 
@@ -686,15 +660,14 @@ goog.graphics.CanvasTextElement.prototype.updateStyle_ = function() {
  * @private
  */
 goog.graphics.CanvasTextElement.prototype.updateText_ = function() {
-  'use strict';
   if (this.x1_ == this.x2_) {
     // Special case vertical text
-    var html = this.text_.split('')
-                   .map(function(entry) {
-                     'use strict';
-                     return goog.string.htmlEscape(entry);
-                   })
-                   .join('<br>');
+    var html =
+        goog.array
+            .map(
+                this.text_.split(''),
+                function(entry) { return goog.string.htmlEscape(entry); })
+            .join('<br>');
     // Creating a SafeHtml for each character would be quite expensive, and it's
     // obvious that this is safe, so an unchecked conversion is appropriate.
     var safeHtml =
@@ -732,7 +705,6 @@ goog.graphics.CanvasTextElement.prototype.updateText_ = function() {
  */
 goog.graphics.CanvasImageElement = function(
     element, graphics, x, y, w, h, src) {
-  'use strict';
   goog.graphics.ImageElement.call(this, element, graphics);
 
   /**
@@ -790,10 +762,8 @@ goog.graphics.CanvasImageElement.prototype.drawn_ = false;
  * @param {number} x X coordinate (left).
  * @param {number} y Y coordinate (top).
  * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.graphics.CanvasImageElement.prototype.setPosition = function(x, y) {
-  'use strict';
   this.x_ = x;
   this.y_ = y;
   if (this.drawn_) {
@@ -807,10 +777,8 @@ goog.graphics.CanvasImageElement.prototype.setPosition = function(x, y) {
  * @param {number} width Width of rectangle.
  * @param {number} height Height of rectangle.
  * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.graphics.CanvasImageElement.prototype.setSize = function(width, height) {
-  'use strict';
   this.w_ = width;
   this.h_ = height;
   if (this.drawn_) {
@@ -823,10 +791,8 @@ goog.graphics.CanvasImageElement.prototype.setSize = function(width, height) {
  * Update the source of the image.
  * @param {string} src Source of the image.
  * @override
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.graphics.CanvasImageElement.prototype.setSource = function(src) {
-  'use strict';
   this.src_ = src;
   if (this.drawn_) {
     // TODO(robbyw): Probably need to reload the image here.
@@ -838,10 +804,8 @@ goog.graphics.CanvasImageElement.prototype.setSource = function(src) {
 /**
  * Draw the image.  Should be treated as package scope.
  * @param {CanvasRenderingContext2D} ctx The context to draw the element in.
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.graphics.CanvasImageElement.prototype.draw = function(ctx) {
-  'use strict';
   if (this.img_) {
     if (this.w_ && this.h_) {
       // If the image is already loaded, draw it.
@@ -863,11 +827,8 @@ goog.graphics.CanvasImageElement.prototype.draw = function(ctx) {
  * Handle an image load.
  * @param {Element} img The image element that finished loading.
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.graphics.CanvasImageElement.prototype.handleImageLoad_ = function(img) {
-  'use strict';
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   this.img_ = img;
 
   // TODO(robbyw): Add a small delay to catch batched images

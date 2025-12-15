@@ -1,41 +1,51 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2015 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.dom.fullscreen_test');
-goog.setTestOnly();
+goog.provide('goog.dom.fullscreen_test');
+goog.setTestOnly('goog.dom.fullscreen_test');
 
-const DomHelper = goog.require('goog.dom.DomHelper');
-const PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
-const asserts = goog.require('goog.testing.asserts');
-const fullscreen = goog.require('goog.dom.fullscreen');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.dom.DomHelper');
+goog.require('goog.dom.fullscreen');
+goog.require('goog.testing.PropertyReplacer');
+goog.require('goog.testing.asserts');
+goog.require('goog.testing.jsunit');
 
-let domHelper;
-let mockDoc;
-let stubs;
+var domHelper;
+var mock_doc;
+var stubs;
 
-testSuite({
-  setUp() {
-    mockDoc = {};
-    domHelper = new DomHelper();
-    stubs = new PropertyReplacer();
-    stubs.replace(domHelper, 'getDocument', () => mockDoc);
-  },
+function clearFullscreenElement() {
+  mock_doc.webkitFullscreenElement = null;
+  mock_doc.mozFullScreenElement = null;
+  mock_doc.msFullscreenElement = null;
+  mock_doc.fullscreenElement = null;
+}
 
-  testGetFullScreenElement() {
-    const element = document.createElement('div');
-    /**
-     * @suppress {strictMissingProperties} suppression added to enable type
-     * checking
-     */
-    mockDoc.fullscreenElement = element;
-    assertEquals(element, fullscreen.getFullScreenElement(domHelper));
-  },
+function setUp() {
+  mock_doc = {};
+  clearFullscreenElement();
+  domHelper = new goog.dom.DomHelper();
+  stubs = new goog.testing.PropertyReplacer();
+  stubs.replace(domHelper, 'getDocument', function() { return mock_doc; });
+}
 
-  testGetFullScreenElementNotFullScreen() {
-    assertNull(fullscreen.getFullScreenElement(domHelper));
-  },
-});
+function testGetFullScreenElement() {
+  var element = {};
+  mock_doc.webkitFullscreenElement = element;
+  assertEquals(element, goog.dom.fullscreen.getFullScreenElement(domHelper));
+}
+
+function testGetFullScreenElementNotFullScreen() {
+  assertNull(goog.dom.fullscreen.getFullScreenElement(domHelper));
+}

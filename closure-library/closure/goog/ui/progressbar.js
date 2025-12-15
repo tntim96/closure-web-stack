@@ -1,12 +1,21 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Implementation of a progress bar.
  *
+ * @author arv@google.com (Erik Arvidsson)
  * @see ../demos/progressbar.html
  */
 
@@ -24,7 +33,6 @@ goog.require('goog.events.EventType');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.RangeModel');
 goog.require('goog.userAgent');
-goog.requireType('goog.events.Event');
 
 
 
@@ -35,7 +43,6 @@ goog.requireType('goog.events.Event');
  * @extends {goog.ui.Component}
  */
 goog.ui.ProgressBar = function(opt_domHelper) {
-  'use strict';
   goog.ui.Component.call(this, opt_domHelper);
 
   /** @type {?HTMLDivElement} */
@@ -52,6 +59,7 @@ goog.ui.ProgressBar = function(opt_domHelper) {
       false, this);
 };
 goog.inherits(goog.ui.ProgressBar, goog.ui.Component);
+goog.tagUnsealableClass(goog.ui.ProgressBar);
 
 
 /**
@@ -84,7 +92,6 @@ goog.ui.ProgressBar
  * @override
  */
 goog.ui.ProgressBar.prototype.createDom = function() {
-  'use strict';
   this.thumbElement_ = this.createThumb_();
   this.setElementInternal(this.getDomHelper().createDom(
       goog.dom.TagName.DIV,
@@ -98,7 +105,6 @@ goog.ui.ProgressBar.prototype.createDom = function() {
 
 /** @override */
 goog.ui.ProgressBar.prototype.enterDocument = function() {
-  'use strict';
   goog.ui.ProgressBar.superClass_.enterDocument.call(this);
   this.attachEvents_();
   this.updateUi_();
@@ -114,7 +120,6 @@ goog.ui.ProgressBar.prototype.enterDocument = function() {
 
 /** @override */
 goog.ui.ProgressBar.prototype.exitDocument = function() {
-  'use strict';
   goog.ui.ProgressBar.superClass_.exitDocument.call(this);
   this.detachEvents_();
 };
@@ -123,10 +128,9 @@ goog.ui.ProgressBar.prototype.exitDocument = function() {
 /**
  * This creates the thumb element.
  * @private
- * @return {!HTMLDivElement} The created thumb element.
+ * @return {HTMLDivElement} The created thumb element.
  */
 goog.ui.ProgressBar.prototype.createThumb_ = function() {
-  'use strict';
   return this.getDomHelper().createDom(
       goog.dom.TagName.DIV, goog.getCssName('progress-bar-thumb'));
 };
@@ -135,10 +139,8 @@ goog.ui.ProgressBar.prototype.createThumb_ = function() {
 /**
  * Adds the initial event listeners to the element.
  * @private
- * @suppress {strictPrimitiveOperators} Part of the go/strict_warnings_migration
  */
 goog.ui.ProgressBar.prototype.attachEvents_ = function() {
-  'use strict';
   if (goog.userAgent.IE && goog.userAgent.VERSION < 7) {
     goog.events.listen(
         this.getElement(), goog.events.EventType.RESIZE, this.updateUi_, false,
@@ -150,10 +152,8 @@ goog.ui.ProgressBar.prototype.attachEvents_ = function() {
 /**
  * Removes the event listeners added by attachEvents_.
  * @private
- * @suppress {strictPrimitiveOperators} Part of the go/strict_warnings_migration
  */
 goog.ui.ProgressBar.prototype.detachEvents_ = function() {
-  'use strict';
   if (goog.userAgent.IE && goog.userAgent.VERSION < 7) {
     goog.events.unlisten(
         this.getElement(), goog.events.EventType.RESIZE, this.updateUi_, false,
@@ -170,7 +170,6 @@ goog.ui.ProgressBar.prototype.detachEvents_ = function() {
  * @override
  */
 goog.ui.ProgressBar.prototype.decorateInternal = function(element) {
-  'use strict';
   goog.ui.ProgressBar.superClass_.decorateInternal.call(this, element);
   goog.dom.classlist.add(
       goog.asserts.assert(this.getElement()),
@@ -181,7 +180,7 @@ goog.ui.ProgressBar.prototype.decorateInternal = function(element) {
       null, goog.getCssName('progress-bar-thumb'), this.getElement())[0];
   if (!thumb) {
     thumb = this.createThumb_();
-    this.getElement().appendChild(/** @type {!Node} */ (thumb));
+    this.getElement().appendChild(thumb);
   }
   this.thumbElement_ = /** @type {!HTMLDivElement} */ (thumb);
 };
@@ -191,7 +190,6 @@ goog.ui.ProgressBar.prototype.decorateInternal = function(element) {
  * @return {number} The value.
  */
 goog.ui.ProgressBar.prototype.getValue = function() {
-  'use strict';
   return this.rangeModel_.getValue();
 };
 
@@ -201,7 +199,6 @@ goog.ui.ProgressBar.prototype.getValue = function() {
  * @param {number} v The value.
  */
 goog.ui.ProgressBar.prototype.setValue = function(v) {
-  'use strict';
   this.rangeModel_.setValue(v);
   if (this.getElement()) {
     this.setValueState_();
@@ -214,7 +211,6 @@ goog.ui.ProgressBar.prototype.setValue = function(v) {
  * @private
  */
 goog.ui.ProgressBar.prototype.setValueState_ = function() {
-  'use strict';
   var element = this.getElement();
   goog.asserts.assert(element, 'The progress bar DOM element cannot be null.');
   goog.a11y.aria.setState(element, 'valuenow', this.getValue());
@@ -225,7 +221,6 @@ goog.ui.ProgressBar.prototype.setValueState_ = function() {
  * @return {number} The minimum value.
  */
 goog.ui.ProgressBar.prototype.getMinimum = function() {
-  'use strict';
   return this.rangeModel_.getMinimum();
 };
 
@@ -235,7 +230,6 @@ goog.ui.ProgressBar.prototype.getMinimum = function() {
  * @param {number} v The minimum value.
  */
 goog.ui.ProgressBar.prototype.setMinimum = function(v) {
-  'use strict';
   this.rangeModel_.setMinimum(v);
   if (this.getElement()) {
     this.setMinimumState_();
@@ -248,7 +242,6 @@ goog.ui.ProgressBar.prototype.setMinimum = function(v) {
  * @private
  */
 goog.ui.ProgressBar.prototype.setMinimumState_ = function() {
-  'use strict';
   var element = this.getElement();
   goog.asserts.assert(element, 'The progress bar DOM element cannot be null.');
   goog.a11y.aria.setState(element, 'valuemin', this.getMinimum());
@@ -259,7 +252,6 @@ goog.ui.ProgressBar.prototype.setMinimumState_ = function() {
  * @return {number} The maximum value.
  */
 goog.ui.ProgressBar.prototype.getMaximum = function() {
-  'use strict';
   return this.rangeModel_.getMaximum();
 };
 
@@ -269,7 +261,6 @@ goog.ui.ProgressBar.prototype.getMaximum = function() {
  * @param {number} v The maximum value.
  */
 goog.ui.ProgressBar.prototype.setMaximum = function(v) {
-  'use strict';
   this.rangeModel_.setMaximum(v);
   if (this.getElement()) {
     this.setMaximumState_();
@@ -282,7 +273,6 @@ goog.ui.ProgressBar.prototype.setMaximum = function(v) {
  * @private
  */
 goog.ui.ProgressBar.prototype.setMaximumState_ = function() {
-  'use strict';
   var element = this.getElement();
   goog.asserts.assert(element, 'The progress bar DOM element cannot be null.');
   goog.a11y.aria.setState(element, 'valuemax', this.getMaximum());
@@ -304,7 +294,6 @@ goog.ui.ProgressBar.prototype.orientation_ =
  * @private
  */
 goog.ui.ProgressBar.prototype.handleChange_ = function(e) {
-  'use strict';
   this.updateUi_();
   this.dispatchEvent(goog.ui.Component.EventType.CHANGE);
 };
@@ -314,10 +303,8 @@ goog.ui.ProgressBar.prototype.handleChange_ = function(e) {
  * This is called when we need to update the size of the thumb. This happens
  * when first created as well as when the value and the orientation changes.
  * @private
- * @suppress {strictPrimitiveOperators} Part of the go/strict_warnings_migration
  */
 goog.ui.ProgressBar.prototype.updateUi_ = function() {
-  'use strict';
   if (this.thumbElement_) {
     var min = this.getMinimum();
     var max = this.getMaximum();
@@ -352,7 +339,6 @@ goog.ui.ProgressBar.prototype.updateUi_ = function() {
  * @private
  */
 goog.ui.ProgressBar.prototype.initializeUi_ = function() {
-  'use strict';
   var tStyle = this.thumbElement_.style;
   if (this.orientation_ == goog.ui.ProgressBar.Orientation.VERTICAL) {
     tStyle.left = '0';
@@ -369,7 +355,6 @@ goog.ui.ProgressBar.prototype.initializeUi_ = function() {
  * @param {goog.ui.ProgressBar.Orientation} orient The orientation.
  */
 goog.ui.ProgressBar.prototype.setOrientation = function(orient) {
-  'use strict';
   if (this.orientation_ != orient) {
     var oldCss =
         goog.ui.ProgressBar.ORIENTATION_TO_CSS_NAME_[this.orientation_];
@@ -392,14 +377,12 @@ goog.ui.ProgressBar.prototype.setOrientation = function(orient) {
  *     progress bar.
  */
 goog.ui.ProgressBar.prototype.getOrientation = function() {
-  'use strict';
   return this.orientation_;
 };
 
 
 /** @override */
 goog.ui.ProgressBar.prototype.disposeInternal = function() {
-  'use strict';
   this.detachEvents_();
   goog.ui.ProgressBar.superClass_.disposeInternal.call(this);
   this.thumbElement_ = null;
@@ -411,7 +394,6 @@ goog.ui.ProgressBar.prototype.disposeInternal = function() {
  * @return {?number} The step value used to determine how to round the value.
  */
 goog.ui.ProgressBar.prototype.getStep = function() {
-  'use strict';
   return this.rangeModel_.getStep();
 };
 
@@ -422,6 +404,5 @@ goog.ui.ProgressBar.prototype.getStep = function() {
  * @param {?number} step  The step size.
  */
 goog.ui.ProgressBar.prototype.setStep = function(step) {
-  'use strict';
   this.rangeModel_.setStep(step);
 };

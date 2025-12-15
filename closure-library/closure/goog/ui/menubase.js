@@ -1,11 +1,20 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Definition of the MenuBase class.
+ *
  */
 
 goog.provide('goog.ui.MenuBase');
@@ -14,8 +23,6 @@ goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyHandler');
 goog.require('goog.ui.Popup');
-goog.requireType('goog.events.Event');
-goog.requireType('goog.events.KeyEvent');
 
 
 
@@ -29,7 +36,6 @@ goog.requireType('goog.events.KeyEvent');
  * @extends {goog.ui.Popup}
  */
 goog.ui.MenuBase = function(opt_element) {
-  'use strict';
   goog.ui.Popup.call(this, opt_element);
 
   /**
@@ -58,14 +64,12 @@ goog.ui.MenuBase.Events = {};
 
 /**
  * Event fired by the Menu when an item is "clicked".
- * @const {string}
  */
 goog.ui.MenuBase.Events.ITEM_ACTION = 'itemaction';
 
 
 /** @override */
 goog.ui.MenuBase.prototype.disposeInternal = function() {
-  'use strict';
   goog.ui.MenuBase.superClass_.disposeInternal.call(this);
   this.eventHandler_.dispose();
   this.keyHandler_.dispose();
@@ -80,7 +84,6 @@ goog.ui.MenuBase.prototype.disposeInternal = function() {
  * @override
  */
 goog.ui.MenuBase.prototype.onShow = function() {
-  'use strict';
   goog.ui.MenuBase.superClass_.onShow.call(this);
 
   // register common event handlers for derived classes
@@ -106,7 +109,6 @@ goog.ui.MenuBase.prototype.onShow = function() {
  * @override
  */
 goog.ui.MenuBase.prototype.onHide = function(opt_target) {
-  'use strict';
   goog.ui.MenuBase.superClass_.onHide.call(this, opt_target);
 
   // remove listeners when hidden
@@ -120,7 +122,6 @@ goog.ui.MenuBase.prototype.onHide = function(opt_target) {
  * @return {Object} The item selected or null if no item is selected.
  */
 goog.ui.MenuBase.prototype.getSelectedItem = function() {
-  'use strict';
   return null;
 };
 

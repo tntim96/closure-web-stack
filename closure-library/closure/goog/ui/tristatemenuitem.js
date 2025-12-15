@@ -1,11 +1,21 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview A menu item class that supports three state checkbox semantics.
+ *
+ * @author eae@google.com (Emil A Eklund)
  */
 
 goog.provide('goog.ui.TriStateMenuItem');
@@ -16,9 +26,6 @@ goog.require('goog.ui.Component');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.TriStateMenuItemRenderer');
 goog.require('goog.ui.registry');
-goog.requireType('goog.dom.DomHelper');
-goog.requireType('goog.ui.ControlContent');
-goog.requireType('goog.ui.MenuItemRenderer');
 
 
 
@@ -42,7 +49,6 @@ goog.requireType('goog.ui.MenuItemRenderer');
  */
 goog.ui.TriStateMenuItem = function(
     content, opt_model, opt_domHelper, opt_renderer, opt_alwaysAllowPartial) {
-  'use strict';
   goog.ui.MenuItem.call(
       this, content, opt_model, opt_domHelper,
       opt_renderer || new goog.ui.TriStateMenuItemRenderer());
@@ -104,7 +110,6 @@ goog.ui.TriStateMenuItem.prototype.alwaysAllowPartial_ = false;
  * @return {goog.ui.TriStateMenuItem.State} The menu item's check state.
  */
 goog.ui.TriStateMenuItem.prototype.getCheckedState = function() {
-  'use strict';
   return this.checkState_;
 };
 
@@ -114,7 +119,6 @@ goog.ui.TriStateMenuItem.prototype.getCheckedState = function() {
  * @param {goog.ui.TriStateMenuItem.State} state The checked state.
  */
 goog.ui.TriStateMenuItem.prototype.setCheckedState = function(state) {
-  'use strict';
   this.setCheckedState_(state);
   this.allowPartial_ =
       state == goog.ui.TriStateMenuItem.State.PARTIALLY_CHECKED;
@@ -123,14 +127,13 @@ goog.ui.TriStateMenuItem.prototype.setCheckedState = function(state) {
 
 /**
  * Sets the checked state and updates the CSS styling. Dispatches a
- * `CHECK` or `UNCHECK` event prior to changing the component's
+ * {@code CHECK} or {@code UNCHECK} event prior to changing the component's
  * state, which may be caught and canceled to prevent the component from
  * changing state.
  * @param {goog.ui.TriStateMenuItem.State} state The checked state.
  * @private
  */
 goog.ui.TriStateMenuItem.prototype.setCheckedState_ = function(state) {
-  'use strict';
   if (this.dispatchEvent(
           state != goog.ui.TriStateMenuItem.State.NOT_CHECKED ?
               goog.ui.Component.EventType.CHECK :
@@ -146,7 +149,6 @@ goog.ui.TriStateMenuItem.prototype.setCheckedState_ = function(state) {
 
 /** @override */
 goog.ui.TriStateMenuItem.prototype.performActionInternal = function(e) {
-  'use strict';
   switch (this.getCheckedState()) {
     case goog.ui.TriStateMenuItem.State.NOT_CHECKED:
       this.setCheckedState_(
@@ -180,7 +182,6 @@ goog.ui.TriStateMenuItem.prototype.performActionInternal = function(e) {
  * @private
  */
 goog.ui.TriStateMenuItem.prototype.updatedCheckedStateClassNames_ = function() {
-  'use strict';
   var renderer = this.getRenderer();
   renderer.enableExtraClassName(
       this, goog.getCssName(renderer.getCssClass(), 'partially-checked'),
@@ -195,7 +196,6 @@ goog.ui.TriStateMenuItem.prototype.updatedCheckedStateClassNames_ = function() {
 // Register a decorator factory function for goog.ui.TriStateMenuItemRenderer.
 goog.ui.registry.setDecoratorByClassName(
     goog.ui.TriStateMenuItemRenderer.CSS_CLASS, function() {
-      'use strict';
       // TriStateMenuItem defaults to using TriStateMenuItemRenderer.
       return new goog.ui.TriStateMenuItem(null);
     });

@@ -1,12 +1,21 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Utilities for manipulating a form and elements.
  *
+ * @author arv@google.com (Erik Arvidsson)
  * @suppress {strictMissingProperties}
  */
 
@@ -14,9 +23,9 @@ goog.provide('goog.dom.forms');
 
 goog.require('goog.dom.InputType');
 goog.require('goog.dom.TagName');
-goog.require('goog.dom.safe');
 goog.require('goog.structs.Map');
 goog.require('goog.window');
+
 
 
 /**
@@ -33,7 +42,6 @@ goog.require('goog.window');
  * @throws {!Error} If opt_submitElement is not a valid form submit element.
  */
 goog.dom.forms.submitFormInNewWindow = function(form, opt_submitElement) {
-  'use strict';
   var formData = goog.dom.forms.getFormDataMap(form);
   var action = form.action;
   var method = form.method;
@@ -74,7 +82,6 @@ goog.dom.forms.submitFormInNewWindow = function(form, opt_submitElement) {
  */
 goog.dom.forms.submitFormDataInNewWindow = function(
     actionUri, method, formData) {
-  'use strict';
   var newWin = goog.window.openBlank('', {noreferrer: true});
 
   // This could be null if a new window could not be opened. e.g. if it was
@@ -88,13 +95,12 @@ goog.dom.forms.submitFormDataInNewWindow = function(
   var newForm =
       /** @type {!HTMLFormElement} */ (newDocument.createElement('form'));
   newForm.method = method;
-  goog.dom.safe.setFormElementAction(newForm, actionUri);
+  newForm.action = actionUri;
 
   // After this point, do not directly reference the form object's functions as
   // field names can shadow the form's properties.
 
   formData.forEach(function(fieldValues, fieldName) {
-    'use strict';
     for (var i = 0; i < fieldValues.length; i++) {
       var fieldValue = fieldValues[i];
       var newInput = newDocument.createElement('input');
@@ -118,7 +124,6 @@ goog.dom.forms.submitFormDataInNewWindow = function(
  *     as field name to arrays of values.
  */
 goog.dom.forms.getFormDataMap = function(form) {
-  'use strict';
   var map = new goog.structs.Map();
   goog.dom.forms.getFormDataHelper_(
       form, map, goog.dom.forms.addFormDataToMap_);
@@ -133,7 +138,6 @@ goog.dom.forms.getFormDataMap = function(form) {
  * @return {string} An application/x-www-url-encoded string.
  */
 goog.dom.forms.getFormDataString = function(form) {
-  'use strict';
   var sb = [];
   goog.dom.forms.getFormDataHelper_(
       form, sb, goog.dom.forms.addFormDataToStringBuffer_);
@@ -146,15 +150,14 @@ goog.dom.forms.getFormDataString = function(form) {
  * string. This doesn't support file inputs.
  * @param {HTMLFormElement} form The form.
  * @param {Object} result The object form data is being put in.
- * @param {Function} fnAppend Function that takes `result`, an element
+ * @param {Function} fnAppend Function that takes {@code result}, an element
  *     name, and an element value, and adds the name/value pair to the result
  *     object.
  * @private
  */
 goog.dom.forms.getFormDataHelper_ = function(form, result, fnAppend) {
-  'use strict';
   var els = form.elements;
-  for (var el, i = 0; el = els.item(i); i++) {
+  for (var el, i = 0; el = els[i]; i++) {
     if (  // Make sure we don't include elements that are not part of the form.
         // Some browsers include non-form elements. Check for 'form' property.
         // See http://code.google.com/p/closure-library/issues/detail?id=227
@@ -213,7 +216,6 @@ goog.dom.forms.getFormDataHelper_ = function(form, result, fnAppend) {
  * @private
  */
 goog.dom.forms.addFormDataToMap_ = function(map, name, value) {
-  'use strict';
   var array = map.get(name);
   if (!array) {
     array = [];
@@ -231,7 +233,6 @@ goog.dom.forms.addFormDataToMap_ = function(map, name, value) {
  * @private
  */
 goog.dom.forms.addFormDataToStringBuffer_ = function(sb, name, value) {
-  'use strict';
   sb.push(encodeURIComponent(name) + '=' + encodeURIComponent(value));
 };
 
@@ -242,7 +243,6 @@ goog.dom.forms.addFormDataToStringBuffer_ = function(sb, name, value) {
  * @return {boolean} Whether the form has a file input.
  */
 goog.dom.forms.hasFileInput = function(form) {
-  'use strict';
   var els = form.elements;
   for (var el, i = 0; el = els[i]; i++) {
     if (!el.disabled && el.type &&
@@ -260,11 +260,10 @@ goog.dom.forms.hasFileInput = function(form) {
  * @param {boolean} disabled Whether the element should be disabled.
  */
 goog.dom.forms.setDisabled = function(el, disabled) {
-  'use strict';
   // disable all elements in a form
   if (el.tagName == goog.dom.TagName.FORM) {
     var els = /** @type {!HTMLFormElement} */ (el).elements;
-    for (var i = 0; el = els.item(i); i++) {
+    for (var i = 0; el = els[i]; i++) {
       goog.dom.forms.setDisabled(el, disabled);
     }
   } else {
@@ -283,7 +282,6 @@ goog.dom.forms.setDisabled = function(el, disabled) {
  * @param {Element} el The form element.
  */
 goog.dom.forms.focusAndSelect = function(el) {
-  'use strict';
   el.focus();
   if (el.select) {
     el.select();
@@ -297,7 +295,6 @@ goog.dom.forms.focusAndSelect = function(el) {
  * @return {boolean} Whether the form has a value.
  */
 goog.dom.forms.hasValue = function(el) {
-  'use strict';
   var value = goog.dom.forms.getValue(el);
   return !!value;
 };
@@ -310,7 +307,6 @@ goog.dom.forms.hasValue = function(el) {
  * @return {boolean} Whether the form has a value.
  */
 goog.dom.forms.hasValueByName = function(form, name) {
-  'use strict';
   var value = goog.dom.forms.getValueByName(form, name);
   return !!value;
 };
@@ -318,33 +314,25 @@ goog.dom.forms.hasValueByName = function(form, name) {
 
 /**
  * Gets the current value of any element with a type.
- * @param {null|!Element|!RadioNodeList<?>} input The element.
+ * @param {Element} el The element.
  * @return {string|Array<string>|null} The current value of the element
  *     (or null).
  */
-goog.dom.forms.getValue = function(input) {
-  'use strict';
+goog.dom.forms.getValue = function(el) {
   // Elements with a type may need more specialized logic.
-  var type = /** {{type: (string|undefined)}} */ (input).type;
-
-  if (typeof type === 'string') {
-    var el = /** @type {!Element} */ (input);
-
-    switch (type.toLowerCase()) {
-      case goog.dom.InputType.CHECKBOX:
-      case goog.dom.InputType.RADIO:
-        return goog.dom.forms.getInputChecked_(el);
-      case goog.dom.InputType.SELECT_ONE:
-        return goog.dom.forms.getSelectSingle_(el);
-      case goog.dom.InputType.SELECT_MULTIPLE:
-        return goog.dom.forms.getSelectMultiple_(el);
-      default:
-        // Not every element with a value has a type (e.g. meter and progress).
-    }
+  var type = /** @type {!HTMLInputElement} */ (el).type;
+  switch (goog.isString(type) && type.toLowerCase()) {
+    case goog.dom.InputType.CHECKBOX:
+    case goog.dom.InputType.RADIO:
+      return goog.dom.forms.getInputChecked_(el);
+    case goog.dom.InputType.SELECT_ONE:
+      return goog.dom.forms.getSelectSingle_(el);
+    case goog.dom.InputType.SELECT_MULTIPLE:
+      return goog.dom.forms.getSelectMultiple_(el);
+    default:
+      // Not every element with a value has a type (e.g. meter and progress).
+      return el.value != null ? el.value : null;
   }
-
-  // Coerce `undefined` to `null`.
-  return input.value != null ? input.value : null;
 };
 
 
@@ -359,22 +347,21 @@ goog.dom.forms.getValue = function(input) {
  *     null if the form element does not exist or has no value.
  */
 goog.dom.forms.getValueByName = function(form, name) {
-  'use strict';
   var els = form.elements[name];
 
-  if (!els) {
-    return null;
-  } else if (els.type) {
-    return goog.dom.forms.getValue(/** @type {!Element} */ (els));
-  } else {
-    for (var i = 0; i < els.length; i++) {
-      var val = goog.dom.forms.getValue(els[i]);
-      if (val) {
-        return val;
+  if (els) {
+    if (els.type) {
+      return goog.dom.forms.getValue(els);
+    } else {
+      for (var i = 0; i < els.length; i++) {
+        var val = goog.dom.forms.getValue(els[i]);
+        if (val) {
+          return val;
+        }
       }
     }
-    return null;
   }
+  return null;
 };
 
 
@@ -385,7 +372,6 @@ goog.dom.forms.getValueByName = function(form, name) {
  * @private
  */
 goog.dom.forms.getInputChecked_ = function(el) {
-  'use strict';
   return el.checked ? /** @type {?} */ (el).value : null;
 };
 
@@ -397,7 +383,6 @@ goog.dom.forms.getInputChecked_ = function(el) {
  * @private
  */
 goog.dom.forms.getSelectSingle_ = function(el) {
-  'use strict';
   var selectedIndex = /** @type {!HTMLSelectElement} */ (el).selectedIndex;
   return selectedIndex >= 0 ?
       /** @type {!HTMLSelectElement} */ (el).options[selectedIndex].value :
@@ -412,7 +397,6 @@ goog.dom.forms.getSelectSingle_ = function(el) {
  * @private
  */
 goog.dom.forms.getSelectMultiple_ = function(el) {
-  'use strict';
   var values = [];
   for (var option, i = 0;
        option = /** @type {!HTMLSelectElement} */ (el).options[i]; i++) {
@@ -432,10 +416,9 @@ goog.dom.forms.getSelectMultiple_ = function(el) {
  *     an array for setting the value of select multiple elements.
  */
 goog.dom.forms.setValue = function(el, opt_value) {
-  'use strict';
   // Elements with a type may need more specialized logic.
   var type = /** @type {!HTMLInputElement} */ (el).type;
-  switch (typeof type === 'string' && type.toLowerCase()) {
+  switch (goog.isString(type) && type.toLowerCase()) {
     case goog.dom.InputType.CHECKBOX:
     case goog.dom.InputType.RADIO:
       goog.dom.forms.setInputChecked_(
@@ -470,7 +453,6 @@ goog.dom.forms.setValue = function(el, opt_value) {
  * @private
  */
 goog.dom.forms.setInputChecked_ = function(el, opt_value) {
-  'use strict';
   el.checked = opt_value;
 };
 
@@ -482,10 +464,9 @@ goog.dom.forms.setInputChecked_ = function(el, opt_value) {
  * @private
  */
 goog.dom.forms.setSelectSingle_ = function(el, opt_value) {
-  'use strict';
   // unset any prior selections
   el.selectedIndex = -1;
-  if (typeof opt_value === 'string') {
+  if (goog.isString(opt_value)) {
     for (var option, i = 0;
          option = /** @type {!HTMLSelectElement} */ (el).options[i]; i++) {
       if (option.value == opt_value) {
@@ -505,9 +486,8 @@ goog.dom.forms.setSelectSingle_ = function(el, opt_value) {
  * @private
  */
 goog.dom.forms.setSelectMultiple_ = function(el, opt_value) {
-  'use strict';
   // reset string opt_values as an array
-  if (typeof opt_value === 'string') {
+  if (goog.isString(opt_value)) {
     opt_value = [opt_value];
   }
   for (var option, i = 0;

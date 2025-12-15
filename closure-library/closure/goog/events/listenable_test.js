@@ -1,23 +1,29 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.events.ListenableTest');
-goog.setTestOnly();
+goog.provide('goog.events.ListenableTest');
+goog.setTestOnly('goog.events.ListenableTest');
 
-const Listenable = goog.require('goog.events.Listenable');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.events.Listenable');
+goog.require('goog.testing.jsunit');
 
-testSuite({
-  testIsImplementedBy() {
-    const ListenableClass = class {};
-    Listenable.addImplementation(ListenableClass);
+function testIsImplementedBy() {
+  var ListenableClass = function() {};
+  goog.events.Listenable.addImplementation(ListenableClass);
 
-    const NonListenableClass = class {};
+  var NonListenableClass = function() {};
 
-    assertTrue(Listenable.isImplementedBy(new ListenableClass()));
-    assertFalse(Listenable.isImplementedBy(new NonListenableClass()));
-  },
-});
+  assertTrue(goog.events.Listenable.isImplementedBy(new ListenableClass()));
+  assertFalse(goog.events.Listenable.isImplementedBy(new NonListenableClass()));
+}

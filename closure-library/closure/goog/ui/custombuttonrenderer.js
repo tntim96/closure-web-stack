@@ -1,12 +1,22 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview A custom button renderer that uses CSS voodoo to render a
  * button-like object with fake rounded corners.
+ *
+ * @author attila@google.com (Attila Bodis)
  */
 
 goog.provide('goog.ui.CustomButtonRenderer');
@@ -19,10 +29,6 @@ goog.require('goog.dom.classlist');
 goog.require('goog.string');
 goog.require('goog.ui.ButtonRenderer');
 goog.require('goog.ui.INLINE_BLOCK_CLASSNAME');
-goog.requireType('goog.dom.DomHelper');
-goog.requireType('goog.ui.Button');
-goog.requireType('goog.ui.Control');
-goog.requireType('goog.ui.ControlContent');
 
 
 
@@ -35,7 +41,6 @@ goog.requireType('goog.ui.ControlContent');
  * @extends {goog.ui.ButtonRenderer}
  */
 goog.ui.CustomButtonRenderer = function() {
-  'use strict';
   goog.ui.ButtonRenderer.call(this);
 };
 goog.inherits(goog.ui.CustomButtonRenderer, goog.ui.ButtonRenderer);
@@ -67,14 +72,13 @@ goog.ui.CustomButtonRenderer.CSS_CLASS = goog.getCssName('goog-custom-button');
  * @override
  */
 goog.ui.CustomButtonRenderer.prototype.createDom = function(control) {
-  'use strict';
   var button = /** @type {goog.ui.Button} */ (control);
   var classNames = this.getClassNames(button);
   var buttonElement = button.getDomHelper().createDom(
       goog.dom.TagName.DIV,
       goog.ui.INLINE_BLOCK_CLASSNAME + ' ' + classNames.join(' '),
       this.createButton(button.getContent(), button.getDomHelper()));
-  this.setTooltip(buttonElement, /** @type {string}*/ (button.getTooltip()));
+  this.setTooltip(buttonElement, /** @type {!string}*/ (button.getTooltip()));
 
   return buttonElement;
 };
@@ -86,7 +90,6 @@ goog.ui.CustomButtonRenderer.prototype.createDom = function(control) {
  * @override
  */
 goog.ui.CustomButtonRenderer.prototype.getAriaRole = function() {
-  'use strict';
   return goog.a11y.aria.Role.BUTTON;
 };
 
@@ -101,7 +104,6 @@ goog.ui.CustomButtonRenderer.prototype.getAriaRole = function() {
  * @override
  */
 goog.ui.CustomButtonRenderer.prototype.getContentElement = function(element) {
-  'use strict';
   return element && element.firstChild &&
       /** @type {Element} */ (element.firstChild.firstChild);
 };
@@ -122,17 +124,14 @@ goog.ui.CustomButtonRenderer.prototype.getContentElement = function(element) {
  * @param {goog.ui.ControlContent} content Text caption or DOM structure to wrap
  *     in a box.
  * @param {goog.dom.DomHelper} dom DOM helper, used for document interaction.
- * @return {!Element} Pseudo-rounded-corner box containing the content.
+ * @return {Element} Pseudo-rounded-corner box containing the content.
  */
 goog.ui.CustomButtonRenderer.prototype.createButton = function(content, dom) {
-  'use strict';
   return dom.createDom(
-      goog.dom.TagName.DIV,
-      goog.ui.INLINE_BLOCK_CLASSNAME + ' ' +
+      goog.dom.TagName.DIV, goog.ui.INLINE_BLOCK_CLASSNAME + ' ' +
           goog.getCssName(this.getCssClass(), 'outer-box'),
       dom.createDom(
-          goog.dom.TagName.DIV,
-          goog.ui.INLINE_BLOCK_CLASSNAME + ' ' +
+          goog.dom.TagName.DIV, goog.ui.INLINE_BLOCK_CLASSNAME + ' ' +
               goog.getCssName(this.getCssClass(), 'inner-box'),
           content));
 };
@@ -147,7 +146,6 @@ goog.ui.CustomButtonRenderer.prototype.createButton = function(content, dom) {
  * @override
  */
 goog.ui.CustomButtonRenderer.prototype.canDecorate = function(element) {
-  'use strict';
   return element.tagName == goog.dom.TagName.DIV;
 };
 
@@ -162,7 +160,6 @@ goog.ui.CustomButtonRenderer.prototype.canDecorate = function(element) {
  */
 goog.ui.CustomButtonRenderer.prototype.hasBoxStructure = function(
     button, element) {
-  'use strict';
   var outer = button.getDomHelper().getFirstElementChild(element);
   var outerClassName = goog.getCssName(this.getCssClass(), 'outer-box');
   if (outer && goog.dom.classlist.contains(outer, outerClassName)) {
@@ -188,7 +185,6 @@ goog.ui.CustomButtonRenderer.prototype.hasBoxStructure = function(
  * @override
  */
 goog.ui.CustomButtonRenderer.prototype.decorate = function(control, element) {
-  'use strict';
   goog.asserts.assert(element);
 
   var button = /** @type {goog.ui.Button} */ (control);
@@ -200,8 +196,7 @@ goog.ui.CustomButtonRenderer.prototype.decorate = function(control, element) {
   // Create the buttom dom if it has not been created.
   if (!this.hasBoxStructure(button, element)) {
     element.appendChild(
-        /** @type {!Node} */ (
-            this.createButton(element.childNodes, button.getDomHelper())));
+        this.createButton(element.childNodes, button.getDomHelper()));
   }
 
   goog.dom.classlist.addAll(
@@ -218,7 +213,6 @@ goog.ui.CustomButtonRenderer.prototype.decorate = function(control, element) {
  * @override
  */
 goog.ui.CustomButtonRenderer.prototype.getCssClass = function() {
-  'use strict';
   return goog.ui.CustomButtonRenderer.CSS_CLASS;
 };
 
@@ -255,7 +249,6 @@ goog.ui.CustomButtonRenderer.prototype.getCssClass = function() {
  * @private
  */
 goog.ui.CustomButtonRenderer.trimTextNodes_ = function(element, fromStart) {
-  'use strict';
   if (element) {
     var node = fromStart ? element.firstChild : element.lastChild, next;
     // Tag soup HTML may result in a DOM where siblings have different parents.

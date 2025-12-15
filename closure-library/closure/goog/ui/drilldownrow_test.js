@@ -1,45 +1,50 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.ui.DrilldownRowTest');
-goog.setTestOnly();
+goog.provide('goog.ui.DrilldownRowTest');
+goog.setTestOnly('goog.ui.DrilldownRowTest');
 
-const DrilldownRow = goog.require('goog.ui.DrilldownRow');
-const SafeHtml = goog.require('goog.html.SafeHtml');
-const TagName = goog.require('goog.dom.TagName');
-const dom = goog.require('goog.dom');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.dom');
+goog.require('goog.dom.TagName');
+goog.require('goog.html.SafeHtml');
+goog.require('goog.testing.jsunit');
+goog.require('goog.ui.DrilldownRow');
+
+function testMakeRows() {
+  var ff = goog.dom.getElement('firstRow');
+  var d = new goog.ui.DrilldownRow({});
+  var d1 = new goog.ui.DrilldownRow({html: createHtmlForRow('Second row')});
+  var d2 = new goog.ui.DrilldownRow({html: createHtmlForRow('Third row')});
+  var d21 = new goog.ui.DrilldownRow({html: createHtmlForRow('Fourth row')});
+  var d22 = new goog.ui.DrilldownRow(goog.ui.DrilldownRow.sampleProperties);
+  d.decorate(ff);
+  d.addChild(d1, true);
+  d.addChild(d2, true);
+  d2.addChild(d21, true);
+  d2.addChild(d22, true);
+
+  assertThrows(function() { d.findIndex(); });
+
+  assertEquals(0, d1.findIndex());
+  assertEquals(1, d2.findIndex());
+}
 
 function createHtmlForRow(rowText) {
+  var SafeHtml = goog.html.SafeHtml;
   return SafeHtml.create(
-      TagName.TR, {},
+      goog.dom.TagName.TR, {},
       SafeHtml.concat(
-          SafeHtml.create(TagName.TD, {}, rowText),
-          SafeHtml.create(TagName.TD, {}, 'Second column')));
+          goog.html.SafeHtml.create(goog.dom.TagName.TD, {}, rowText),
+          goog.html.SafeHtml.create(goog.dom.TagName.TD, {}, 'Second column')));
 }
-testSuite({
-  testMakeRows() {
-    const ff = dom.getElement('firstRow');
-    const d = new DrilldownRow({});
-    const d1 = new DrilldownRow({html: createHtmlForRow('Second row')});
-    const d2 = new DrilldownRow({html: createHtmlForRow('Third row')});
-    const d21 = new DrilldownRow({html: createHtmlForRow('Fourth row')});
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const d22 = new DrilldownRow(DrilldownRow.sampleProperties);
-    d.decorate(ff);
-    d.addChild(d1, true);
-    d.addChild(d2, true);
-    d2.addChild(d21, true);
-    d2.addChild(d22, true);
-
-    assertThrows(() => {
-      d.findIndex();
-    });
-
-    assertEquals(0, d1.findIndex());
-    assertEquals(1, d2.findIndex());
-  },
-});

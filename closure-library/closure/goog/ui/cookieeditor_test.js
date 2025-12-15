@@ -1,89 +1,107 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2010 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-goog.module('goog.ui.CookieEditorTest');
-goog.setTestOnly();
+goog.provide('goog.ui.CookieEditorTest');
+goog.setTestOnly('goog.ui.CookieEditorTest');
 
-const CookieEditor = goog.require('goog.ui.CookieEditor');
-const Cookies = goog.require('goog.net.Cookies');
-const EventType = goog.require('goog.events.EventType');
-const GoogEvent = goog.require('goog.events.Event');
-const dom = goog.require('goog.dom');
-const events = goog.require('goog.testing.events');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.dom');
+goog.require('goog.events.Event');
+goog.require('goog.events.EventType');
+goog.require('goog.net.cookies');
+goog.require('goog.testing.events');
+goog.require('goog.testing.jsunit');
+goog.require('goog.ui.CookieEditor');
 
-const COOKIE_KEY = 'my_fabulous_cookie';
-const cookies = Cookies.getInstance();
+var COOKIE_KEY = 'my_fabulous_cookie';
+var COOKIE_VALUES;
 
-/** @suppress {visibility} suppression added to enable type checking */
-function newCookieEditor(cookieValue = undefined) {
+goog.net.cookies.get = function(key) {
+  return COOKIE_VALUES[key];
+};
+
+goog.net.cookies.set = function(key, value) {
+  return COOKIE_VALUES[key] = value;
+};
+
+goog.net.cookies.remove = function(key, value) {
+  delete COOKIE_VALUES[key];
+};
+
+function setUp() {
+  goog.dom.removeChildren(goog.dom.getElement('test_container'));
+  COOKIE_VALUES = {};
+}
+
+function newCookieEditor(opt_cookieValue) {
   // Set cookie.
-  if (cookieValue) {
-    cookies.set(COOKIE_KEY, cookieValue);
+  if (opt_cookieValue) {
+    goog.net.cookies.set(COOKIE_KEY, opt_cookieValue);
   }
 
   // Render editor.
-  const editor = new CookieEditor();
+  var editor = new goog.ui.CookieEditor();
   editor.selectCookie(COOKIE_KEY);
-  editor.render(dom.getElement('test_container'));
+  editor.render(goog.dom.getElement('test_container'));
   assertEquals(
-      'wrong text area value', cookieValue || '',
+      'wrong text area value', opt_cookieValue || '',
       editor.textAreaElem_.value || '');
 
   return editor;
 }
 
-testSuite({
-  setUp() {
-    dom.removeChildren(dom.getElement('test_container'));
-    cookies.remove(COOKIE_KEY);
-  },
+function testRender() {
+  // Render editor.
+  var editor = newCookieEditor();
 
-  testRender() {
-    // Render editor.
-    const editor = newCookieEditor();
+  // All expected elements created?
+  var elem = editor.getElement();
+  assertNotNullNorUndefined('missing element', elem);
+  assertNotNullNorUndefined('missing clear button', editor.clearButtonElem_);
+  assertNotNullNorUndefined('missing update button', editor.updateButtonElem_);
+  assertNotNullNorUndefined('missing text area', editor.textAreaElem_);
+}
 
-    // All expected elements created?
-    const elem = editor.getElement();
-    assertNotNullNorUndefined('missing element', elem);
-    assertNotNullNorUndefined('missing clear button', editor.clearButtonElem_);
-    assertNotNullNorUndefined(
-        'missing update button', editor.updateButtonElem_);
-    assertNotNullNorUndefined('missing text area', editor.textAreaElem_);
-  },
+function testEditCookie() {
+  // Render editor.
+  var editor = newCookieEditor();
 
-  /** @suppress {checkTypes} suppression added to enable type checking */
-  testEditCookie() {
-    // Render editor.
-    const editor = newCookieEditor();
+  // Invalid value.
+  var newValue = 'my bad value;';
+  editor.textAreaElem_.value = newValue;
+  goog.testing.events.fireBrowserEvent(
+      new goog.events.Event(
+          goog.events.EventType.CLICK, editor.updateButtonElem_));
+  assertTrue('unexpected cookie value', !goog.net.cookies.get(COOKIE_KEY));
 
-    // Invalid value.
-    let newValue = 'my bad value;';
-    editor.textAreaElem_.value = newValue;
-    events.fireBrowserEvent(
-        new GoogEvent(EventType.CLICK, editor.updateButtonElem_));
-    assertTrue('unexpected cookie value', !cookies.get(COOKIE_KEY));
+  // Valid value.
+  newValue = 'my fabulous value';
+  editor.textAreaElem_.value = newValue;
+  goog.testing.events.fireBrowserEvent(
+      new goog.events.Event(
+          goog.events.EventType.CLICK, editor.updateButtonElem_));
+  assertEquals(
+      'wrong cookie value', newValue, goog.net.cookies.get(COOKIE_KEY));
+}
 
-    // Valid value.
-    newValue = 'my fabulous value';
-    editor.textAreaElem_.value = newValue;
-    events.fireBrowserEvent(
-        new GoogEvent(EventType.CLICK, editor.updateButtonElem_));
-    assertEquals('wrong cookie value', newValue, cookies.get(COOKIE_KEY));
-  },
+function testClearCookie() {
+  // Render editor.
+  var value = 'I will be cleared';
+  var editor = newCookieEditor(value);
 
-  /** @suppress {checkTypes} suppression added to enable type checking */
-  testClearCookie() {
-    // Render editor.
-    const value = 'I will be cleared';
-    const editor = newCookieEditor(value);
-
-    // Clear value.
-    events.fireBrowserEvent(
-        new GoogEvent(EventType.CLICK, editor.clearButtonElem_));
-    assertTrue('unexpected cookie value', !cookies.get(COOKIE_KEY));
-  },
-});
+  // Clear value.
+  goog.testing.events.fireBrowserEvent(
+      new goog.events.Event(
+          goog.events.EventType.CLICK, editor.clearButtonElem_));
+  assertTrue('unexpected cookie value', !goog.net.cookies.get(COOKIE_KEY));
+}

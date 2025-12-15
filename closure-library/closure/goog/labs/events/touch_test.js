@@ -1,88 +1,92 @@
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 /**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
+ * @fileoverview Unit tests for goog.labs.events.touch.
  */
 
-/** @fileoverview Unit tests for touch. */
 
-goog.module('goog.labs.events.touchTest');
-goog.setTestOnly();
+goog.provide('goog.labs.events.touchTest');
 
-const testSuite = goog.require('goog.testing.testSuite');
-const touch = goog.require('goog.labs.events.touch');
+goog.require('goog.labs.events.touch');
+goog.require('goog.testing.jsunit');
 
-testSuite({
-  testMouseEvent() {
-    const fakeTarget = {};
+goog.setTestOnly('goog.labs.events.touchTest');
 
-    const fakeMouseMove = {
-      'clientX': 1,
-      'clientY': 2,
-      'screenX': 3,
-      'screenY': 4,
-      'target': fakeTarget,
-      'type': 'mousemove',
-    };
+function testMouseEvent() {
+  var fakeTarget = {};
 
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const data = touch.getTouchData(fakeMouseMove);
-    assertEquals(1, data.clientX);
-    assertEquals(2, data.clientY);
-    assertEquals(3, data.screenX);
-    assertEquals(4, data.screenY);
-    assertEquals(fakeTarget, data.target);
-  },
+  var fakeMouseMove = {
+    'clientX': 1,
+    'clientY': 2,
+    'screenX': 3,
+    'screenY': 4,
+    'target': fakeTarget,
+    'type': 'mousemove'
+  };
 
-  testTouchEvent() {
-    const fakeTarget = {};
+  var data = goog.labs.events.touch.getTouchData(fakeMouseMove);
+  assertEquals(1, data.clientX);
+  assertEquals(2, data.clientY);
+  assertEquals(3, data.screenX);
+  assertEquals(4, data.screenY);
+  assertEquals(fakeTarget, data.target);
+}
 
-    const fakeTouch = {
-      'clientX': 1,
-      'clientY': 2,
-      'screenX': 3,
-      'screenY': 4,
-      'target': fakeTarget,
-    };
+function testTouchEvent() {
+  var fakeTarget = {};
 
-    const fakeTouchStart = {
-      'targetTouches': [fakeTouch],
-      'target': fakeTarget,
-      'type': 'touchstart',
-    };
+  var fakeTouch = {
+    'clientX': 1,
+    'clientY': 2,
+    'screenX': 3,
+    'screenY': 4,
+    'target': fakeTarget
+  };
 
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const data = touch.getTouchData(fakeTouchStart);
-    assertEquals(1, data.clientX);
-    assertEquals(2, data.clientY);
-    assertEquals(3, data.screenX);
-    assertEquals(4, data.screenY);
-    assertEquals(fakeTarget, data.target);
-  },
+  var fakeTouchStart = {
+    'targetTouches': [fakeTouch],
+    'target': fakeTarget,
+    'type': 'touchstart'
+  };
 
-  testTouchChangeEvent() {
-    const fakeTarget = {};
+  var data = goog.labs.events.touch.getTouchData(fakeTouchStart);
+  assertEquals(1, data.clientX);
+  assertEquals(2, data.clientY);
+  assertEquals(3, data.screenX);
+  assertEquals(4, data.screenY);
+  assertEquals(fakeTarget, data.target);
+}
 
-    const fakeTouch = {
-      'clientX': 1,
-      'clientY': 2,
-      'screenX': 3,
-      'screenY': 4,
-      'target': fakeTarget,
-    };
+function testTouchChangeEvent() {
+  var fakeTarget = {};
 
-    const fakeTouchStart = {
-      'changedTouches': [fakeTouch],
-      'target': fakeTarget,
-      'type': 'touchend'
-    };
+  var fakeTouch = {
+    'clientX': 1,
+    'clientY': 2,
+    'screenX': 3,
+    'screenY': 4,
+    'target': fakeTarget
+  };
 
-    /** @suppress {checkTypes} suppression added to enable type checking */
-    const data = touch.getTouchData(fakeTouchStart);
-    assertEquals(1, data.clientX);
-    assertEquals(2, data.clientY);
-    assertEquals(3, data.screenX);
-    assertEquals(4, data.screenY);
-    assertEquals(fakeTarget, data.target);
-  },
-});
+  var fakeTouchStart =
+      {'changedTouches': [fakeTouch], 'target': fakeTarget, 'type': 'touchend'};
+
+  var data = goog.labs.events.touch.getTouchData(fakeTouchStart);
+  assertEquals(1, data.clientX);
+  assertEquals(2, data.clientY);
+  assertEquals(3, data.screenX);
+  assertEquals(4, data.screenY);
+  assertEquals(fakeTarget, data.target);
+}

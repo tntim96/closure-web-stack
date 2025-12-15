@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Assert functions that account for locale data changes.
@@ -35,8 +43,7 @@
 goog.provide('goog.testing.i18n.asserts');
 goog.setTestOnly('goog.testing.i18n.asserts');
 
-goog.require('goog.testing.asserts');
-goog.require('goog.testing.i18n.whitespace');
+goog.require('goog.testing.jsunit');
 
 
 /**
@@ -46,116 +53,25 @@ goog.require('goog.testing.i18n.whitespace');
  * @private
  */
 goog.testing.i18n.asserts.EXPECTED_VALUE_MAP_ = {
-    // NOTE: Add mappings for each test file using addI18nMapping.
-};
-
-/**
- * Asserts that the two values are "almost equal" from i18n perspective.
- * All horizontal white space is stripped before comparison.
- * I18n-equivalent strings are set with addI18nMapping.
- *
- * @param {string|null|undefined} a The expected value or comment.
- * @param {string|null|undefined} b The actual or expected.
- * @param {string=} opt_c Null or the actual value.
- */
-goog.testing.i18n.asserts.assertI18nEquals = function(a, b, opt_c) {
-  'use strict';
-  let expected;
-  let actual;
-  let msg;  // The comment to be added, if any
-  // If there are 3 arguments, the first is a comment.
-  if (arguments.length === 3) {
-    msg = a;
-    expected = b;
-    actual = opt_c;
-  } else {
-    expected = a;
-    actual = b;
-  }
-
-  if (typeof expected !== 'string' || typeof actual !== 'string') {
-    // If we aren't comparing string<->string, then no amount of whitespace
-    // removal will make them equal, so fall through to direct comparison.
-    assertEquals.apply(undefined, arguments);
-    return;
-  }
-
-  if (expected === actual) {
-    return;
-  }
-
-  // Compare with all horizontal white space characters removed, making
-  // this less brittle.
-  const wsFixedActual = goog.testing.i18n.whitespace.removeWhitespace(actual);
-  const wsFixedExpected =
-      goog.testing.i18n.whitespace.removeWhitespace(expected);
-
-  // Now, check if the expected string and the actual result differ only
-  // in whitespace by stripping white space characters from each.
-  if (wsFixedExpected === wsFixedActual) {
-    return;
-  }
-
-  // Also handle an alternate expected string, similarly ignoring whitespace.
-  // Note that expected can be null!
-  const alternativeExpected =
-      goog.testing.i18n.asserts.EXPECTED_VALUE_MAP_[expected] ||
-      goog.testing.i18n.asserts.EXPECTED_VALUE_MAP_[wsFixedExpected];
-  if (alternativeExpected &&
-      wsFixedActual ===
-          goog.testing.i18n.whitespace.removeWhitespace(alternativeExpected)) {
-    return;
-  }
-
-  // At this point, all comparisons have failed.
-  // Re-compare the whitespace-fixed actual and original expected as the
-  // error messages produced are clearer.
-  if (msg) {
-    assertEquals(msg, wsFixedExpected, wsFixedActual);
-  } else {
-    assertEquals(wsFixedExpected, wsFixedActual);
-  }
+    // Data to test the assert itself, old string as key, new string as value
 };
 
 
 /**
- * Asserts that needle, or a string i18n-equivalent to needle, is a substring of
- * haystack. I18n-equivalent strings are set with addI18nMapping.
- * Horizontal white space is removed before comparison.
- *
- * @param {string} needle The substring to search for.
- * @param {string} haystack The string to search within.
+ * Asserts that the two values are "almost equal" from i18n perspective
+ * (based on a manually maintained and validated whitelist).
+ * @param {string} expected The expected value.
+ * @param {string} actual The actual value.
  */
-goog.testing.i18n.asserts.assertI18nContains = function(needle, haystack) {
-  'use strict';
-  if (needle === haystack) {
+goog.testing.i18n.asserts.assertI18nEquals = function(expected, actual) {
+  if (expected == actual) {
     return;
   }
 
-  const newNeedle = goog.testing.i18n.asserts.EXPECTED_VALUE_MAP_[needle];
-  if (haystack.indexOf(newNeedle) !== -1) {
+  var newExpected = goog.testing.i18n.asserts.EXPECTED_VALUE_MAP_[expected];
+  if (newExpected == actual) {
     return;
   }
 
-  const wsFixedNeedle = goog.testing.i18n.whitespace.removeWhitespace(needle);
-  const wsFixedHaystack =
-      goog.testing.i18n.whitespace.removeWhitespace(haystack);
-
-  assertContains(wsFixedNeedle, wsFixedHaystack);
-};
-
-
-/**
- * Adds two strings as being i18n-equivalent. Call this
- * method in your unit test file to add mappings scoped to the file.
- *
- * @param {string} expected The expected string in assertI18nEquals.
- * @param {string} equivalent A string which is i18n-equal.
- */
-goog.testing.i18n.asserts.addI18nMapping = function(expected, equivalent) {
-  'use strict';
-  if (goog.testing.i18n.asserts.EXPECTED_VALUE_MAP_.hasOwnProperty(expected)) {
-    throw new RangeError('Mapping for string already exists');
-  }
-  goog.testing.i18n.asserts.EXPECTED_VALUE_MAP_[expected] = equivalent;
+  assertEquals(expected, actual);
 };

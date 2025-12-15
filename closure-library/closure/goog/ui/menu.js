@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview A base menu class that supports key and mouse events. The menu
@@ -48,8 +56,6 @@ goog.require('goog.ui.MenuHeader');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.MenuRenderer');
 goog.require('goog.ui.MenuSeparator');
-goog.requireType('goog.dom.DomHelper');
-goog.requireType('goog.events.Event');
 
 // The dependencies MenuHeader, MenuItem, and MenuSeparator are implicit.
 // There are no references in the code, but we need to load these
@@ -67,17 +73,17 @@ goog.requireType('goog.events.Event');
  * @extends {goog.ui.Container}
  */
 goog.ui.Menu = function(opt_domHelper, opt_renderer) {
-  'use strict';
   goog.ui.Container.call(
       this, goog.ui.Container.Orientation.VERTICAL,
       opt_renderer || goog.ui.MenuRenderer.getInstance(), opt_domHelper);
 
   // Unlike Containers, Menus aren't keyboard-accessible by default.  This line
   // preserves backwards compatibility with code that depends on menus not
-  // receiving focus - e.g. `goog.ui.MenuButton`.
+  // receiving focus - e.g. {@code goog.ui.MenuButton}.
   this.setFocusable(false);
 };
 goog.inherits(goog.ui.Menu, goog.ui.Container);
+goog.tagUnsealableClass(goog.ui.Menu);
 
 
 // TODO(robbyw): Remove this and all references to it.
@@ -148,7 +154,6 @@ goog.ui.Menu.prototype.allowHighlightDisabled_ = false;
  * @deprecated Use getRenderer().getCssClass().
  */
 goog.ui.Menu.prototype.getCssClass = function() {
-  'use strict';
   return this.getRenderer().getCssClass();
 };
 
@@ -160,10 +165,8 @@ goog.ui.Menu.prototype.getCssClass = function() {
  * @param {Element} element The element to test for.
  * @return {boolean} Whether the provided element is to be considered inside
  *     the menu.
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.ui.Menu.prototype.containsElement = function(element) {
-  'use strict';
   if (this.getRenderer().containsElement(this, element)) {
     return true;
   }
@@ -187,7 +190,6 @@ goog.ui.Menu.prototype.containsElement = function(element) {
  * @deprecated Use {@link #addChild} instead, with true for the second argument.
  */
 goog.ui.Menu.prototype.addItem = function(item) {
-  'use strict';
   this.addChild(item, true);
 };
 
@@ -201,7 +203,6 @@ goog.ui.Menu.prototype.addItem = function(item) {
  *     argument.
  */
 goog.ui.Menu.prototype.addItemAt = function(item, n) {
-  'use strict';
   this.addChildAt(item, n, true);
 };
 
@@ -213,7 +214,6 @@ goog.ui.Menu.prototype.addItemAt = function(item, n) {
  * @deprecated Use {@link #removeChild} instead.
  */
 goog.ui.Menu.prototype.removeItem = function(item) {
-  'use strict';
   var removedChild = this.removeChild(item, true);
   if (removedChild) {
     removedChild.dispose();
@@ -227,7 +227,6 @@ goog.ui.Menu.prototype.removeItem = function(item) {
  * @deprecated Use {@link #removeChildAt} instead.
  */
 goog.ui.Menu.prototype.removeItemAt = function(n) {
-  'use strict';
   var removedChild = this.removeChildAt(n, true);
   if (removedChild) {
     removedChild.dispose();
@@ -243,7 +242,6 @@ goog.ui.Menu.prototype.removeItemAt = function(n) {
  * @deprecated Use {@link #getChildAt} instead.
  */
 goog.ui.Menu.prototype.getItemAt = function(n) {
-  'use strict';
   return /** @type {goog.ui.MenuItem?} */ (this.getChildAt(n));
 };
 
@@ -254,7 +252,6 @@ goog.ui.Menu.prototype.getItemAt = function(n) {
  * @deprecated Use {@link #getChildCount} instead.
  */
 goog.ui.Menu.prototype.getItemCount = function() {
-  'use strict';
   return this.getChildCount();
 };
 
@@ -265,14 +262,10 @@ goog.ui.Menu.prototype.getItemCount = function() {
  * @deprecated Use getChildAt, forEachChild, and getChildCount.
  */
 goog.ui.Menu.prototype.getItems = function() {
-  'use strict';
   // TODO(user): Remove reference to getItems and instead use getChildAt,
   // forEachChild, and getChildCount
   var children = [];
-  this.forEachChild(function(child) {
-    'use strict';
-    children.push(child);
-  });
+  this.forEachChild(function(child) { children.push(child); });
   return children;
 };
 
@@ -283,7 +276,6 @@ goog.ui.Menu.prototype.getItems = function() {
  * @param {number=} opt_y Top position.
  */
 goog.ui.Menu.prototype.setPosition = function(x, opt_y) {
-  'use strict';
   // NOTE(user): It is necessary to temporarily set the display from none, so
   // that the position gets set correctly.
   var visible = this.isVisible();
@@ -303,7 +295,6 @@ goog.ui.Menu.prototype.setPosition = function(x, opt_y) {
  *     menu or null if the menu is not visible.
  */
 goog.ui.Menu.prototype.getPosition = function() {
-  'use strict';
   return this.isVisible() ? goog.style.getPageOffset(this.getElement()) : null;
 };
 
@@ -315,7 +306,6 @@ goog.ui.Menu.prototype.getPosition = function() {
  *     key event target when it is set to visible.
  */
 goog.ui.Menu.prototype.setAllowAutoFocus = function(allow) {
-  'use strict';
   this.allowAutoFocus_ = allow;
   if (allow) {
     this.setFocusable(true);
@@ -328,7 +318,6 @@ goog.ui.Menu.prototype.setAllowAutoFocus = function(allow) {
  *     event target when it is set to visible.
  */
 goog.ui.Menu.prototype.getAllowAutoFocus = function() {
-  'use strict';
   return this.allowAutoFocus_;
 };
 
@@ -340,7 +329,6 @@ goog.ui.Menu.prototype.getAllowAutoFocus = function() {
  *     skip to the next active item.
  */
 goog.ui.Menu.prototype.setAllowHighlightDisabled = function(allow) {
-  'use strict';
   this.allowHighlightDisabled_ = allow;
 };
 
@@ -350,7 +338,6 @@ goog.ui.Menu.prototype.setAllowHighlightDisabled = function(allow) {
  *     to the next active item.
  */
 goog.ui.Menu.prototype.getAllowHighlightDisabled = function() {
-  'use strict';
   return this.allowHighlightDisabled_;
 };
 
@@ -364,15 +351,13 @@ goog.ui.Menu.prototype.getAllowHighlightDisabled = function() {
  *     be made visible (ignored if show is false).
  */
 goog.ui.Menu.prototype.setVisible = function(show, opt_force, opt_e) {
-  'use strict';
   var visibilityChanged =
       goog.ui.Menu.superClass_.setVisible.call(this, show, opt_force);
   if (visibilityChanged && show && this.isInDocument() &&
       this.allowAutoFocus_) {
     this.getKeyEventTarget().focus();
   }
-  if (show && opt_e && typeof opt_e.clientX === 'number') {
-    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
+  if (show && opt_e && goog.isNumber(opt_e.clientX)) {
     this.openingCoords = new goog.math.Coordinate(opt_e.clientX, opt_e.clientY);
   } else {
     this.openingCoords = null;
@@ -383,7 +368,6 @@ goog.ui.Menu.prototype.setVisible = function(show, opt_force, opt_e) {
 
 /** @override */
 goog.ui.Menu.prototype.handleEnterItem = function(e) {
-  'use strict';
   if (this.allowAutoFocus_) {
     this.getKeyEventTarget().focus();
   }
@@ -399,10 +383,8 @@ goog.ui.Menu.prototype.handleEnterItem = function(e) {
  * @return {boolean} Whether a matching prefix was found.
  */
 goog.ui.Menu.prototype.highlightNextPrefix = function(charStr) {
-  'use strict';
   var re = new RegExp('^' + goog.string.regExpEscape(charStr), 'i');
   return this.highlightHelper(function(index, max) {
-    'use strict';
     // Index is >= -1 because it is set to -1 when nothing is selected.
     var start = index < 0 ? 0 : index;
     var wrapped = false;
@@ -430,7 +412,6 @@ goog.ui.Menu.prototype.highlightNextPrefix = function(charStr) {
 
 /** @override */
 goog.ui.Menu.prototype.canHighlightItem = function(item) {
-  'use strict';
   return (this.allowHighlightDisabled_ || item.isEnabled()) &&
       item.isVisible() && item.isSupportedState(goog.ui.Component.State.HOVER);
 };
@@ -438,7 +419,6 @@ goog.ui.Menu.prototype.canHighlightItem = function(item) {
 
 /** @override */
 goog.ui.Menu.prototype.decorateInternal = function(element) {
-  'use strict';
   this.decorateContent(element);
   goog.ui.Menu.superClass_.decorateInternal.call(this, element);
 };
@@ -446,13 +426,11 @@ goog.ui.Menu.prototype.decorateInternal = function(element) {
 
 /** @override */
 goog.ui.Menu.prototype.handleKeyEventInternal = function(e) {
-  'use strict';
   var handled = goog.ui.Menu.base(this, 'handleKeyEventInternal', e);
   if (!handled) {
     // Loop through all child components, and for each menu item call its
     // key event handler so that keyboard mnemonics can be handled.
     this.forEachChild(function(menuItem) {
-      'use strict';
       if (!handled && menuItem.getMnemonic &&
           menuItem.getMnemonic() == e.keyCode) {
         if (this.isEnabled()) {
@@ -470,7 +448,6 @@ goog.ui.Menu.prototype.handleKeyEventInternal = function(e) {
 
 /** @override */
 goog.ui.Menu.prototype.setHighlightedIndex = function(index) {
-  'use strict';
   goog.ui.Menu.base(this, 'setHighlightedIndex', index);
 
   // Bring the highlighted item into view. This has no effect if the menu is not
@@ -483,13 +460,12 @@ goog.ui.Menu.prototype.setHighlightedIndex = function(index) {
 
 
 /**
- * Decorate menu items located in any descendant node which as been explicitly
+ * Decorate menu items located in any descendent node which as been explicitly
  * marked as a 'content' node.
  * @param {Element} element Element to decorate.
  * @protected
  */
 goog.ui.Menu.prototype.decorateContent = function(element) {
-  'use strict';
   var renderer = this.getRenderer();
   var contentElements = this.getDomHelper().getElementsByTagNameAndClass(
       goog.dom.TagName.DIV, goog.getCssName(renderer.getCssClass(), 'content'),

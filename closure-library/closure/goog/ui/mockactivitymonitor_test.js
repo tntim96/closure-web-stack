@@ -1,72 +1,87 @@
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
 /**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
+ * @fileoverview Tests for goog.ui.MockActivityMonitorTest.
+ * @author nnaze@google.com (Nathan Naze)
  */
 
-goog.module('goog.ui.MockActivityMonitorTest');
-goog.setTestOnly();
+/** @suppress {extraProvide} */
+goog.provide('goog.ui.MockActivityMonitorTest');
 
-const ActivityMonitor = goog.require('goog.ui.ActivityMonitor');
-const MockActivityMonitor = goog.require('goog.ui.MockActivityMonitor');
-const dispose = goog.require('goog.dispose');
-const events = goog.require('goog.events');
-const functions = goog.require('goog.functions');
-const recordFunction = goog.require('goog.testing.recordFunction');
-const testSuite = goog.require('goog.testing.testSuite');
+goog.require('goog.events');
+goog.require('goog.functions');
+goog.require('goog.testing.jsunit');
+goog.require('goog.testing.recordFunction');
+goog.require('goog.ui.ActivityMonitor');
+goog.require('goog.ui.MockActivityMonitor');
 
-const googNow = Date.now;
-let monitor;
-let recordedFunction;
-let replacer;
+goog.setTestOnly('goog.ui.MockActivityMonitorTest');
 
-testSuite({
-  setUp() {
-    monitor = new MockActivityMonitor();
-    recordedFunction = recordFunction();
+var googNow = goog.now;
+var monitor;
+var recordedFunction;
+var replacer;
 
-    events.listen(monitor, ActivityMonitor.Event.ACTIVITY, recordedFunction);
-  },
+function setUp() {
+  monitor = new goog.ui.MockActivityMonitor();
+  recordedFunction = goog.testing.recordFunction();
 
-  tearDown() {
-    dispose(monitor);
-    Date.now = googNow;
-  },
+  goog.events.listen(
+      monitor, goog.ui.ActivityMonitor.Event.ACTIVITY, recordedFunction);
+}
 
-  testEventFireSameTime() {
-    Date.now = functions.constant(1000);
+function tearDown() {
+  goog.dispose(monitor);
+  goog.now = googNow;
+}
 
-    monitor.simulateEvent();
-    assertEquals(1, recordedFunction.getCallCount());
+function testEventFireSameTime() {
+  goog.now = goog.functions.constant(1000);
 
-    monitor.simulateEvent();
-    assertEquals(2, recordedFunction.getCallCount());
-  },
+  monitor.simulateEvent();
+  assertEquals(1, recordedFunction.getCallCount());
 
-  testEventFireDifferingTime() {
-    Date.now = functions.constant(1000);
-    monitor.simulateEvent();
-    assertEquals(1, recordedFunction.getCallCount());
+  monitor.simulateEvent();
+  assertEquals(2, recordedFunction.getCallCount());
+}
 
-    Date.now = functions.constant(1001);
-    monitor.simulateEvent();
-    assertEquals(2, recordedFunction.getCallCount());
-  },
+function testEventFireDifferingTime() {
+  goog.now = goog.functions.constant(1000);
+  monitor.simulateEvent();
+  assertEquals(1, recordedFunction.getCallCount());
 
-  testDispatchEventReturnValue() {
-    assertTrue(monitor.dispatchEvent(ActivityMonitor.Event.ACTIVITY));
-    assertEquals(1, recordedFunction.getCallCount());
-  },
+  goog.now = goog.functions.constant(1001);
+  monitor.simulateEvent();
+  assertEquals(2, recordedFunction.getCallCount());
+}
 
-  testDispatchEventPreventDefault() {
-    // Undo the listen call in setUp.
-    events.unlisten(monitor, ActivityMonitor.Event.ACTIVITY, recordedFunction);
+function testDispatchEventReturnValue() {
+  assertTrue(monitor.dispatchEvent(goog.ui.ActivityMonitor.Event.ACTIVITY));
+  assertEquals(1, recordedFunction.getCallCount());
+}
 
-    // Listen with a function that cancels the event.
-    events.listen(monitor, ActivityMonitor.Event.ACTIVITY, (e) => {
-      e.preventDefault();
-    });
+function testDispatchEventPreventDefault() {
+  // Undo the listen call in setUp.
+  goog.events.unlisten(
+      monitor, goog.ui.ActivityMonitor.Event.ACTIVITY, recordedFunction);
 
-    assertFalse(monitor.dispatchEvent(ActivityMonitor.Event.ACTIVITY));
-  },
-});
+  // Listen with a function that cancels the event.
+  goog.events.listen(
+      monitor, goog.ui.ActivityMonitor.Event.ACTIVITY,
+      function(e) { e.preventDefault(); });
+
+  assertFalse(monitor.dispatchEvent(goog.ui.ActivityMonitor.Event.ACTIVITY));
+}

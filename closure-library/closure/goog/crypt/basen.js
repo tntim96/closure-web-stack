@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Numeric base conversion library.  Works for arbitrary bases and
@@ -13,6 +21,7 @@
  * mostly for demonstration purpose.
  *
  * TODO: Make base64 and baseN classes that have common interface.  (Perhaps...)
+ *
  */
 
 goog.provide('goog.crypt.baseN');
@@ -93,15 +102,13 @@ goog.crypt.baseN.BASE_64_URL_SAFE =
  * @return {string} The converted number.
  */
 goog.crypt.baseN.recodeString = function(number, inputBase, outputBase) {
-  'use strict';
   if (outputBase == '') {
     throw new Error('Empty output base');
   }
 
   // Check if number is 0 (special case when we don't want to return '').
-  let isZero = true;
-  let n = number.length;
-  for (let i = 0; i < n; i++) {
+  var isZero = true;
+  for (var i = 0, n = number.length; i < n; i++) {
     if (number.charAt(i) != inputBase.charAt(0)) {
       isZero = false;
       break;
@@ -111,25 +118,24 @@ goog.crypt.baseN.recodeString = function(number, inputBase, outputBase) {
     return outputBase.charAt(0);
   }
 
-  const numberDigits = goog.crypt.baseN.stringToArray_(number, inputBase);
+  var numberDigits = goog.crypt.baseN.stringToArray_(number, inputBase);
 
-  const inputBaseSize = inputBase.length;
-  const outputBaseSize = outputBase.length;
+  var inputBaseSize = inputBase.length;
+  var outputBaseSize = outputBase.length;
 
   // result = 0.
-  const result = [];
+  var result = [];
 
   // For all digits of number, starting with the most significant ...
-  for (let i = numberDigits.length - 1; i >= 0; i--) {
+  for (var i = numberDigits.length - 1; i >= 0; i--) {
     // result *= number.base.
-    let carry = 0;
-    const n = result.length;
-    for (let j = 0; j < n; j++) {
-      let digit = result[j];
+    var carry = 0;
+    for (var j = 0, n = result.length; j < n; j++) {
+      var digit = result[j];
       // This may overflow for huge bases.  See function comment.
       digit = digit * inputBaseSize + carry;
       if (digit >= outputBaseSize) {
-        const remainder = digit % outputBaseSize;
+        var remainder = digit % outputBaseSize;
         carry = (digit - remainder) / outputBaseSize;
         digit = remainder;
       } else {
@@ -138,23 +144,23 @@ goog.crypt.baseN.recodeString = function(number, inputBase, outputBase) {
       result[j] = digit;
     }
     while (carry) {
-      const remainder = carry % outputBaseSize;
+      var remainder = carry % outputBaseSize;
       result.push(remainder);
       carry = (carry - remainder) / outputBaseSize;
     }
 
     // result += number[i].
     carry = numberDigits[i];
-    let j = 0;
+    var j = 0;
     while (carry) {
       if (j >= result.length) {
         // Extend result with a leading zero which will be overwritten below.
         result.push(0);
       }
-      let digit = result[j];
+      var digit = result[j];
       digit += carry;
       if (digit >= outputBaseSize) {
-        const remainder = digit % outputBaseSize;
+        var remainder = digit % outputBaseSize;
         carry = (digit - remainder) / outputBaseSize;
         digit = remainder;
       } else {
@@ -185,16 +191,14 @@ goog.crypt.baseN.recodeString = function(number, inputBase, outputBase) {
  * @private
  */
 goog.crypt.baseN.stringToArray_ = function(number, base) {
-  'use strict';
-  const index = {};
-  const n = base.length;
-  for (let i = 0; i < n; i++) {
+  var index = {};
+  for (var i = 0, n = base.length; i < n; i++) {
     index[base.charAt(i)] = i;
   }
-  const result = [];
-  for (let i = number.length - 1; i >= 0; i--) {
-    const character = number.charAt(i);
-    const digit = index[character];
+  var result = [];
+  for (var i = number.length - 1; i >= 0; i--) {
+    var character = number.charAt(i);
+    var digit = index[character];
     if (typeof digit == 'undefined') {
       throw new Error(
           'Number ' + number + ' contains a character not found in base ' +
@@ -223,12 +227,11 @@ goog.crypt.baseN.stringToArray_ = function(number, base) {
  * @private
  */
 goog.crypt.baseN.arrayToString_ = function(number, base) {
-  'use strict';
-  const n = number.length;
-  const chars = [];
-  const baseSize = base.length;
-  for (let i = n - 1; i >= 0; i--) {
-    const digit = number[i];
+  var n = number.length;
+  var chars = [];
+  var baseSize = base.length;
+  for (var i = n - 1; i >= 0; i--) {
+    var digit = number[i];
     if (digit >= baseSize || digit < 0) {
       throw new Error(
           'Number ' + number + ' contains an invalid digit: ' + digit);

@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * @fileoverview Class to encapsulate an editable field that blends in with
@@ -11,6 +19,7 @@
  * This is a goog.editor.Field, but with blending and sizing capabilities,
  * and avoids using an iframe whenever possible.
  *
+ * @author nicksantos@google.com (Nick Santos)
  * @see ../demos/editor/seamlessfield.html
  */
 
@@ -49,7 +58,6 @@ goog.require('goog.style');
  * @extends {goog.editor.Field}
  */
 goog.editor.SeamlessField = function(id, opt_doc) {
-  'use strict';
   goog.editor.Field.call(this, id, opt_doc);
 };
 goog.inherits(goog.editor.SeamlessField, goog.editor.Field);
@@ -86,15 +94,12 @@ goog.editor.SeamlessField.prototype.listenForIframeLoadEventKey_;
  * update the field if necessary based on the new min height.
  * @param {number} height The min height specified as a number of pixels,
  *    e.g., 75.
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.SeamlessField.prototype.setMinHeight = function(height) {
-  'use strict';
   if (height == this.minHeight_) {
     // Do nothing if the min height isn't changing.
     return;
   }
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   this.minHeight_ = height;
   if (this.usesIframe()) {
     this.doFieldSizingGecko();
@@ -125,7 +130,6 @@ goog.editor.SeamlessField.prototype.isFixedHeightOverridden_ = false;
  * @override
  */
 goog.editor.SeamlessField.prototype.isFixedHeight = function() {
-  'use strict';
   return this.isFixedHeight_;
 };
 
@@ -135,7 +139,6 @@ goog.editor.SeamlessField.prototype.isFixedHeight = function() {
  *    of a fixed-height. This overrides auto-detection.
  */
 goog.editor.SeamlessField.prototype.overrideFixedHeight = function(newVal) {
-  'use strict';
   this.isFixedHeight_ = newVal;
   this.isFixedHeightOverridden_ = true;
 };
@@ -146,7 +149,6 @@ goog.editor.SeamlessField.prototype.overrideFixedHeight = function(newVal) {
  * @private
  */
 goog.editor.SeamlessField.prototype.autoDetectFixedHeight_ = function() {
-  'use strict';
   if (!this.isFixedHeightOverridden_) {
     var originalElement = this.getOriginalElement();
     if (originalElement) {
@@ -162,7 +164,6 @@ goog.editor.SeamlessField.prototype.autoDetectFixedHeight_ = function() {
  * @private
  */
 goog.editor.SeamlessField.prototype.handleOuterDocChange_ = function() {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.CHANGE)) {
     return;
   }
@@ -173,10 +174,8 @@ goog.editor.SeamlessField.prototype.handleOuterDocChange_ = function() {
 /**
  * Sizes the iframe to its body's height.
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.SeamlessField.prototype.sizeIframeToBodyHeightGecko_ = function() {
-  'use strict';
   if (this.acquireSizeIframeLockGecko_()) {
     var resized = false;
     var ifr = this.getEditableIframe();
@@ -204,7 +203,6 @@ goog.editor.SeamlessField.prototype.sizeIframeToBodyHeightGecko_ = function() {
  * @private
  */
 goog.editor.SeamlessField.prototype.getIframeBodyHeightGecko_ = function() {
-  'use strict';
   var ifr = this.getEditableIframe();
   var body = ifr.contentDocument.body;
   var htmlElement = /** @type {!HTMLElement} */ (body.parentNode);
@@ -253,7 +251,6 @@ goog.editor.SeamlessField.prototype.getIframeBodyHeightGecko_ = function() {
  * @private
  */
 goog.editor.SeamlessField.getScrollbarWidth_ = function() {
-  'use strict';
   return goog.editor.SeamlessField.scrollbarWidth_ ||
       (goog.editor.SeamlessField.scrollbarWidth_ =
            goog.style.getScrollbarWidth());
@@ -267,7 +264,6 @@ goog.editor.SeamlessField.getScrollbarWidth_ = function() {
  * @private
  */
 goog.editor.SeamlessField.prototype.sizeIframeToWrapperGecko_ = function() {
-  'use strict';
   if (this.acquireSizeIframeLockGecko_()) {
     var ifr = this.getEditableIframe();
     var field = this.getElement();
@@ -309,7 +305,6 @@ goog.editor.SeamlessField.prototype.sizeIframeToWrapperGecko_ = function() {
  * Perform all the sizing immediately.
  */
 goog.editor.SeamlessField.prototype.doFieldSizingGecko = function() {
-  'use strict';
   // Because doFieldSizingGecko can be called after a setTimeout
   // it is possible that the field has been destroyed before this call
   // to do the sizing is executed. Check for field existence and do nothing
@@ -333,10 +328,8 @@ goog.editor.SeamlessField.prototype.doFieldSizingGecko = function() {
  * infinite loops.
  * @return {boolean} False if the lock is already acquired.
  * @private
- * @suppress {strictMissingProperties} Added to tighten compiler checks
  */
 goog.editor.SeamlessField.prototype.acquireSizeIframeLockGecko_ = function() {
-  'use strict';
   if (this.sizeIframeLock_) {
     return false;
   }
@@ -351,8 +344,6 @@ goog.editor.SeamlessField.prototype.acquireSizeIframeLockGecko_ = function() {
  * @private
  */
 goog.editor.SeamlessField.prototype.releaseSizeIframeLockGecko_ = function() {
-  'use strict';
-  /** @suppress {strictMissingProperties} Added to tighten compiler checks */
   this.sizeIframeLock_ = false;
 };
 
@@ -379,7 +370,6 @@ goog.editor.SeamlessField.prototype.iframeableCss_ = '';
  */
 goog.editor.SeamlessField.prototype.getIframeableCss = function(
     opt_forceRegeneration) {
-  'use strict';
   if (!this.iframeableCss_ || opt_forceRegeneration) {
     var originalElement = this.getOriginalElement();
     if (originalElement) {
@@ -400,7 +390,6 @@ goog.editor.SeamlessField.prototype.getIframeableCss = function(
  * @param {string} iframeableCss String containing the css rules to use.
  */
 goog.editor.SeamlessField.prototype.setIframeableCss = function(iframeableCss) {
-  'use strict';
   this.iframeableCss_ = iframeableCss;
 };
 
@@ -423,7 +412,6 @@ goog.editor.SeamlessField.haveInstalledCss_ = false;
 
 /** @override */
 goog.editor.SeamlessField.prototype.usesIframe = function() {
-  'use strict';
   // TODO(user): Switch Firefox to using contentEditable
   // rather than designMode iframe once contentEditable support
   // is less buggy.
@@ -434,7 +422,6 @@ goog.editor.SeamlessField.prototype.usesIframe = function() {
 /** @override */
 goog.editor.SeamlessField.prototype.setupMutationEventHandlersGecko =
     function() {
-  'use strict';
   goog.editor.SeamlessField.superClass_.setupMutationEventHandlersGecko.call(
       this);
 
@@ -461,7 +448,6 @@ goog.editor.SeamlessField.prototype.setupMutationEventHandlersGecko =
 
 /** @override */
 goog.editor.SeamlessField.prototype.handleChange = function() {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.CHANGE)) {
     return;
   }
@@ -476,7 +462,6 @@ goog.editor.SeamlessField.prototype.handleChange = function() {
 
 /** @override */
 goog.editor.SeamlessField.prototype.dispatchBlur = function() {
-  'use strict';
   if (this.isEventStopped(goog.editor.Field.EventType.BLUR)) {
     return;
   }
@@ -497,13 +482,9 @@ goog.editor.SeamlessField.prototype.dispatchBlur = function() {
     var win = this.getEditableDomHelper().getWindow();
     var dragging = false;
     goog.events.unlistenByKey(this.listenForDragOverEventKey_);
-    this.listenForDragOverEventKey_ =
-        goog.events.listenOnce(win.document.body, 'dragover', function() {
-          'use strict';
-          dragging = true;
-        });
+    this.listenForDragOverEventKey_ = goog.events.listenOnce(
+        win.document.body, 'dragover', function() { dragging = true; });
     goog.global.setTimeout(goog.bind(function() {
-      'use strict';
       // Do not clear the selection if we're only dragging text.
       // This addresses a bug on FF1.5/linux where dragging fires a blur,
       // but clearing the selection confuses Firefox's drag-and-drop
@@ -537,7 +518,6 @@ goog.editor.SeamlessField.prototype.dispatchBlur = function() {
 
 /** @override */
 goog.editor.SeamlessField.prototype.turnOnDesignModeGecko = function() {
-  'use strict';
   goog.editor.SeamlessField.superClass_.turnOnDesignModeGecko.call(this);
   var doc = this.getEditableDomHelper().getDocument();
 
@@ -548,7 +528,6 @@ goog.editor.SeamlessField.prototype.turnOnDesignModeGecko = function() {
 
 /** @override */
 goog.editor.SeamlessField.prototype.installStyles = function() {
-  'use strict';
   if (!this.usesIframe()) {
     if (!goog.editor.SeamlessField.haveInstalledCss_) {
       if (this.cssStyles.getTypedStringValue()) {
@@ -566,7 +545,6 @@ goog.editor.SeamlessField.prototype.installStyles = function() {
 /** @override */
 goog.editor.SeamlessField.prototype.makeEditableInternal = function(
     opt_iframeSrc) {
-  'use strict';
   if (this.usesIframe()) {
     goog.editor.SeamlessField.superClass_.makeEditableInternal.call(
         this, opt_iframeSrc);
@@ -586,7 +564,6 @@ goog.editor.SeamlessField.prototype.makeEditableInternal = function(
 
 /** @override */
 goog.editor.SeamlessField.prototype.handleFieldLoad = function() {
-  'use strict';
   if (this.usesIframe()) {
     // If the CSS inheriting code screws up (e.g. makes fonts too large) and
     // the field is sized off in goog.editor.Field.makeIframeField, then we need
@@ -594,10 +571,7 @@ goog.editor.SeamlessField.prototype.handleFieldLoad = function() {
     // to have fully rendered it. We need to put this on a timeout to give
     // the browser time to render.
     var self = this;
-    goog.global.setTimeout(function() {
-      'use strict';
-      self.doFieldSizingGecko();
-    }, 0);
+    goog.global.setTimeout(function() { self.doFieldSizingGecko(); }, 0);
   }
   goog.editor.SeamlessField.superClass_.handleFieldLoad.call(this);
 };
@@ -605,14 +579,12 @@ goog.editor.SeamlessField.prototype.handleFieldLoad = function() {
 
 /** @override */
 goog.editor.SeamlessField.prototype.getIframeAttributes = function() {
-  'use strict';
   return {'frameBorder': 0, 'style': 'padding:0;'};
 };
 
 
 /** @override */
 goog.editor.SeamlessField.prototype.attachIframe = function(iframe) {
-  'use strict';
   this.autoDetectFixedHeight_();
   var field = this.getOriginalElement();
   var dh = goog.dom.getDomHelper(field);
@@ -660,7 +632,6 @@ goog.editor.SeamlessField.prototype.attachIframe = function(iframe) {
   // if a field when it has an iframe child, to fill up the remaining line
   // height. So make the line height = 0.
   if (goog.editor.node.isStandardsMode(field)) {
-    /** @suppress {strictMissingProperties} Added to tighten compiler checks */
     this.originalFieldLineHeight_ = field.style.lineHeight;
     goog.style.setStyle(field, 'lineHeight', '0');
   }
@@ -688,7 +659,6 @@ goog.editor.SeamlessField.prototype.attachIframe = function(iframe) {
 
 /** @override */
 goog.editor.SeamlessField.prototype.getFieldFormatInfo = function(extraStyles) {
-  'use strict';
   var originalElement = this.getOriginalElement();
   if (originalElement) {
     return new goog.editor.icontent.FieldFormatInfo(
@@ -702,7 +672,6 @@ goog.editor.SeamlessField.prototype.getFieldFormatInfo = function(extraStyles) {
 /** @override */
 goog.editor.SeamlessField.prototype.writeIframeContent = function(
     iframe, innerHtml, extraStyles) {
-  'use strict';
   // For seamless iframes, hide the iframe while we're laying it out to
   // prevent the flicker.
   goog.style.setStyle(iframe, 'visibility', 'hidden');
@@ -719,7 +688,6 @@ goog.editor.SeamlessField.prototype.writeIframeContent = function(
 
 /** @override */
 goog.editor.SeamlessField.prototype.restoreDom = function() {
-  'use strict';
   // TODO(user): Consider only removing the iframe if we are
   // restoring the original node.
   if (this.usesIframe()) {
@@ -730,7 +698,6 @@ goog.editor.SeamlessField.prototype.restoreDom = function() {
 
 /** @override */
 goog.editor.SeamlessField.prototype.clearListeners = function() {
-  'use strict';
   goog.events.unlistenByKey(this.listenForDragOverEventKey_);
   goog.events.unlistenByKey(this.listenForIframeLoadEventKey_);
 

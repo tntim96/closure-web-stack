@@ -1,30 +1,37 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2012 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 goog.module('goog.async.AnimationDelayTest');
 goog.setTestOnly('goog.async.AnimationDelayTest');
 
-const AnimationDelay = goog.require('goog.async.AnimationDelay');
-const Promise = goog.require('goog.Promise');
-const PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
-const Timer = goog.require('goog.Timer');
-const testSuite = goog.require('goog.testing.testSuite');
+var AnimationDelay = goog.require('goog.async.AnimationDelay');
+var Promise = goog.require('goog.Promise');
+var PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
+var Timer = goog.require('goog.Timer');
+var jsunit = goog.require('goog.testing.jsunit');
+var testSuite = goog.require('goog.testing.testSuite');
 
-const TEST_DELAY = 50;
-const stubs = new PropertyReplacer();
+var TEST_DELAY = 50;
+var stubs = new PropertyReplacer();
 
 testSuite({
-  tearDown: function() {
-    stubs.reset();
-  },
+  tearDown: function() { stubs.reset(); },
 
   testStart: function() {
-    let resolver = Promise.withResolver();
-    const start = Date.now();
-    const delay = new AnimationDelay(function(end) {
+    var resolver = Promise.withResolver();
+    var start = goog.now();
+    var delay = new AnimationDelay(function(end) {
       assertNotNull(resolver);  // fail if called multiple times
       resolver.resolve();
       resolver = null;
@@ -36,11 +43,9 @@ testSuite({
   },
 
   testStop: function() {
-    const resolver = Promise.withResolver();
-    const start = Date.now();
-    const delay = new AnimationDelay(function(end) {
-      resolver.reject();
-    });
+    var resolver = Promise.withResolver();
+    var start = goog.now();
+    var delay = new AnimationDelay(function(end) { resolver.reject(); });
 
     delay.start();
     delay.stop();
@@ -52,11 +57,11 @@ testSuite({
   },
 
   testAlwaysUseGoogNowForHandlerTimestamp: function() {
-    const resolver = Promise.withResolver();
-    const expectedValue = 12345.1;
-    stubs.set(Date, 'now', function() { return expectedValue; });
+    var resolver = Promise.withResolver();
+    var expectedValue = 12345.1;
+    stubs.set(goog, 'now', function() { return expectedValue; });
 
-    const delay = new AnimationDelay(function(timestamp) {
+    var delay = new AnimationDelay(function(timestamp) {
       assertEquals(expectedValue, timestamp);
       resolver.resolve();
     });
@@ -67,10 +72,10 @@ testSuite({
   },
 
   testStartIfActive: function() {
-    const delay = new AnimationDelay(() => {});
+    var delay = new AnimationDelay(goog.nullFunction);
     delay.start();
 
-    let startWasCalled = false;
+    var startWasCalled = false;
     stubs.set(AnimationDelay.prototype, 'start', function() {
       startWasCalled = true;
     });

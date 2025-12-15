@@ -1,30 +1,37 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 goog.module('goog.net.MultiIframeLoadMonitorTest');
 goog.setTestOnly('goog.net.MultiIframeLoadMonitorTest');
 
-const MultiIframeLoadMonitor = goog.require('goog.net.MultiIframeLoadMonitor');
-const Promise = goog.require('goog.Promise');
-const PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
-const TagName = goog.require('goog.dom.TagName');
-const Timer = goog.require('goog.Timer');
-const dom = goog.require('goog.dom');
-const testSuite = goog.require('goog.testing.testSuite');
+var IframeLoadMonitor = goog.require('goog.net.IframeLoadMonitor');
+var MultiIframeLoadMonitor = goog.require('goog.net.MultiIframeLoadMonitor');
+var Promise = goog.require('goog.Promise');
+var PropertyReplacer = goog.require('goog.testing.PropertyReplacer');
+var TagName = goog.require('goog.dom.TagName');
+var Timer = goog.require('goog.Timer');
+var dom = goog.require('goog.dom');
+var testSuite = goog.require('goog.testing.testSuite');
 
 
-const stubs = new PropertyReplacer();
-const TEST_FRAME_SRCS =
+var stubs = new PropertyReplacer();
+var TEST_FRAME_SRCS =
     ['iframeloadmonitor_test_frame.html', 'iframeloadmonitor_test_frame2.html'];
-let frameParent;
+var frameParent;
 
 testSuite({
-  setUpPage: function() {
-    frameParent = dom.getElement('frame_parent');
-  },
+  setUpPage: function() { frameParent = dom.getElement('frame_parent'); },
 
   tearDown: function() {
     dom.removeChildren(frameParent);
@@ -32,11 +39,10 @@ testSuite({
   },
 
   testMultiIframeLoadMonitor: function() {
-    const frames =
-        [dom.createDom(TagName.IFRAME), dom.createDom(TagName.IFRAME)];
-    let loaded = false;
+    var frames = [dom.createDom(TagName.IFRAME), dom.createDom(TagName.IFRAME)];
+    var loaded = false;
 
-    const monitorPromise = new Promise(function(resolve, reject) {
+    var monitorPromise = new Promise(function(resolve, reject) {
       new MultiIframeLoadMonitor(frames, function() {
         loaded = true;
         resolve();
@@ -51,11 +57,10 @@ testSuite({
   },
 
   testMultiIframeLoadMonitor_withContentCheck: function() {
-    const frames =
-        [dom.createDom(TagName.IFRAME), dom.createDom(TagName.IFRAME)];
-    let loaded = false;
+    var frames = [dom.createDom(TagName.IFRAME), dom.createDom(TagName.IFRAME)];
+    var loaded = false;
 
-    const monitorPromise = new Promise(function(resolve, reject) {
+    var monitorPromise = new Promise(function(resolve, reject) {
       new MultiIframeLoadMonitor(frames, function() {
         loaded = true;
         resolve();
@@ -86,28 +91,23 @@ testSuite({
   },
 
   testStopMonitoring: function() {
-    let iframeLoadMonitorsCreated = 0;
-    let disposeCalls = 0;
+    var iframeLoadMonitorsCreated = 0;
+    var disposeCalls = 0;
 
     // Replace the IframeLoadMonitor implementation with a fake.
     function FakeIframeLoadMonitor() {
       iframeLoadMonitorsCreated++;
       return {
         attachEvent: function() {},
-        dispose: function() {
-          disposeCalls++;
-        },
-        isLoaded: function() {
-          return false;
-        },
+        dispose: function() { disposeCalls++; },
+        isLoaded: function() { return false; }
       };
     }
     FakeIframeLoadMonitor.LOAD_EVENT = 'ifload';
     stubs.replace(goog.net, 'IframeLoadMonitor', FakeIframeLoadMonitor);
 
-    const frames =
-        [dom.createDom(TagName.IFRAME), dom.createDom(TagName.IFRAME)];
-    const monitor = new MultiIframeLoadMonitor(frames, function() {
+    var frames = [dom.createDom(TagName.IFRAME), dom.createDom(TagName.IFRAME)];
+    var monitor = new MultiIframeLoadMonitor(frames, function() {
       fail('should not invoke callback for unloaded frames');
     }, true);
 
@@ -116,5 +116,5 @@ testSuite({
 
     monitor.stopMonitoring();
     assertEquals(frames.length, disposeCalls);
-  },
+  }
 });

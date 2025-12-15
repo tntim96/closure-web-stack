@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 
 /**
@@ -10,6 +18,7 @@
  *
  * Implements a buffer with a maximum size. New entries override the oldest
  * entries when the maximum size has been reached.
+ *
  */
 
 
@@ -24,7 +33,6 @@ goog.provide('goog.structs.CircularBuffer');
  * @template T
  */
 goog.structs.CircularBuffer = function(opt_maxSize) {
-  'use strict';
   /**
    * Index of the next element in the circular array structure.
    * @private {number}
@@ -32,7 +40,7 @@ goog.structs.CircularBuffer = function(opt_maxSize) {
   this.nextPtr_ = 0;
 
   /**
-   * Maximum size of the circular array structure.
+   * Maximum size of the the circular array structure.
    * @private {number}
    */
   this.maxSize_ = opt_maxSize || 100;
@@ -53,8 +61,7 @@ goog.structs.CircularBuffer = function(opt_maxSize) {
  *     Return undefined, otherwise.
  */
 goog.structs.CircularBuffer.prototype.add = function(item) {
-  'use strict';
-  const previousItem = this.buff_[this.nextPtr_];
+  var previousItem = this.buff_[this.nextPtr_];
   this.buff_[this.nextPtr_] = item;
   this.nextPtr_ = (this.nextPtr_ + 1) % this.maxSize_;
   return previousItem;
@@ -64,11 +71,10 @@ goog.structs.CircularBuffer.prototype.add = function(item) {
 /**
  * Returns the item at the specified index.
  * @param {number} index The index of the item. The index of an item can change
- *     after calls to `add()` if the buffer is at maximum size.
+ *     after calls to {@code add()} if the buffer is at maximum size.
  * @return {T} The item at the specified index.
  */
 goog.structs.CircularBuffer.prototype.get = function(index) {
-  'use strict';
   index = this.normalizeIndex_(index);
   return this.buff_[index];
 };
@@ -77,11 +83,10 @@ goog.structs.CircularBuffer.prototype.get = function(index) {
 /**
  * Sets the item at the specified index.
  * @param {number} index The index of the item. The index of an item can change
- *     after calls to `add()` if the buffer is at maximum size.
+ *     after calls to {@code add()} if the buffer is at maximum size.
  * @param {T} item The item to add.
  */
 goog.structs.CircularBuffer.prototype.set = function(index, item) {
-  'use strict';
   index = this.normalizeIndex_(index);
   this.buff_[index] = item;
 };
@@ -92,7 +97,6 @@ goog.structs.CircularBuffer.prototype.set = function(index, item) {
  * @return {number} The current number of items in the buffer.
  */
 goog.structs.CircularBuffer.prototype.getCount = function() {
-  'use strict';
   return this.buff_.length;
 };
 
@@ -101,7 +105,6 @@ goog.structs.CircularBuffer.prototype.getCount = function() {
  * @return {boolean} Whether the buffer is empty.
  */
 goog.structs.CircularBuffer.prototype.isEmpty = function() {
-  'use strict';
   return this.buff_.length == 0;
 };
 
@@ -110,7 +113,6 @@ goog.structs.CircularBuffer.prototype.isEmpty = function() {
  * Empties the current buffer.
  */
 goog.structs.CircularBuffer.prototype.clear = function() {
-  'use strict';
   this.buff_.length = 0;
   this.nextPtr_ = 0;
 };
@@ -120,7 +122,6 @@ goog.structs.CircularBuffer.prototype.clear = function() {
  * @return {!Array<T>} The values in the buffer ordered from oldest to newest.
  */
 goog.structs.CircularBuffer.prototype.getValues = function() {
-  'use strict';
   // getNewestValues returns all the values if the maxCount parameter is the
   // count
   return this.getNewestValues(this.getCount());
@@ -128,18 +129,17 @@ goog.structs.CircularBuffer.prototype.getValues = function() {
 
 
 /**
- * Returns the newest values in the buffer up to `count`.
+ * Returns the newest values in the buffer up to {@code count}.
  * @param {number} maxCount The maximum number of values to get. Should be a
  *     positive number.
- * @return {!Array<T>} The newest values in the buffer up to `count`. The
+ * @return {!Array<T>} The newest values in the buffer up to {@code count}. The
  *     values are ordered from oldest to newest.
  */
 goog.structs.CircularBuffer.prototype.getNewestValues = function(maxCount) {
-  'use strict';
-  const l = this.getCount();
-  const start = this.getCount() - maxCount;
-  const rv = [];
-  for (let i = start; i < l; i++) {
+  var l = this.getCount();
+  var start = this.getCount() - maxCount;
+  var rv = [];
+  for (var i = start; i < l; i++) {
     rv.push(this.get(i));
   }
   return rv;
@@ -148,10 +148,9 @@ goog.structs.CircularBuffer.prototype.getNewestValues = function(maxCount) {
 
 /** @return {!Array<number>} The indexes in the buffer. */
 goog.structs.CircularBuffer.prototype.getKeys = function() {
-  'use strict';
-  const rv = [];
-  const l = this.getCount();
-  for (let i = 0; i < l; i++) {
+  var rv = [];
+  var l = this.getCount();
+  for (var i = 0; i < l; i++) {
     rv[i] = i;
   }
   return rv;
@@ -164,7 +163,6 @@ goog.structs.CircularBuffer.prototype.getKeys = function() {
  * @return {boolean} Whether the buffer contains the key/index.
  */
 goog.structs.CircularBuffer.prototype.containsKey = function(key) {
-  'use strict';
   return key < this.getCount();
 };
 
@@ -175,9 +173,8 @@ goog.structs.CircularBuffer.prototype.containsKey = function(key) {
  * @return {boolean} Whether the buffer contains the given value.
  */
 goog.structs.CircularBuffer.prototype.containsValue = function(value) {
-  'use strict';
-  const l = this.getCount();
-  for (let i = 0; i < l; i++) {
+  var l = this.getCount();
+  for (var i = 0; i < l; i++) {
     if (this.get(i) == value) {
       return true;
     }
@@ -192,7 +189,6 @@ goog.structs.CircularBuffer.prototype.containsValue = function(value) {
  *     or null if the buffer is empty.
  */
 goog.structs.CircularBuffer.prototype.getLast = function() {
-  'use strict';
   if (this.getCount() == 0) {
     return null;
   }
@@ -211,7 +207,6 @@ goog.structs.CircularBuffer.prototype.getLast = function() {
  * @private
  */
 goog.structs.CircularBuffer.prototype.normalizeIndex_ = function(index) {
-  'use strict';
   if (index >= this.buff_.length) {
     throw new Error('Out of bounds exception');
   }

@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 
 /**
@@ -11,6 +19,8 @@
  *
  *     This is intended as a drop-in for current users of goog.json who want
  *     to take advantage of native JSON if present.
+ *
+ * @author nnaze@google.com (Nathan Naze)
  */
 
 goog.provide('goog.json.hybrid');
@@ -21,14 +31,13 @@ goog.require('goog.json');
 
 /**
  * Attempts to serialize the JSON string natively, falling back to
- * `goog.json.serialize` if unsuccessful.
+ * {@code goog.json.serialize} if unsuccessful.
  * @param {!Object} obj JavaScript object to serialize to JSON.
  * @return {string} Resulting JSON string.
  */
-goog.json.hybrid.stringify = goog.json.USE_NATIVE_JSON ?
-    goog.global['JSON']['stringify'] :
-    function(obj) {
-      'use strict';
+goog.json.hybrid.stringify =
+    goog.json.USE_NATIVE_JSON ? goog.global['JSON']['stringify'] : function(
+                                                                       obj) {
       if (goog.global.JSON) {
         try {
           return goog.global.JSON.stringify(obj);
@@ -44,7 +53,7 @@ goog.json.hybrid.stringify = goog.json.USE_NATIVE_JSON ?
 
 /**
  * Attempts to parse the JSON string natively, falling back to
- * the supplied `fallbackParser` if unsuccessful.
+ * the supplied {@code fallbackParser} if unsuccessful.
  * @param {string} jsonString JSON string to parse.
  * @param {function(string):Object} fallbackParser Fallback JSON parser used
  *     if native
@@ -52,7 +61,6 @@ goog.json.hybrid.stringify = goog.json.USE_NATIVE_JSON ?
  * @private
  */
 goog.json.hybrid.parse_ = function(jsonString, fallbackParser) {
-  'use strict';
   if (goog.global.JSON) {
     try {
       var obj = goog.global.JSON.parse(jsonString);
@@ -69,13 +77,12 @@ goog.json.hybrid.parse_ = function(jsonString, fallbackParser) {
 
 /**
  * Attempts to parse the JSON string natively, falling back to
- * `goog.json.parse` if unsuccessful.
+ * {@code goog.json.parse} if unsuccessful.
  * @param {string} jsonString JSON string to parse.
  * @return {?Object} Resulting JSON object.
  */
-goog.json.hybrid.parse = goog.json.USE_NATIVE_JSON ?
-    goog.global['JSON']['parse'] :
-    function(jsonString) {
-      'use strict';
+goog.json.hybrid.parse =
+    goog.json.USE_NATIVE_JSON ? goog.global['JSON']['parse'] : function(
+                                                                   jsonString) {
       return goog.json.hybrid.parse_(jsonString, goog.json.parse);
     };

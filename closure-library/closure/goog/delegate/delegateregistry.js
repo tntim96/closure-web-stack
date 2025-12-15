@@ -1,8 +1,16 @@
-/**
- * @license
- * Copyright The Closure Library Authors.
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2017 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 goog.module('goog.delegate.DelegateRegistry');
 
@@ -26,7 +34,7 @@ class Registration {
     /**
      * The registered delegate constructor.  Exactly one of `instance` or
      * `ctor` must be provided.
-     * @type {function(new: T, ...?)|undefined}
+     * @type {function(new: T)|undefined}
      */
     this.ctor;
     /**
@@ -87,8 +95,8 @@ class DelegateRegistryBase {
   /**
    * Returns the first (highest priority) registered delegate, or undefined
    * if none was registered.
-   * @param {(function(function(new: T, ...?)): T)=} instantiate A function to
-   *     instantiate constructors registered with `registerClass`.  By default,
+   * @param {(function(function(new: T)): T)=} instantiate A function to
+   *     instantiated constructors registered with `registerClass`.  By default,
    *     this just calls the constructor with no arguments.
    * @return {T|undefined}
    */
@@ -106,8 +114,8 @@ class DelegateRegistryBase {
    * of any registered classes.  The `instantiate` argument can be passed to
    * override how constructors are called.  The array will be frozen in debug
    * mode.
-   * @param {(function(function(new: T, ...?)): T)=} instantiate A function to
-   *     instantiate constructors registered with `registerClass`.  By default,
+   * @param {(function(function(new: T)): T)=} instantiate A function to
+   *     instantiated constructors registered with `registerClass`.  By default,
    *     this just calls the constructor with no arguments.
    * @return {!Array<T>}
    */
@@ -120,7 +128,7 @@ class DelegateRegistryBase {
 
   /**
    * @param {!Registration<T>} registration
-   * @param {(function(function(new: T, ...?)): T)=} instantiate
+   * @param {(function(function(new: T)): T)=} instantiate
    * @return {T}
    * @private
    */
@@ -175,7 +183,7 @@ class DelegateRegistryBase {
  *
  * For example, consider a class `Foo` that wants to provide a few extension
  * points for the behaviors `zorch` and `snarf`.  We can set up the delegation
- * as follows:
+ * as follows
  *
  * <code class="highlight highlight-source-js"><pre>
  * const DelegateRegistry = goog.require('goog.delegate.DelegateRegistry');
@@ -183,7 +191,7 @@ class DelegateRegistryBase {
  * class Foo {
  *   constructor() {
  *     /** @private @const {!Array<!Foo.Delegate>} &ast;/
- *     this.delegates_ = Foo.registry.delegates();
+ *     this.delegates_ = Foo.Delegate.REGISTRY.delegates();
  *   }
  *   frobnicate(x, y, z) {
  *     const w = delegates.callFirst(this.delegates_, d => d.zorch(x, y));
@@ -196,7 +204,7 @@ class DelegateRegistryBase {
  *   snarf(a, b) {}
  * }
  * /** @const {!DelegateRegistry<!Foo.Delegate>} &ast;/
- * Foo.registry = new DelegateRegistry();
+ * Foo.registry = new DelegateRegstry();
  * </pre></code>
  *
  * A file inserted later in the bundle can define a delegate and register itself
@@ -218,19 +226,19 @@ class DelegateRegistryBase {
  *
  * ## Multiple Delegates
  *
- * Two different registry classes are defined, each with a different policy for
- * how to handle multiple delegates.  The simpler one, `DelegateRegistry`,
+ * Several different registry classes are defined, each with a different policy
+ * for how to handle multiple delegates.  The most simple, `DelegateRegistry`,
  * allows multiple delegates to be registered and returns them in the order they
- * were registered.  If only one delegate is expected,
+ * are registered.  If only one delegate is expected,
  * `DelegateRegistry.prototype.expectAtMostOneDelegate()` performs assertions
  * (in debug mode) that at most one delegate is added, though in production
  * mode it will still register them all - The use of `delegate()` or
  * `goog.delegate.delegates.callFirst()` is recommended in this case to ensure
  * reasonable behavior.
  *
- * The more sophisticated one, `DelegateRegistry.Prioritized`, requires passing
- * a unique priority to each delegate registration (collisions are asserted in
- * debug mode, but will fall back to registration order in production).
+ * Finally, `DelegateRegistry.Prioritized` requires passing a
+ * unique priority to each delegate registration (collisions are asserted in
+ * debug mode, but will fall back on registration order in production).
  *
  *
  * ## Wrapped Delegator
@@ -247,7 +255,7 @@ class DelegateRegistryBase {
  *   bar() {}
  *   /** @return {string} &ast;/
  *   baz() {}
- * }
+ * /
  * class MyDelegator {
  *   /** @param {!Array<!MyDelegateInterface>} delegates &ast;/
  *   constructor(delegates) { this.delegates_ = delegates; }
@@ -290,7 +298,7 @@ class DelegateRegistry extends DelegateRegistryBase {
   }
 
   /**
-   * @param {function(new: T, ...?)} ctor
+   * @param {function(new: T)} ctor
    */
   registerClass(ctor) {
     this.checkRegistration_();
@@ -319,10 +327,10 @@ class DelegateRegistry extends DelegateRegistryBase {
 
 
 /**
- * A delegate registry that allows multiple delegates, each of which must have a
- * numeric priority specified when it is registered.  Iteration will start with
- * the highest number and proceed to the lowest number.  If two delegates are
- * added with the same priority, an error will be given in debug mode.
+ * A delegate registry that allows multiple delegates, which must each have a
+ * numeric priority specified when they are registered.  Iteration will start
+ * with the highest number and proceed to the lowest number.  If two delegates
+ * are added with the same priority, an error will be given in debug mode.
  * @see DelegateRegistry
  *
  * @extends {DelegateRegistryBase<T>}
@@ -330,7 +338,7 @@ class DelegateRegistry extends DelegateRegistryBase {
  */
 DelegateRegistry.Prioritized = class extends DelegateRegistryBase {
   /**
-   * @param {function(new: T, ...?)} ctor
+   * @param {function(new: T)} ctor
    * @param {number} priority
    */
   registerClass(ctor, priority) {
